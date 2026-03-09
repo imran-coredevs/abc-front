@@ -14,7 +14,9 @@ export default function LoginPage() {
 
     // Check if user is coming from reset password link
     useEffect(() => {
-        if (location.pathname === '/reset-password' && searchParams.get('token')) {
+        const isPasswordRoute =
+            location.pathname === '/reset-password' || location.pathname === '/auth/set-password'
+        if (isPasswordRoute && searchParams.get('token')) {
             setStage('generatepassword')
         }
     }, [location.pathname, searchParams])

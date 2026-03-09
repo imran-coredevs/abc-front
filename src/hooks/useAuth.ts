@@ -2,43 +2,41 @@ import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import toast from 'react-hot-toast'
 import { useLoginUserStore } from '@/store/useLoginUserStore'
+import { authService } from '@/services/authService'
+
+function parseName(fullName: string | null | undefined): { firstName: string; lastName: string } {
+    if (!fullName) return { firstName: 'Investor', lastName: '' }
+    const parts = fullName.trim().split(' ')
+    return {
+        firstName: parts[0] || fullName,
+        lastName: parts.slice(1).join(' ') || '',
+    }
+}
 
 export function useAuth() {
     const navigate = useNavigate()
     const { setUser, setToken, saveToLocalStorage, saveToSessionStorage, clear } = useLoginUserStore()
 
     const loginMutation = useMutation({
-        mutationFn: async ({ email, password }: { email: string; password: string; rememberMe?: boolean }) => {
-            // Mock login - no API call
-            return {
-                user: {
-                    id: '1',
-                    email: email,
-                    firstName: 'Admin',
-                    lastName: 'User',
-                    profileImageUrl: '',
-                },
-                accessToken: 'mock-access-token',
-                refreshToken: 'mock-refresh-token',
-            }
-        },
-        onSuccess: async (data, variables) => {
+        mutationFn: ({ email, password }: { email: string; password: string; rememberMe?: boolean }) =>
+            authService.login(email, password),
+        onSuccess: (data, variables) => {
+            const { firstName, lastName } = parseName(data.data.investor.name)
             const user = {
-                id: data.user.id,
-                email: data.user.email,
-                firstName: data.user.firstName || '',
-                lastName: data.user.lastName || '',
-                profileImage: data.user.profileImageUrl || '',
+                id: data.data.investor.id,
+                email: data.data.investor.email,
+                firstName,
+                lastName,
+                profileImage: '',
             }
 
             setUser(user)
-            setToken(data.accessToken)
+            setToken(data.data.token)
 
-            // Save tokens based on remember me preference
             if (variables.rememberMe) {
-                saveToLocalStorage(user, data.accessToken, data.refreshToken)
+                saveToLocalStorage(user, data.data.token, data.data.refreshToken || '')
             } else {
-                saveToSessionStorage(user, data.accessToken, data.refreshToken)
+                saveToSessionStorage(user, data.data.token, data.data.refreshToken || '')
             }
 
             toast.success('Login successful!')
@@ -51,18 +49,14 @@ export function useAuth() {
     })
 
     const logoutMutation = useMutation({
-        mutationFn: async () => {
-            // Mock logout - no API call
-            return Promise.resolve()
-        },
+        mutationFn: () => authService.logout(),
         onSuccess: () => {
             clear()
             toast.success('Logged out successfully')
             navigate('/login')
         },
-        onError: (error: any) => {
-            console.error('Logout error:', error)
-            // Clear local state anyway
+        onError: () => {
+            // Clear local state regardless of server error
             clear()
             navigate('/login')
         },

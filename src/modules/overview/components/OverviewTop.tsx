@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router-dom'
 
 export default function OverviewTop() {
     const isApiConnected = true // Mock API connection status
+    const navigate = useNavigate()
 
     return (
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -16,7 +18,7 @@ export default function OverviewTop() {
                 {/* API Connection Status */}
                 <div className="flex items-center gap-2 rounded-full bg-white/5 px-4 py-2">
                     <span className="text-sm text-neutral-50">API Connection:</span>
-                    <div className='rounded-full bg-neutral-900 px-4 py-2'>
+                    <div className="rounded-full bg-neutral-900 px-4 py-2">
                         <span className={`text-sm font-medium ${isApiConnected ? 'text-green-500' : 'text-red-500'}`}>
                             {isApiConnected ? 'Connected' : 'Disconnected'}
                         </span>
@@ -24,7 +26,7 @@ export default function OverviewTop() {
                 </div>
 
                 {/* Create Instance Button */}
-                <Button>Create Instance</Button>
+                <Button onClick={() => navigate('/strategy-management/create')}>Create Strategy</Button>
             </div>
         </div>
     )

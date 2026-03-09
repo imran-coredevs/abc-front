@@ -1,6 +1,6 @@
+import { useLoginUserStore } from '@/store/useLoginUserStore'
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
-import { useLoginUserStore } from '@/store/useLoginUserStore'
 
 export function useProfile() {
     const { user, setUser, saveToLocalStorage, saveToSessionStorage } = useLoginUserStore()
@@ -24,22 +24,26 @@ export function useProfile() {
                 lastName: data.lastName || '',
                 profileImage: data.profileImageUrl || user?.profileImage || '',
             }
-            
+
             setUser(updatedUser)
-            
+
             // Update storage with fresh data
-            const token = localStorage.getItem('arbitrax-auth-storage-token') || 
-                         sessionStorage.getItem('arbitrax-auth-storage-token') || ''
-            
-            const storedRefreshToken = localStorage.getItem('arbitrax-refresh-token') ||
-                                      sessionStorage.getItem('arbitrax-refresh-token') || ''
-            
-            if (localStorage.getItem('arbitrax-auth-storage-token')) {
+            const token =
+                localStorage.getItem('cda-trading-bot-auth-storage-token') ||
+                sessionStorage.getItem('cda-trading-bot-auth-storage-token') ||
+                ''
+
+            const storedRefreshToken =
+                localStorage.getItem('cda-trading-bot-refresh-token') ||
+                sessionStorage.getItem('cda-trading-bot-refresh-token') ||
+                ''
+
+            if (localStorage.getItem('cda-trading-bot-auth-storage-token')) {
                 saveToLocalStorage(updatedUser, token, storedRefreshToken)
             } else {
                 saveToSessionStorage(updatedUser, token, storedRefreshToken)
             }
-            
+
             toast.success('Profile updated successfully!')
         },
         onError: (error: any) => {
@@ -67,22 +71,26 @@ export function useProfile() {
                 lastName: data.lastName || user?.lastName || '',
                 profileImage: data.profileImageUrl || '',
             }
-            
+
             setUser(updatedUser)
-            
+
             // Update storage with fresh data
-            const token = localStorage.getItem('arbitrax-auth-storage-token') || 
-                         sessionStorage.getItem('arbitrax-auth-storage-token') || ''
-            
-            const storedRefreshToken = localStorage.getItem('arbitrax-refresh-token') ||
-                                      sessionStorage.getItem('arbitrax-refresh-token') || ''
-            
-            if (localStorage.getItem('arbitrax-auth-storage-token')) {
+            const token =
+                localStorage.getItem('cda-trading-bot-auth-storage-token') ||
+                sessionStorage.getItem('cda-trading-bot-auth-storage-token') ||
+                ''
+
+            const storedRefreshToken =
+                localStorage.getItem('cda-trading-bot-refresh-token') ||
+                sessionStorage.getItem('cda-trading-bot-refresh-token') ||
+                ''
+
+            if (localStorage.getItem('cda-trading-bot-auth-storage-token')) {
                 saveToLocalStorage(updatedUser, token, storedRefreshToken)
             } else {
                 saveToSessionStorage(updatedUser, token, storedRefreshToken)
             }
-            
+
             toast.success('Profile image updated successfully!')
         },
         onError: (error: any) => {

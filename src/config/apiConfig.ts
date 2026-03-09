@@ -33,9 +33,9 @@ const processQueue = (error: any, token: string | null = null) => {
 api.interceptors.request.use(
     (config) => {
         // Try to get token from localStorage first, then sessionStorage
-        let token = localStorage.getItem('arbitrax-auth-storage-token')
+        let token = localStorage.getItem('cda-trading-bot-auth-storage-token')
         if (!token) {
-            token = sessionStorage.getItem('arbitrax-auth-storage-token')
+            token = sessionStorage.getItem('cda-trading-bot-auth-storage-token')
         }
 
         if (token) {
@@ -77,12 +77,12 @@ api.interceptors.response.use(
             isRefreshing = true
 
             // Try to get refresh token
-            let refreshToken = localStorage.getItem('arbitrax-refresh-token')
+            let refreshToken = localStorage.getItem('cda-trading-bot-refresh-token')
             if (!refreshToken) {
-                refreshToken = sessionStorage.getItem('arbitrax-refresh-token')
+                refreshToken = sessionStorage.getItem('cda-trading-bot-refresh-token')
             }
 
-            if (!refreshToken) {
+            if (!refreshToken || refreshToken === '') {
                 // No refresh token, logout
                 isRefreshing = false
                 clearAuthData()
@@ -94,17 +94,17 @@ api.interceptors.response.use(
                 const response = await axios.post(
                     `${envConfig.API_BASE_URL}/auth/refresh`,
                     { refreshToken },
-                    { headers: { 'Content-Type': 'application/json' } }
+                    { headers: { 'Content-Type': 'application/json' } },
                 )
 
                 const { accessToken } = response.data
 
                 // Update stored token
-                const isLocalStorage = !!localStorage.getItem('arbitrax-auth-storage-token')
+                const isLocalStorage = !!localStorage.getItem('cda-trading-bot-auth-storage-token')
                 if (isLocalStorage) {
-                    localStorage.setItem('arbitrax-auth-storage-token', accessToken)
+                    localStorage.setItem('cda-trading-bot-auth-storage-token', accessToken)
                 } else {
-                    sessionStorage.setItem('arbitrax-auth-storage-token', accessToken)
+                    sessionStorage.setItem('cda-trading-bot-auth-storage-token', accessToken)
                 }
 
                 // Update the failed request with new token
@@ -133,12 +133,12 @@ api.interceptors.response.use(
 
 // Helper function to clear auth data
 function clearAuthData() {
-    localStorage.removeItem('arbitrax-auth-storage-user')
-    localStorage.removeItem('arbitrax-auth-storage-token')
-    localStorage.removeItem('arbitrax-refresh-token')
-    sessionStorage.removeItem('arbitrax-auth-storage-user')
-    sessionStorage.removeItem('arbitrax-auth-storage-token')
-    sessionStorage.removeItem('arbitrax-refresh-token')
+    localStorage.removeItem('cda-trading-bot-auth-storage-user')
+    localStorage.removeItem('cda-trading-bot-auth-storage-token')
+    localStorage.removeItem('cda-trading-bot-refresh-token')
+    sessionStorage.removeItem('cda-trading-bot-auth-storage-user')
+    sessionStorage.removeItem('cda-trading-bot-auth-storage-token')
+    sessionStorage.removeItem('cda-trading-bot-refresh-token')
 
     // Redirect to login if not already there
     if (window.location.pathname !== '/login' && window.location.pathname !== '/reset-password') {

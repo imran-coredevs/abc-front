@@ -25,30 +25,38 @@ export const useLoginUserStore = create<LoginUserStore>((set) => ({
     setRefreshToken: (refreshToken) => set(() => ({ refreshToken })),
     setLoaded: (loaded) => set(() => ({ isLoaded: loaded })),
     clear: () => {
-        localStorage.removeItem('arbitrax-auth-storage-user')
-        localStorage.removeItem('arbitrax-auth-storage-token')
-        localStorage.removeItem('arbitrax-refresh-token')
-        sessionStorage.removeItem('arbitrax-auth-storage-user')
-        sessionStorage.removeItem('arbitrax-auth-storage-token')
-        sessionStorage.removeItem('arbitrax-refresh-token')
+        localStorage.removeItem('cda-trading-bot-auth-storage-user')
+        localStorage.removeItem('cda-trading-bot-auth-storage-token')
+        localStorage.removeItem('cda-trading-bot-refresh-token')
+        sessionStorage.removeItem('cda-trading-bot-auth-storage-user')
+        sessionStorage.removeItem('cda-trading-bot-auth-storage-token')
+        sessionStorage.removeItem('cda-trading-bot-refresh-token')
         set(() => ({ user: null, token: null, refreshToken: null, isLoaded: true }))
     },
     saveToLocalStorage: (user, token, refreshToken) => {
-        localStorage.setItem('arbitrax-auth-storage-user', JSON.stringify(user))
-        localStorage.setItem('arbitrax-auth-storage-token', token)
-        localStorage.setItem('arbitrax-refresh-token', refreshToken)
-        sessionStorage.removeItem('arbitrax-auth-storage-user')
-        sessionStorage.removeItem('arbitrax-auth-storage-token')
-        sessionStorage.removeItem('arbitrax-refresh-token')
+        localStorage.setItem('cda-trading-bot-auth-storage-user', JSON.stringify(user))
+        localStorage.setItem('cda-trading-bot-auth-storage-token', token)
+        if (refreshToken) {
+            localStorage.setItem('cda-trading-bot-refresh-token', refreshToken)
+        } else {
+            localStorage.removeItem('cda-trading-bot-refresh-token')
+        }
+        sessionStorage.removeItem('cda-trading-bot-auth-storage-user')
+        sessionStorage.removeItem('cda-trading-bot-auth-storage-token')
+        sessionStorage.removeItem('cda-trading-bot-refresh-token')
         set(() => ({ user, token, refreshToken, isLoaded: true }))
     },
     saveToSessionStorage: (user, token, refreshToken) => {
-        sessionStorage.setItem('arbitrax-auth-storage-user', JSON.stringify(user))
-        sessionStorage.setItem('arbitrax-auth-storage-token', token)
-        sessionStorage.setItem('arbitrax-refresh-token', refreshToken)
-        localStorage.removeItem('arbitrax-auth-storage-user')
-        localStorage.removeItem('arbitrax-auth-storage-token')
-        localStorage.removeItem('arbitrax-refresh-token')
+        sessionStorage.setItem('cda-trading-bot-auth-storage-user', JSON.stringify(user))
+        sessionStorage.setItem('cda-trading-bot-auth-storage-token', token)
+        if (refreshToken) {
+            sessionStorage.setItem('cda-trading-bot-refresh-token', refreshToken)
+        } else {
+            sessionStorage.removeItem('cda-trading-bot-refresh-token')
+        }
+        localStorage.removeItem('cda-trading-bot-auth-storage-user')
+        localStorage.removeItem('cda-trading-bot-auth-storage-token')
+        localStorage.removeItem('cda-trading-bot-refresh-token')
         set(() => ({ user, token, refreshToken, isLoaded: true }))
     },
     loadFromStorage: () => {
@@ -56,17 +64,17 @@ export const useLoginUserStore = create<LoginUserStore>((set) => ({
         let token = null
         let refreshToken = null
 
-        const localUser = localStorage.getItem('arbitrax-auth-storage-user')
-        const localToken = localStorage.getItem('arbitrax-auth-storage-token')
-        const localRefreshToken = localStorage.getItem('arbitrax-refresh-token')
+        const localUser = localStorage.getItem('cda-trading-bot-auth-storage-user')
+        const localToken = localStorage.getItem('cda-trading-bot-auth-storage-token')
+        const localRefreshToken = localStorage.getItem('cda-trading-bot-refresh-token')
         if (localUser && localToken) {
             user = JSON.parse(localUser)
             token = localToken
             refreshToken = localRefreshToken
         } else {
-            const sessionUser = sessionStorage.getItem('arbitrax-auth-storage-user')
-            const sessionToken = sessionStorage.getItem('arbitrax-auth-storage-token')
-            const sessionRefreshToken = sessionStorage.getItem('arbitrax-refresh-token')
+            const sessionUser = sessionStorage.getItem('cda-trading-bot-auth-storage-user')
+            const sessionToken = sessionStorage.getItem('cda-trading-bot-auth-storage-token')
+            const sessionRefreshToken = sessionStorage.getItem('cda-trading-bot-refresh-token')
             if (sessionUser && sessionToken) {
                 user = JSON.parse(sessionUser)
                 token = sessionToken

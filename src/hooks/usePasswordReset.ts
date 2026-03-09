@@ -1,14 +1,12 @@
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
+import { authService } from '@/services/authService'
 
 export function usePasswordReset() {
     const forgotPasswordMutation = useMutation({
-        mutationFn: async (data: { email: string }) => {
-            // Mock forgot password - no API call
-            return Promise.resolve()
-        },
+        mutationFn: ({ email }: { email: string }) => authService.forgotPassword(email),
         onSuccess: () => {
-            toast.success('Password reset email sent! Check your inbox.')
+            toast.success('If that email is registered, a reset link has been sent.')
         },
         onError: (error: any) => {
             const message = error.response?.data?.message || 'Failed to send reset email.'
@@ -17,10 +15,8 @@ export function usePasswordReset() {
     })
 
     const resetPasswordMutation = useMutation({
-        mutationFn: async (data: { token: string; newPassword: string }) => {
-            // Mock reset password - no API call
-            return Promise.resolve()
-        },
+        mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
+            authService.resetPassword(token, newPassword),
         onSuccess: () => {
             toast.success('Password reset successful! You can now login.')
         },

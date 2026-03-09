@@ -1,6 +1,9 @@
 import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router'
 
 export default function StrategyManagementTop() {
+    const navigate = useNavigate()
+
     return (
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-2">
@@ -11,7 +14,7 @@ export default function StrategyManagementTop() {
             </div>
 
             <div className="flex items-center gap-4">
-                <Button>Create Instance</Button>
+                <Button onClick={() => navigate('/strategy-management/create')}>Create Strategy</Button>
             </div>
         </div>
     )

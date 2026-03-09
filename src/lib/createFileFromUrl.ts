@@ -1,4 +1,4 @@
-export async function createFileFromUrl(fileData: UserDocument) {
+export async function createFileFromUrl(fileData) {
     // Fetch the file from server
     const response = await fetch(fileData.location)
     const blob = await response.blob()

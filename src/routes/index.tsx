@@ -1,18 +1,20 @@
 import RootLayout from '@/layouts/root'
-import OverviewPage from '@/modules/overview/page'
-import StrategyManagementPage from '@/modules/strategy-management/page'
-import StrategyDetailsPage from '@/modules/strategy-management/pages/strategy-details'
-import HistoryPage from '@/modules/history/page'
-import ErrorPage from '@/modules/error/page'
 import NotFoundPage from '@/modules/error/404-page'
+import ErrorPage from '@/modules/error/page'
+import HistoryPage from '@/modules/history/page'
 import LoginPage from '@/modules/login/page'
+import OverviewPage from '@/modules/overview/page'
 import SettingsPage from '@/modules/settings/page'
+import StrategyManagementPage from '@/modules/strategy-management/page'
+import CreateEditStrategyPage from '@/modules/strategy-management/pages/create-edit-strategy'
+import StrategyDetailsPage from '@/modules/strategy-management/pages/strategy-details'
 import { createBrowserRouter } from 'react-router'
 import ProtectedRoute from './protected.route'
 
 export const router = createBrowserRouter([
     { path: '/login', Component: LoginPage },
     { path: '/reset-password', Component: LoginPage },
+    { path: '/auth/set-password', Component: LoginPage },
     {
         element: <ProtectedRoute />,
         children: [
@@ -24,15 +26,17 @@ export const router = createBrowserRouter([
                         path: '/',
                         Component: OverviewPage,
                         loader: async () => {
-                            const userStorage = localStorage.getItem('arbitrax-auth-storage')
-                            const user = userStorage ? JSON.parse(userStorage) : {}
-                            const name = user?.state?.user?.firstName
-                                ? `${user?.state?.user?.firstName} ${user?.state?.user?.lastName}`
-                                : 'Admin'
+                            const userStorage =
+                                localStorage.getItem('cda-trading-bot-auth-storage-user') ||
+                                sessionStorage.getItem('cda-trading-bot-auth-storage-user')
+                            const user = userStorage ? JSON.parse(userStorage) : null
+                            const name = user?.firstName
+                                ? `${user.firstName} ${user.lastName}`.trim()
+                                : 'Investor'
                             return { name }
                         },
-                        handle: ({ data }: { data: { name: string } }) => ({
-                            title: `Hello, ${data.name}`,
+                        handle: ({
+                            title: 'Overview',
                             subTitle: 'Overview of your CDA trading strategies',
                             isBackBtn: false,
                         }),
@@ -47,11 +51,29 @@ export const router = createBrowserRouter([
                         },
                     },
                     {
+                        path: '/strategy-management/create',
+                        Component: CreateEditStrategyPage,
+                        handle: {
+                            title: 'Create Strategy',
+                            subTitle: 'Configure a new automated trading strategy',
+                            isBackBtn: true,
+                        },
+                    },
+                    {
                         path: '/strategy-management/:id',
                         Component: StrategyDetailsPage,
                         handle: {
                             title: 'Strategy Details',
                             subTitle: 'View and manage strategy configuration',
+                            isBackBtn: true,
+                        },
+                    },
+                    {
+                        path: '/strategy-management/:id/edit',
+                        Component: CreateEditStrategyPage,
+                        handle: {
+                            title: 'Edit Strategy',
+                            subTitle: 'Update your trading strategy configuration',
                             isBackBtn: true,
                         },
                     },
