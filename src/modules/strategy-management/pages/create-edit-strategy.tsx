@@ -1,4 +1,5 @@
 import Separator from '@/components/ui/Separator'
+import { useStrategyStore } from '@/store/useStrategyStore'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 import BasicConfigSection from '../components/strategy-form/BasicConfigSection'
@@ -12,6 +13,9 @@ export default function CreateEditStrategyPage() {
     const { id } = useParams<{ id?: string }>()
     const isEditMode = Boolean(id)
 
+    const { addStrategy, updateStrategy, getById } = useStrategyStore()
+    const existing = id ? getById(id) : undefined
+
     const {
         control,
         handleSubmit,
@@ -19,12 +23,17 @@ export default function CreateEditStrategyPage() {
         setValue,
         formState: { isSubmitting },
     } = useForm<StrategyFormData>({
-        defaultValues: STRATEGY_FORM_DEFAULTS,
+        defaultValues: existing?.formData ?? STRATEGY_FORM_DEFAULTS,
     })
 
     const onSubmit = (data: StrategyFormData) => {
-        console.log(isEditMode ? 'Update strategy:' : 'Create strategy:', data)
-        navigate('/strategy-management')
+        if (isEditMode && id) {
+            updateStrategy(id, data)
+            navigate(`/strategy-management/${id}`)
+        } else {
+            const newId = addStrategy(data)
+            navigate(`/strategy-management/${newId}`)
+        }
     }
 
     return (

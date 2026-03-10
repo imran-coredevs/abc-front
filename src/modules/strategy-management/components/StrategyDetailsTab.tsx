@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Separator from '@/components/ui/Separator'
+import { useStrategyStore } from '@/store/useStrategyStore'
 import { Edit, PlayCircle, Trash } from 'iconsax-reactjs'
 import { StopCircle } from 'lucide-react'
 import { useState } from 'react'
@@ -49,13 +50,18 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
     const [status, setStatus] = useState(strategyData.status)
     const navigate = useNavigate()
     const { id } = useParams()
+    const { toggleStatus, deleteStrategy } = useStrategyStore()
 
     const handleToggleStatus = () => {
+        if (id) toggleStatus(id)
         setStatus((prev) => (isLiveStatus(prev) ? 'STOPPED' : 'LIVE'))
     }
 
     const handleEdit = () => navigate(`/strategy-management/${id}/edit`)
-    const handleDelete = () => console.log('Delete strategy')
+    const handleDelete = () => {
+        if (id) deleteStrategy(id)
+        navigate('/strategy-management')
+    }
 
     const directionColor =
         strategyData.tradeDirection === 'BUY'

@@ -139,6 +139,7 @@ export default function SymbolSearchSelect<T extends FieldValues>({ label, name,
                                     value={query}
                                     onChange={(e) => setQuery(e.target.value)}
                                     placeholder="Search e.g. BTC, ETH, SOL…"
+                                    autoComplete="off"
                                     className="w-full bg-transparent text-sm text-neutral-100 placeholder-neutral-500 outline-none"
                                 />
                                 {loading && (

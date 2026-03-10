@@ -111,6 +111,7 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                                         {...field}
                                         {...props}
                                         type={showPassword ? 'text' : 'password'}
+                                        autoComplete="off"
                                         className={cn(
                                             'p-sm h-full flex-1 bg-transparent text-neutral-200 outline-none',
                                             className,
@@ -153,6 +154,7 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                                     {...field}
                                     {...props}
                                     type="text"
+                                    autoComplete="off"
                                     className={cn(
                                         'p-sm h-full w-full bg-transparent text-neutral-200 transition-all duration-300 ease-out outline-none',
                                         className,
@@ -171,6 +173,7 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                                 {...field}
                                 {...props}
                                 type={type}
+                                autoComplete="off"
                                 disabled={props.disabled}
                                 className={cn(
                                     INPUT_BASE_CLASSES,

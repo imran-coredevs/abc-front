@@ -247,6 +247,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                     min={0}
                                                     step="any"
                                                     value={inputValue}
+                                                    autoComplete="off"
                                                     onChange={(e) => {
                                                         const raw = e.target.value
                                                         setDurationDraft(raw)
@@ -298,7 +299,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
-                                            value="LONG"
+                                            value="BUY"
                                             className={figmaRadioClass}
                                             {...control.register('tradeDirection')}
                                         />
@@ -307,7 +308,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
-                                            value="SHORT"
+                                            value="SELL"
                                             className={figmaRadioClass}
                                             {...control.register('tradeDirection')}
                                         />

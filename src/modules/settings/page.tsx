@@ -25,7 +25,7 @@ export default function SettingsPage() {
     return (
         <div>
             {/* Tab Navigation */}
-            <div className="space-y-6 border-b border-neutral-700 bg-neutral-950/50 pb-4">
+            <div className="space-y-6 bg-neutral-950/50 pb-4">
                 <div className="scrollbar-hide flex gap-5 overflow-x-auto">
                     {pages.map((page) => (
                         <Button
@@ -37,17 +37,6 @@ export default function SettingsPage() {
                             {page.label}
                         </Button>
                     ))}
-                </div>
-
-                <div className="inline-flex flex-col items-start justify-start gap-2">
-                    <div className="inline-flex items-center justify-start gap-3 self-stretch">
-                        <div className="text-neutral-50 justify-start text-2xl leading-8 font-semibold">
-                            Exchange Connections
-                        </div>
-                    </div>
-                    <div className="justify-start text-base leading-5 font-normal text-neutral-400">
-                        Connect your Binance account to enable live trading and strategy execution
-                    </div>
                 </div>
             </div>
 
