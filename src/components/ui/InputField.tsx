@@ -1,23 +1,26 @@
 import { cn } from '@/lib/utils'
 import { Eye, EyeSlash, SearchNormal1 } from 'iconsax-reactjs'
 import { useRef, useState } from 'react'
-import { Control, Controller, FieldValues, RegisterOptions, Path, FieldPath } from 'react-hook-form'
+import { Control, Controller, FieldPath, FieldValues, Path, RegisterOptions } from 'react-hook-form'
 
-interface InputFieldProps<TFieldValues extends FieldValues = FieldValues>
-    extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputFieldProps<
+    TFieldValues extends FieldValues = FieldValues,
+> extends React.InputHTMLAttributes<HTMLInputElement> {
     name: Path<TFieldValues>
     control: Control<TFieldValues>
     label?: string
     className?: string
     type?: 'text' | 'password' | 'search' | 'toggle' | 'number' | 'tel'
     suffix?: string
+    horizontal?: boolean
     rules?: Omit<
         RegisterOptions<TFieldValues, FieldPath<TFieldValues>>,
         'disabled' | 'setValueAs' | 'valueAsNumber' | 'valueAsDate'
     >
 }
 
-const INPUT_BASE_CLASSES = 'h-[52px] px-4 rounded-lg bg-white/10 border border-transparent transition-colors outline-none'
+const INPUT_BASE_CLASSES =
+    'h-[52px] px-4 rounded-lg bg-white/10 border border-transparent transition-colors outline-none'
 const INPUT_FOCUS_CLASSES = 'focus:border-blue-700 caret-blue-700'
 const ERROR_CLASSES = 'border-red-500'
 
@@ -28,6 +31,7 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
     className,
     type = 'text',
     suffix,
+    horizontal = false,
     rules,
     ...props
 }: InputFieldProps<TFieldValues>) => {
@@ -36,11 +40,12 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
     const containerRef = useRef<HTMLDivElement>(null)
 
     return (
-        <div className="flex min-h-[52px] flex-col gap-2">
+        <div className={cn('flex min-h-[52px] gap-2', horizontal ? 'flex-row items-center justify-between' : 'flex-col')}>
             {label && (
                 <label
                     className={cn(
                         'p-md flex items-center gap-1 font-medium text-neutral-50',
+                        horizontal && 'min-w-[150px] shrink-0',
                         props.disabled && 'cursor-not-allowed opacity-50',
                     )}
                 >
@@ -75,7 +80,7 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                                     >
                                         <div
                                             className={cn(
-                                                'absolute left-[3px] top-[2px] h-4 w-4 rounded-full transition-all duration-300 ease-in-out',
+                                                'absolute top-[2px] left-[3px] h-4 w-4 rounded-full transition-all duration-300 ease-in-out',
                                                 field.value ? 'translate-x-4 bg-white' : 'bg-neutral-400',
                                             )}
                                         />
@@ -149,7 +154,7 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                                     {...props}
                                     type="text"
                                     className={cn(
-                                        'p-sm h-full w-full bg-transparent text-neutral-200 outline-none transition-all duration-300 ease-out',
+                                        'p-sm h-full w-full bg-transparent text-neutral-200 transition-all duration-300 ease-out outline-none',
                                         className,
                                     )}
                                     autoFocus={searchActive}
@@ -161,7 +166,7 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
 
                     // DEFAULT TEXT FIELD
                     return (
-                        <div className="flex w-full flex-col gap-1.5">
+                        <div className={cn('flex flex-col gap-1.5' + (horizontal ? ' w-full max-w-[10.5rem]' : ''))}>
                             <input
                                 {...field}
                                 {...props}

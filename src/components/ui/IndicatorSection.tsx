@@ -54,12 +54,10 @@ export default function IndicatorSection<T extends FieldValues>({
                             render={({ field }) => (
                                 <Select onValueChange={field.onChange} value={field.value as string}>
                                     <SelectTrigger className="h-8 w-28 rounded-md border-white/20 bg-white/10 text-xs text-neutral-200">
-                                        <SelectValue>
-                                            {formatRole(field.value as string)}
-                                        </SelectValue>
+                                        <SelectValue>{formatRole(field.value as string)}</SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {nonDisabledRoles.map(role => (
+                                        {nonDisabledRoles.map((role) => (
                                             <SelectItem key={role} value={role}>
                                                 {formatRole(role)}
                                             </SelectItem>
@@ -88,9 +86,7 @@ export default function IndicatorSection<T extends FieldValues>({
                                     checked={(field.value as string) !== 'disabled'}
                                     onChange={(e) => {
                                         field.onChange(
-                                            e.target.checked
-                                                ? (nonDisabledRoles[0] ?? 'filterOnly')
-                                                : 'disabled'
+                                            e.target.checked ? (nonDisabledRoles[0] ?? 'filterOnly') : 'disabled',
                                         )
                                     }}
                                     className="peer sr-only"
@@ -117,7 +113,7 @@ export default function IndicatorSection<T extends FieldValues>({
             {isEnabled && (
                 <>
                     <Separator />
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
+                    <div className="grid grid-cols-1 gap-4 bg-neutral-900 p-4 rounded-lg">{children}</div>
                 </>
             )}
         </div>

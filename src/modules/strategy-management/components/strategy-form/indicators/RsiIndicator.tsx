@@ -3,6 +3,7 @@ import { InputField } from '@/components/ui/InputField'
 import IndicatorSection from '@/components/ui/IndicatorSection'
 import { PRICE_SOURCES, RSI_SMOOTHING } from '../../../constants/strategy-form.defaults'
 import type { StrategyControl, StrategyWatch } from '../../../types/strategy-form.types'
+import Separator from '@/components/ui/Separator'
 
 type Props = { control: StrategyControl; watch: StrategyWatch }
 
@@ -22,9 +23,22 @@ export default function RsiIndicator({ control, watch }: Props) {
                 type="number"
                 placeholder="14"
                 rules={{ min: { value: 1, message: 'Min 1' } }}
+                horizontal
             />
-            <FormSelect label="Source" name="indicators.rsi.source" control={control} options={PRICE_SOURCES} />
-            <FormSelect label="Smoothing Type" name="indicators.rsi.smoothingType" control={control} options={RSI_SMOOTHING} />
+            <FormSelect
+                label="Source"
+                name="indicators.rsi.source"
+                control={control}
+                options={PRICE_SOURCES}
+                horizontal
+            />
+            <FormSelect
+                label="Smoothing Type"
+                name="indicators.rsi.smoothingType"
+                control={control}
+                options={RSI_SMOOTHING}
+                horizontal
+            />
             {showSmoothingLength && (
                 <InputField
                     name="indicators.rsi.smoothingLength"
@@ -33,6 +47,7 @@ export default function RsiIndicator({ control, watch }: Props) {
                     type="number"
                     placeholder="14"
                     rules={{ min: { value: 1, message: 'Min 1' } }}
+                    horizontal
                 />
             )}
             {showBbMultiplier && (
@@ -43,6 +58,7 @@ export default function RsiIndicator({ control, watch }: Props) {
                     type="number"
                     placeholder="2"
                     rules={{ min: { value: 0.1, message: 'Min 0.1' } }}
+                    horizontal
                 />
             )}
             <InputField
@@ -52,6 +68,7 @@ export default function RsiIndicator({ control, watch }: Props) {
                 type="number"
                 placeholder="70"
                 rules={{ min: { value: 50, message: 'Min 50' }, max: { value: 100, message: 'Max 100' } }}
+                horizontal
             />
             <InputField
                 name="indicators.rsi.oversoldLevel"
@@ -60,6 +77,7 @@ export default function RsiIndicator({ control, watch }: Props) {
                 type="number"
                 placeholder="30"
                 rules={{ min: { value: 0, message: 'Min 0' }, max: { value: 50, message: 'Max 50' } }}
+                horizontal
             />
             {isSignal && (
                 <InputField
@@ -69,8 +87,13 @@ export default function RsiIndicator({ control, watch }: Props) {
                     type="number"
                     placeholder="1"
                     rules={{ min: { value: 0, message: 'Min 0' } }}
+                    horizontal
                 />
             )}
+
+            <Separator />
+
+            <p className='text-neutral-500 text-sm'>Used to detect overbought and oversold conditions</p>
         </IndicatorSection>
     )
 }

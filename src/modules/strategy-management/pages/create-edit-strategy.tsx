@@ -1,12 +1,10 @@
+import Separator from '@/components/ui/Separator'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
-import { STRATEGY_FORM_DEFAULTS } from '../constants/strategy-form.defaults'
 import BasicConfigSection from '../components/strategy-form/BasicConfigSection'
 import FormActions from '../components/strategy-form/FormActions'
-import IndicatorsSection from '../components/strategy-form/IndicatorsSection'
-import RiskManagementSection from '../components/strategy-form/RiskManagementSection'
-import StrategyExitsSection from '../components/strategy-form/StrategyExitsSection'
 import StrategyFormHeader from '../components/strategy-form/StrategyFormHeader'
+import { STRATEGY_FORM_DEFAULTS } from '../constants/strategy-form.defaults'
 import type { StrategyFormData } from '../types/strategy-form.types'
 
 export default function CreateEditStrategyPage() {
@@ -14,7 +12,13 @@ export default function CreateEditStrategyPage() {
     const { id } = useParams<{ id?: string }>()
     const isEditMode = Boolean(id)
 
-    const { control, handleSubmit, watch, formState: { isSubmitting } } = useForm<StrategyFormData>({
+    const {
+        control,
+        handleSubmit,
+        watch,
+        setValue,
+        formState: { isSubmitting },
+    } = useForm<StrategyFormData>({
         defaultValues: STRATEGY_FORM_DEFAULTS,
     })
 
@@ -24,14 +28,14 @@ export default function CreateEditStrategyPage() {
     }
 
     return (
-        <div>
+        <div className="relative overflow-hidden">
+            <div className="absolute -bottom-[20%] left-[50%] -z-1 -translate-x-1/2">
+                <div className="h-200 w-200 rounded-full bg-linear-to-b from-blue-900 to-blue-800 blur-[500px]" />
+            </div>
             <StrategyFormHeader isEditMode={isEditMode} id={id} />
-
             <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
-                <BasicConfigSection control={control} watch={watch} />
-                <RiskManagementSection control={control} watch={watch} />
-                <IndicatorsSection control={control} watch={watch} />
-                <StrategyExitsSection control={control} watch={watch} />
+                <BasicConfigSection control={control} watch={watch} setValue={setValue} />
+                <Separator />
                 <FormActions isEditMode={isEditMode} id={id} isSubmitting={isSubmitting} />
             </form>
         </div>

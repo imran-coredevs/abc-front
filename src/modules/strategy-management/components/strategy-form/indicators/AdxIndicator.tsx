@@ -3,6 +3,7 @@ import { InputField } from '@/components/ui/InputField'
 import IndicatorSection from '@/components/ui/IndicatorSection'
 import { ADX_CONDITIONS, ADX_ROLES } from '../../../constants/strategy-form.defaults'
 import type { StrategyControl, StrategyWatch } from '../../../types/strategy-form.types'
+import Separator from '@/components/ui/Separator'
 
 type Props = { control: StrategyControl; watch: StrategyWatch }
 
@@ -23,6 +24,7 @@ export default function AdxIndicator({ control, watch }: Props) {
                 type="number"
                 placeholder="14"
                 rules={{ min: { value: 1, message: 'Min 1' } }}
+                horizontal
             />
             <InputField
                 name="indicators.adx.adxLength"
@@ -31,6 +33,7 @@ export default function AdxIndicator({ control, watch }: Props) {
                 type="number"
                 placeholder="14"
                 rules={{ min: { value: 1, message: 'Min 1' } }}
+                horizontal
             />
             <InputField
                 name="indicators.adx.threshold"
@@ -39,8 +42,18 @@ export default function AdxIndicator({ control, watch }: Props) {
                 type="number"
                 placeholder="25"
                 rules={{ min: { value: 1, message: 'Min 1' } }}
+                horizontal
             />
-            <FormSelect label="Condition Type" name="indicators.adx.conditionType" control={control} options={ADX_CONDITIONS} />
+            <FormSelect
+                label="Condition Type"
+                name="indicators.adx.conditionType"
+                control={control}
+                options={ADX_CONDITIONS}
+                horizontal
+            />
+            <Separator />
+
+            <p className="text-sm text-neutral-500">Smooths price action to identify trend direction.</p>
         </IndicatorSection>
     )
 }

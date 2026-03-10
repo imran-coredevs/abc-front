@@ -13,16 +13,12 @@ export default function FormActions({ isEditMode, id, isSubmitting }: Props) {
     const cancelPath = isEditMode ? `/strategy-management/${id}` : '/strategy-management'
 
     return (
-        <div className="flex items-center justify-end gap-4 pb-8">
-            <Button
-                type="button"
-                variant="secondary"
-                onClick={() => navigate(cancelPath)}
-            >
-                Cancel
-            </Button>
+        <div className="flex items-center gap-4 pb-8">
             <Button type="submit" disabled={isSubmitting}>
                 {isEditMode ? 'Save Changes' : 'Create Strategy'}
+            </Button>
+            <Button className="px-10" type="button" variant="secondary" onClick={() => navigate(cancelPath)}>
+                Cancel
             </Button>
         </div>
     )

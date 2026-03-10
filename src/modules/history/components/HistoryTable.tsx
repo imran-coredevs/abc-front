@@ -331,15 +331,15 @@ export default function HistoryTable() {
                         </SelectContent>
                     </Select>
 
-                    <DateRangePicker
-                        initialDateFrom={subDays(new Date(), 7)}
-                        initialDateTo={new Date()}
-                    />
+                    <DateRangePicker initialDateFrom={subDays(new Date(), 7)} initialDateTo={new Date()} />
                 </div>
             </TableHeader>
 
-            <div className="mt-4">
+            <div className="relative overflow-hidden mt-5">
                 <Table columns={columns} tableData={currentTrades} />
+                <div className="absolute -bottom-[20%] left-[50%] z-1 -translate-x-1/2 pointer-events-none">
+                    <div className="h-200 w-200 rounded-full bg-linear-to-b from-blue-900 to-blue-800 blur-[500px]" />
+                </div>
             </div>
 
             <TablePagination paginationOptions={paginationOptions} tableName="trades" />

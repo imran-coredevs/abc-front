@@ -1,6 +1,7 @@
 import FormSelect from '@/components/ui/FormSelect'
-import { InputField } from '@/components/ui/InputField'
 import IndicatorSection from '@/components/ui/IndicatorSection'
+import { InputField } from '@/components/ui/InputField'
+import Separator from '@/components/ui/Separator'
 import { SUPERTREND_SRC } from '../../../constants/strategy-form.defaults'
 import type { StrategyControl, StrategyWatch } from '../../../types/strategy-form.types'
 
@@ -19,6 +20,7 @@ export default function SupertrendIndicator({ control, watch }: Props) {
                 type="number"
                 placeholder="10"
                 rules={{ min: { value: 1, message: 'Min 1' } }}
+                horizontal
             />
             <InputField
                 name="indicators.superTrend.atrMultiplier"
@@ -27,8 +29,15 @@ export default function SupertrendIndicator({ control, watch }: Props) {
                 type="number"
                 placeholder="3"
                 rules={{ min: { value: 0.1, message: 'Min 0.1' } }}
+                horizontal
             />
-            <FormSelect label="Source" name="indicators.superTrend.srcPrice" control={control} options={SUPERTREND_SRC} />
+            <FormSelect
+                label="Source"
+                name="indicators.superTrend.srcPrice"
+                control={control}
+                options={SUPERTREND_SRC}
+                horizontal
+            />
             {isSignal && (
                 <InputField
                     name="indicators.superTrend.signalLookbackBars"
@@ -37,8 +46,13 @@ export default function SupertrendIndicator({ control, watch }: Props) {
                     type="number"
                     placeholder="1"
                     rules={{ min: { value: 0, message: 'Min 0' } }}
+                    horizontal
                 />
             )}
+
+            <Separator />
+
+            <p className="text-sm text-neutral-500">Defines trend direction and strength</p>
         </IndicatorSection>
     )
 }
