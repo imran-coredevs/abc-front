@@ -299,20 +299,20 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
-                                            value="BUY"
+                                            value="LONG"
                                             className={figmaRadioClass}
                                             {...control.register('tradeDirection')}
                                         />
-                                        <span className="text-base text-neutral-50">Buy Long</span>
+                                        <span className="text-base text-neutral-50">Long</span>
                                     </label>
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
-                                            value="SELL"
+                                            value="SHORT"
                                             className={figmaRadioClass}
                                             {...control.register('tradeDirection')}
                                         />
-                                        <span className="text-base text-neutral-50">Sell Short</span>
+                                        <span className="text-base text-neutral-50">Short</span>
                                     </label>
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input

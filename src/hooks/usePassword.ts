@@ -1,11 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
+import { authService } from '@/services/authService'
 
 export function usePassword() {
     const updatePasswordMutation = useMutation({
         mutationFn: async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) => {
-            // Mock update password - no API call
-            return Promise.resolve()
+            return authService.changePassword(currentPassword, newPassword)
         },
         onSuccess: () => {
             toast.success('Password updated successfully!')

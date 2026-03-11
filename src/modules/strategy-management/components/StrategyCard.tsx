@@ -7,19 +7,23 @@ import toast from 'react-hot-toast'
 type StrategyCardProps = {
     apiKey: string
     strategyName: string
-    status: 'Running' | 'Stopped'
+    status: 'Running' | 'Stopped' | 'Starting' | 'Stopping' | 'Draft'
     pair: string
     direction: 'Long' | 'Short' | 'Both'
     allocation: number
     onToggleStatus: () => void
     onViewDetails: () => void
+    isToggling?: boolean
 }
 
 // Status badge component matching Figma TokenPairs design
-const StatusBadge = ({ status }: { status: 'Running' | 'Stopped' }) => {
+const StatusBadge = ({ status }: { status: 'Running' | 'Stopped' | 'Starting' | 'Stopping' | 'Draft' }) => {
     const statusStyles = {
         Running: 'bg-green-600/10 text-green-500',
         Stopped: 'bg-red-600/10 text-red-500',
+        Draft: 'bg-neutral-800 text-neutral-400',
+        Starting: 'bg-yellow-600/10 text-yellow-500',
+        Stopping: 'bg-orange-600/10 text-orange-500',
     }
 
     return (
@@ -43,6 +47,7 @@ export default function StrategyCard({
     allocation,
     onToggleStatus,
     onViewDetails,
+    isToggling = false,
 }: StrategyCardProps) {
     const handleCopyApiKey = () => {
         navigator.clipboard.writeText(apiKey)
@@ -62,6 +67,9 @@ export default function StrategyCard({
         }
         return colors[dir as keyof typeof colors] || 'text-neutral-50'
     }
+
+    const canToggle = status === 'Running' || status === 'Stopped' || status === 'Draft'
+    const showStopButton = status === 'Running' || status === 'Stopping'
 
     return (
         <div className="gradient-border relative flex h-full flex-col gap-8 overflow-hidden rounded-xl bg-white/5 p-6">
@@ -118,14 +126,20 @@ export default function StrategyCard({
             <div className="relative z-10 flex gap-3">
                 <button
                     onClick={onToggleStatus}
-                    className="flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-[40px] border border-white/30 px-6 py-3 text-base leading-5.25 font-normal text-neutral-50 transition-colors hover:bg-white/5"
+                    disabled={isToggling || !canToggle}
+                    className={cn(
+                        'flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-[40px] border border-white/30 px-6 py-3 text-base leading-5.25 font-normal text-neutral-50 transition-colors',
+                        isToggling || !canToggle
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'hover:bg-white/5'
+                    )}
                 >
-                    {status === 'Running' ? (
+                    {showStopButton ? (
                         <StopCircle size={20} className="text-red-500" variant="Bold" />
                     ) : (
                         <PlayCircle size={20} className="text-green-500" variant="Bold" />
                     )}
-                    {status === 'Running' ? 'Stop' : 'Run'}
+                    {isToggling ? 'Processing...' : showStopButton ? 'Stop' : 'Run'}
                 </button>
                 <button
                     onClick={onViewDetails}

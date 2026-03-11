@@ -13,9 +13,10 @@ export type BinanceApiFormData = {
 type Props = {
     open: boolean
     onOpenChange: (open: boolean) => void
-    onSave: (data: BinanceApiFormData) => void
+    onSave: (data: BinanceApiFormData) => void | Promise<void>
     existingApiKey?: string | null
     mode?: 'add' | 'replace'
+    isSubmitting?: boolean
 }
 
 function truncateKey(key: string): string {
@@ -60,7 +61,7 @@ function PasswordInput({
     )
 }
 
-export default function AddBinanceApiKeyModal({ open, onOpenChange, onSave, existingApiKey, mode = 'add' }: Props) {
+export default function AddBinanceApiKeyModal({ open, onOpenChange, onSave, existingApiKey, mode = 'add', isSubmitting: externalSubmitting }: Props) {
     const isReplace = mode === 'replace'
 
     const {
@@ -78,11 +79,13 @@ export default function AddBinanceApiKeyModal({ open, onOpenChange, onSave, exis
         onOpenChange(false)
     }
 
-    const onSubmit = (data: BinanceApiFormData) => {
-        onSave(data)
+    const onSubmit = async (data: BinanceApiFormData) => {
+        await onSave(data)
         reset()
         onOpenChange(false)
     }
+
+    const submitting = isSubmitting || externalSubmitting
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
@@ -134,13 +137,14 @@ export default function AddBinanceApiKeyModal({ open, onOpenChange, onSave, exis
                     <Separator />
 
                     <div className="flex gap-3">
-                        <Button type="submit" variant="default" disabled={!isValid || isSubmitting} className="flex-1">
-                            {isReplace ? 'Replace API Key' : 'Save API Key'}
+                        <Button type="submit" variant="default" disabled={!isValid || submitting} className="flex-1">
+                            {submitting ? 'Saving...' : isReplace ? 'Replace API Key' : 'Save API Key'}
                         </Button>
                         <Button
                             type="button"
                             variant="secondary"
                             onClick={handleClose}
+                            disabled={submitting}
                             className="flex-1 border-neutral-700"
                         >
                             Cancel

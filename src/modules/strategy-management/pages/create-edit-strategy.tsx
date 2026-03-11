@@ -1,7 +1,9 @@
 import Separator from '@/components/ui/Separator'
-import { useStrategyStore } from '@/store/useStrategyStore'
+import { instanceService } from '@/services/instanceService'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
+import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import BasicConfigSection from '../components/strategy-form/BasicConfigSection'
 import FormActions from '../components/strategy-form/FormActions'
 import StrategyFormHeader from '../components/strategy-form/StrategyFormHeader'
@@ -12,28 +14,88 @@ export default function CreateEditStrategyPage() {
     const navigate = useNavigate()
     const { id } = useParams<{ id?: string }>()
     const isEditMode = Boolean(id)
-
-    const { addStrategy, updateStrategy, getById } = useStrategyStore()
-    const existing = id ? getById(id) : undefined
+    const [isLoading, setIsLoading] = useState(isEditMode)
 
     const {
         control,
         handleSubmit,
         watch,
         setValue,
+        reset,
         formState: { isSubmitting },
     } = useForm<StrategyFormData>({
-        defaultValues: existing?.formData ?? STRATEGY_FORM_DEFAULTS,
+        defaultValues: STRATEGY_FORM_DEFAULTS,
     })
 
-    const onSubmit = (data: StrategyFormData) => {
-        if (isEditMode && id) {
-            updateStrategy(id, data)
-            navigate(`/strategy-management/${id}`)
-        } else {
-            const newId = addStrategy(data)
-            navigate(`/strategy-management/${newId}`)
+    // Fetch existing strategy data in edit mode
+    useEffect(() => {
+        const fetchStrategy = async () => {
+            if (!id) return
+
+            try {
+                setIsLoading(true)
+                const response = await instanceService.getInstance(id)
+                const instance = response.data
+                
+                // Map API response to form data
+                const formData: StrategyFormData = {
+                    name: instance.name,
+                    symbol: instance.symbol,
+                    timeframe: instance.timeframe,
+                    tradeDirection: instance.tradeDirection,
+                    candleType: instance.candleType,
+                    marginType: instance.marginType,
+                    capitalAllocationType: instance.capitalAllocationType,
+                    allocationValue: instance.allocationValue,
+                    leverage: instance.leverage,
+                    maxOpenPositions: instance.maxOpenPositions,
+                    maxTradeDuration: 0,
+                    positionSizingMethod: instance.positionSizingMethod,
+                    fixedTradeAmount: instance.fixedTradeAmount || 0,
+                    capitalPercentagePerTrade: instance.capitalPercentagePerTrade || 0,
+                    minSignalAgreement: instance.minSignalAgreement,
+                    indicators: instance.indicators || {},
+                    risk: instance.risk,
+                    strategyExits: instance.strategyExits,
+                }
+                
+                reset(formData)
+            } catch (error: any) {
+                console.error('Failed to fetch strategy:', error)
+                toast.error(error?.response?.data?.message || 'Failed to load strategy')
+                navigate('/strategy-management')
+            } finally {
+                setIsLoading(false)
+            }
         }
+
+        fetchStrategy()
+    }, [id, reset, navigate])
+
+    const onSubmit = async (data: StrategyFormData) => {
+        try {
+            if (isEditMode && id) {
+                await instanceService.updateInstance(id, data)
+                toast.success('Strategy updated successfully')
+                navigate(`/strategy-management/${id}`)
+            } else {
+                const response = await instanceService.createInstance(data)
+                toast.success('Strategy created successfully')
+                navigate(`/strategy-management/${response.data._id}`)
+            }
+        } catch (error: any) {
+            console.error('Failed to save strategy:', error)
+            const errorMessage = error?.response?.data?.message || 'Failed to save strategy'
+            toast.error(errorMessage)
+        }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <div className="size-12 animate-spin rounded-full border-4 border-neutral-700 border-t-green-500" />
+            </div>
+        )
     }
 
     return (

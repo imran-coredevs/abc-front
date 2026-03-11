@@ -7,7 +7,7 @@
 export const INSTANCE_STATUSES        = ['DRAFT', 'STARTING', 'LIVE', 'STOPPING', 'STOPPED', 'BACKTESTING'] as const;
 export const CAPITAL_ALLOCATION_TYPES = ['PERCENTAGE_OF_PORTFOLIO', 'FIXED_AMOUNT'] as const;
 export const POSITION_SIZING_METHODS  = ['FIXED', 'PERCENTAGE'] as const;
-export const TRADE_DIRECTIONS         = ['BUY', 'SELL', 'BOTH'] as const;
+export const TRADE_DIRECTIONS         = ['LONG', 'SHORT', 'BOTH'] as const;
 export const CANDLE_TYPES             = ['STANDARD', 'HEIKIN_ASHI'] as const;
 export const MARGIN_TYPES             = ['CROSSED', 'ISOLATED'] as const;
 

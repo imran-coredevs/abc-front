@@ -1,101 +1,29 @@
 import Table from '@/components/ui/table/table'
 import TableHeader from '@/components/ui/table/table-header'
 import { cn } from '@/lib/utils'
+import { InstanceOverview } from '@/services/instanceService'
 
-type Strategy = {
-    strategyName: string
-    tradingPair: string
-    timeframe: string
-    direction: 'Long' | 'Short' | 'Both'
-    openPositions: number
-    allocatedCapital: number
-    leverage: string
-    todaysPnL: number
-    lastTrade: string
-    status: 'Running' | 'Stopped' | 'Draft'
+interface StrategyOverviewTableProps {
+    data: InstanceOverview[]
+    isLoading: boolean
 }
 
-const dummyStrategies: Strategy[] = [
-    {
-        strategyName: 'Momentum Breakout',
-        tradingPair: 'BTC/USDT',
-        timeframe: '15m',
-        direction: 'Long',
-        openPositions: 2,
-        allocatedCapital: 5000,
-        leverage: '5x',
-        todaysPnL: 245.5,
-        lastTrade: '2h ago',
-        status: 'Stopped',
-    },
-    {
-        strategyName: 'Mean Reversion',
-        tradingPair: 'ETH/USDT',
-        timeframe: '1h',
-        direction: 'Both',
-        openPositions: 1,
-        allocatedCapital: 3500,
-        leverage: '3x',
-        todaysPnL: 182.75,
-        lastTrade: '10m ago',
-        status: 'Running',
-    },
-    {
-        strategyName: 'Grid Trading',
-        tradingPair: 'BNB/USDT',
-        timeframe: '5m',
-        direction: 'Both',
-        openPositions: 0,
-        allocatedCapital: 2000,
-        leverage: '2x',
-        todaysPnL: -45.2,
-        lastTrade: '--- · ---',
-        status: 'Draft',
-    },
-    {
-        strategyName: 'Scalping Pro',
-        tradingPair: 'SOL/USDT',
-        timeframe: '1m',
-        direction: 'Short',
-        openPositions: 3,
-        allocatedCapital: 4000,
-        leverage: '10x',
-        todaysPnL: 312.0,
-        lastTrade: '--- · ---',
-        status: 'Running',
-    },
-    {
-        strategyName: 'Swing Strategy',
-        tradingPair: 'MATIC/USDT',
-        timeframe: '4h',
-        direction: 'Long',
-        openPositions: 0,
-        allocatedCapital: 1500,
-        leverage: '2x',
-        todaysPnL: -22.5,
-        lastTrade: '--- · ---',
-        status: 'Draft',
-    },
-    {
-        strategyName: 'Arbitrage Hunter',
-        tradingPair: 'ADA/USDT',
-        timeframe: '30m',
-        direction: 'Both',
-        openPositions: 1,
-        allocatedCapital: 2500,
-        leverage: '4x',
-        todaysPnL: 165.8,
-        lastTrade: '--- · ---',
-        status: 'Running',
-    },
-]
-
 // Status badge component matching Figma TokenPairs design
-const StatusBadge = ({ status }: { status: Strategy['status'] }) => {
+const StatusBadge = ({ status }: { status: InstanceOverview['status'] }) => {
     const statusStyles = {
-        Running: 'bg-green-600/10 text-green-500',
-        Stopped: 'bg-red-600/10 text-red-500',
-        Draft: 'bg-neutral-800 text-neutral-400',
+        LIVE: 'bg-green-600/10 text-green-500',
+        STOPPED: 'bg-red-600/10 text-red-500',
+        DRAFT: 'bg-neutral-800 text-neutral-400',
+        STARTING: 'bg-yellow-600/10 text-yellow-500',
+        STOPPING: 'bg-orange-600/10 text-orange-500',
+    }
+
+    const statusLabels = {
+        LIVE: 'Running',
+        STOPPED: 'Stopped',
+        DRAFT: 'Draft',
+        STARTING: 'Starting',
+        STOPPING: 'Stopping',
     }
 
     return (
@@ -105,23 +33,28 @@ const StatusBadge = ({ status }: { status: Strategy['status'] }) => {
                 statusStyles[status],
             )}
         >
-            {status}
+            {statusLabels[status]}
         </div>
     )
 }
 
 // Direction badge component with color coding
-const DirectionBadge = ({ direction }: { direction: Strategy['direction'] }) => {
+const DirectionBadge = ({ direction }: { direction: InstanceOverview['direction'] }) => {
     const directionStyles = {
-        Long: 'text-green-500',
-        Short: 'text-red-500',
-        Both: 'text-violet-500',
+        LONG: 'text-green-500',
+        SHORT: 'text-red-500',
+        BOTH: 'text-violet-500',
     }
 
-    return <span className={cn('text-sm font-medium', directionStyles[direction])}>{direction}</span>
-}
+    const directionLabels = {
+        LONG: 'Long',
+        SHORT: 'Short',
+        BOTH: 'Both',
+    }
 
-const columns: TableColumn<Strategy>[] = [
+    return <span className={cn('text-sm font-medium', directionStyles[direction])}>{directionLabels[direction]}</span>
+}
+const columns: TableColumn<InstanceOverview>[] = [
     {
         title: 'Strategy Name',
         key: 'strategyName',
@@ -164,15 +97,15 @@ const columns: TableColumn<Strategy>[] = [
         title: 'Leverage',
         key: 'leverage',
         type: 'dynamic',
-        render: (row) => <span className="text-sm font-normal text-neutral-50">{row.leverage}</span>,
+        render: (row) => <span className="text-sm font-normal text-neutral-50">{row.leverage}x</span>,
     },
     {
         title: "Today's PnL",
-        key: 'todaysPnL',
+        key: 'todayPnL',
         type: 'dynamic',
         render: (row) => (
-            <span className={cn('text-sm font-normal', row.todaysPnL >= 0 ? 'text-green-500' : 'text-red-500')}>
-                {row.todaysPnL >= 0 ? '+' : ''}${row.todaysPnL.toFixed(2)}
+            <span className={cn('text-sm font-normal', row.todayPnL >= 0 ? 'text-green-500' : 'text-red-500')}>
+                {row.todayPnL >= 0 ? '+' : ''}${row.todayPnL.toFixed(2)}
             </span>
         ),
     },
@@ -180,7 +113,7 @@ const columns: TableColumn<Strategy>[] = [
         title: 'Last Trade',
         key: 'lastTrade',
         type: 'dynamic',
-        render: (row) => <span className="text-sm font-normal text-neutral-50">{row.lastTrade}</span>,
+        render: (row) => <span className="text-sm font-normal text-neutral-50">{row.lastTrade || '— · —'}</span>,
     },
     {
         title: 'Status',
@@ -190,12 +123,15 @@ const columns: TableColumn<Strategy>[] = [
     },
 ]
 
-export default function StrategyOverviewTable() {
+export default function StrategyOverviewTable({ data }: StrategyOverviewTableProps) {
     return (
         <div className="mt-5 rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
             <TableHeader title="Strategy Overview" />
             <div className="mt-6">
-                <Table columns={columns} tableData={dummyStrategies} />
+                <Table 
+                    columns={columns as unknown as TableColumn<Record<string, unknown>>[]} 
+                    tableData={data as unknown as Record<string, unknown>[]} 
+                />
             </div>
         </div>
     )

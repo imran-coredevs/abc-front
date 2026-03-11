@@ -34,8 +34,8 @@ export const STRATEGY_FORM_DEFAULTS: StrategyFormData = {
 }
 
 // Full DTO timeframe list. UI enforces min 5m — 1m/3m are excluded from the dropdown.
-export const TIMEFRAMES = ['5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M']
-export const TRADE_DIRECTIONS = ['BUY', 'SELL', 'BOTH']
+export const TIMEFRAMES = ['5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w']
+export const TRADE_DIRECTIONS = ['LONG', 'SHORT', 'BOTH']
 export const CAPITAL_ALLOCATION_TYPES = ['PERCENTAGE_OF_PORTFOLIO', 'FIXED_AMOUNT']
 export const POSITION_SIZING_METHODS = ['FIXED', 'PERCENTAGE']
 export const CANDLE_TYPES = ['STANDARD', 'HEIKIN_ASHI']
