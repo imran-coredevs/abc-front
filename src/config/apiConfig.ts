@@ -4,7 +4,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
 // Base API configuration
 export const api = axios.create({
     baseURL: envConfig.API_BASE_URL,
-    timeout: 10000,
+    timeout: 60000, // 60 seconds for long-running operations
     headers: {
         'Content-Type': 'application/json',
     },

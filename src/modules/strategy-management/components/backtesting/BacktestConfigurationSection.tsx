@@ -14,6 +14,7 @@ type BacktestConfigurationSectionProps = {
     activeIndicators: string[]
     stopLossText: string
     takeProfitText: string
+    hasResults: boolean
     onAssetChange: (value: string) => void
     onDateRangeChange: (range: DateRange) => void
     onRunBacktest: () => void
@@ -29,6 +30,7 @@ export default function BacktestConfigurationSection({
     activeIndicators,
     stopLossText,
     takeProfitText,
+    hasResults,
     onAssetChange,
     onDateRangeChange,
     onRunBacktest,
@@ -55,8 +57,8 @@ export default function BacktestConfigurationSection({
                         <label className="text-base text-neutral-50">
                             Trading Asset <span className="text-neutral-200">*</span>
                         </label>
-                        <Select value={selectedAsset} onValueChange={onAssetChange}>
-                            <SelectTrigger className="h-12 rounded-lg border-transparent bg-white/10 text-base text-neutral-300 focus:border-blue-700">
+                        <Select value={selectedAsset} onValueChange={onAssetChange} disabled>
+                            <SelectTrigger className="h-12 rounded-lg border-transparent bg-white/10 text-base text-neutral-300 focus:border-blue-700 opacity-60 cursor-not-allowed">
                                 <SelectValue placeholder="Select trading asset" />
                             </SelectTrigger>
                             <SelectContent>
@@ -132,7 +134,7 @@ export default function BacktestConfigurationSection({
                                 Running…
                             </div>
                         ) : (
-                            'Re-run Backtest'
+                            hasResults ? 'Re-run Backtest' : 'Run Backtest'
                         )}
                     </Button>
 

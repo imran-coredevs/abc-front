@@ -1,6 +1,7 @@
-export type BacktestStatus = 'idle' | 'running' | 'completed'
+export type BacktestStatus = 'idle' | 'running' | 'completed' | 'failed'
 
 export type StrategyInfo = {
+    _id?: string
     symbol?: string
     timeframe?: string
     indicators?: Record<string, { role: string } | undefined>
@@ -25,6 +26,11 @@ export type BacktestResult = {
     longTrades: number
     shortTrades: number
     exposureRatio: number
+    winningTrades: number
+    losingTrades: number
+    profitFactor: number
+    maxConsecutiveWins: number
+    maxConsecutiveLosses: number
 }
 
 export type EquityCurvePoint = {

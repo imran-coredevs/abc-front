@@ -16,6 +16,22 @@ export default function BacktestResultsSection({
     results,
     equityCurve,
 }: BacktestResultsSectionProps) {
+    // Calculate dynamic chart domain
+    const equityValues = equityCurve.map((point) => point.equity)
+    const minEquity = Math.min(...equityValues)
+    const maxEquity = Math.max(...equityValues)
+    const padding = (maxEquity - minEquity) * 0.1 // 10% padding
+    const chartMin = Math.max(0, minEquity - padding)
+    const chartMax = maxEquity + padding
+
+    // Format Y-axis values dynamically
+    const formatYAxis = (value: number) => {
+        if (value >= 1000) {
+            return `$${(value / 1000).toFixed(1)}k`
+        }
+        return `$${value.toFixed(0)}`
+    }
+
     return (
         <div className="relative space-y-6 overflow-hidden rounded-xl bg-white/5 p-5">
             <div className="pointer-events-none absolute -bottom-[25%] left-1/2 -z-1 h-200 w-200 -translate-x-1/2 rounded-full bg-linear-to-b from-blue-700 to-blue-900 blur-[500px]" />
@@ -37,7 +53,10 @@ export default function BacktestResultsSection({
                     <div className="flex items-center gap-3">
                         <span className="font-medium text-neutral-300">Net Profit:</span>
                         <span className={cn('font-bold', results.netProfit >= 0 ? 'text-green-500' : 'text-red-500')}>
-                            {results.netProfit >= 0 ? '+' : '-'}${Math.abs(results.netProfit).toLocaleString()}
+                            {results.netProfit >= 0 ? '+' : ''}${results.netProfit.toFixed(2)}
+                        </span>
+                        <span className={cn('text-sm', results.netProfitPct >= 0 ? 'text-green-400' : 'text-red-400')}>
+                            ({results.netProfitPct >= 0 ? '+' : ''}{results.netProfitPct.toFixed(2)}%)
                         </span>
                     </div>
 
@@ -60,10 +79,24 @@ export default function BacktestResultsSection({
                     <div className="flex items-center gap-3">
                         <span className="font-medium text-neutral-300">Win Rate:</span>
                         <span className="font-bold text-neutral-50">{results.winRate.toFixed(1)}%</span>
+                        <span className="text-sm text-neutral-400">
+                            ({results.winningTrades}W / {results.losingTrades}L)
+                        </span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="font-medium text-neutral-300">Sharpe Ratio:</span>
                         <span className="font-bold text-neutral-50">{results.sharpeRatio.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="font-medium text-neutral-300">Profit Factor:</span>
+                        <span
+                            className={cn(
+                                'font-bold',
+                                results.profitFactor >= 1 ? 'text-green-500' : 'text-red-500',
+                            )}
+                        >
+                            {results.profitFactor.toFixed(2)}
+                        </span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="font-medium text-neutral-300">Total Trades:</span>
@@ -80,12 +113,20 @@ export default function BacktestResultsSection({
                     <div className="flex items-center gap-3">
                         <span className="font-medium text-neutral-300">Expectancy:</span>
                         <span className={cn('font-bold', results.expectancy >= 0 ? 'text-green-500' : 'text-red-500')}>
-                            {results.expectancy >= 0 ? '+' : '-'}${Math.abs(results.expectancy).toFixed(2)}
+                            {results.expectancy >= 0 ? '+' : ''}${results.expectancy.toFixed(2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="font-medium text-neutral-300">Maximum Drawdown:</span>
                         <span className="font-bold text-red-500">{results.maxDrawdown.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="font-medium text-neutral-300">Max Consecutive:</span>
+                        <span className="text-sm">
+                            <span className="text-green-500 font-bold">{results.maxConsecutiveWins}W</span>
+                            {' / '}
+                            <span className="text-red-500 font-bold">{results.maxConsecutiveLosses}L</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -95,7 +136,7 @@ export default function BacktestResultsSection({
                     <div>
                         <h4 className="text-xl font-semibold text-neutral-200">Equity Curve</h4>
                         <p className="mt-2 text-sm text-neutral-200">
-                            hows how the simulated account balance changed during the selected period
+                            Shows how the simulated account balance changed during the selected period
                         </p>
                     </div>
 
@@ -115,16 +156,15 @@ export default function BacktestResultsSection({
                                 tick={{ fill: '#f6f7f9', fontSize: 12 }}
                                 axisLine={false}
                                 tickLine={false}
-                                interval={0}
+                                interval="preserveStartEnd"
                             />
                             <YAxis
                                 tick={{ fill: '#f6f7f9', fontSize: 12 }}
                                 axisLine={false}
                                 tickLine={false}
-                                tickFormatter={(value) => `$${Math.round(value / 1000)}k`}
-                                width={42}
-                                domain={[1000, 100000]}
-                                ticks={[1000, 5000, 20000, 40000, 60000, 80000, 100000]}
+                                tickFormatter={formatYAxis}
+                                width={50}
+                                domain={[chartMin, chartMax]}
                             />
                             <ChartTooltip
                                 content={<ChartTooltipContent />}
@@ -153,7 +193,7 @@ export default function BacktestResultsSection({
                             { label: 'Avg Trade Duration:', value: results.avgTradeDuration },
                             { label: 'Long Trades:', value: results.longTrades },
                             { label: 'Short Trades:', value: results.shortTrades },
-                            { label: 'Exposure Ratio:', value: (results.exposureRatio / 100).toFixed(2) },
+                            { label: 'Exposure Ratio:', value: `${results.exposureRatio.toFixed(1)}%` },
                         ].map(({ label, value }) => (
                             <div key={label} className="flex items-center gap-3">
                                 <span className="font-medium text-neutral-300">{label}</span>
