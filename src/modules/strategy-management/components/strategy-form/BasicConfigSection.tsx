@@ -70,7 +70,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
 
                 <FormSelect label="Timeframe" name="timeframe" control={control} options={TIMEFRAMES} required />
             </div>
-            <div className='space-y-6'>
+            <div className="space-y-6">
                 <div>
                     <div className="space-y-6 rounded-lg bg-white/5 p-5">
                         <h2 className="text-xl font-semibold text-neutral-50">Capital Allocation</h2>
@@ -299,20 +299,20 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
-                                            value="LONG"
+                                            value="BUY"
                                             className={figmaRadioClass}
                                             {...control.register('tradeDirection')}
                                         />
-                                        <span className="text-base text-neutral-50">Long</span>
+                                        <span className="text-base text-neutral-50">Buy</span>
                                     </label>
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
-                                            value="SHORT"
+                                            value="SELL"
                                             className={figmaRadioClass}
                                             {...control.register('tradeDirection')}
                                         />
-                                        <span className="text-base text-neutral-50">Short</span>
+                                        <span className="text-base text-neutral-50">Sell</span>
                                     </label>
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input

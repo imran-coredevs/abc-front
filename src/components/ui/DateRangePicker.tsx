@@ -13,6 +13,7 @@ export interface DateRangePickerProps {
     locale?: string
     initialDateFrom?: Date
     initialDateTo?: Date
+    triggerClassName?: string
 }
 
 export interface DateRange {
@@ -136,6 +137,7 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
     locale = 'en-US',
     initialDateFrom,
     initialDateTo,
+    triggerClassName,
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [range, setRange] = useState<DateRange>({
@@ -235,7 +237,10 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
             <PopoverTrigger asChild>
                 <Button
                     variant="secondary"
-                    className="h-10 rounded-xl border border-neutral-700 bg-neutral-800 px-3 text-sm text-neutral-200"
+                    className={cn(
+                        'h-10 rounded-xl border border-neutral-700 bg-neutral-800 px-3 text-sm text-neutral-200',
+                        triggerClassName,
+                    )}
                 >
                     <div className="flex w-full items-center gap-2 lg:w-max">
                         <Calendar size={20} className="text-neutral-300" />

@@ -67,7 +67,7 @@ export default function StrategyDetailsPage() {
                 <StrategyTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
                 <div className="mt-6">
-                    {activeTab === 'details' ? <StrategyDetailsTab strategyData={strategyData} /> : <BacktestingTab />}
+                    {activeTab === 'details' ? <StrategyDetailsTab strategyData={strategyData} /> : <BacktestingTab strategyData={strategyData} />}
                 </div>
             </div>
         </div>

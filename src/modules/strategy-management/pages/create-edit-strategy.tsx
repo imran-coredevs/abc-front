@@ -1,14 +1,23 @@
 import Separator from '@/components/ui/Separator'
 import { instanceService } from '@/services/instanceService'
-import { useForm } from 'react-hook-form'
-import { useNavigate, useParams } from 'react-router'
 import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import { useNavigate, useParams } from 'react-router'
 import BasicConfigSection from '../components/strategy-form/BasicConfigSection'
 import FormActions from '../components/strategy-form/FormActions'
 import StrategyFormHeader from '../components/strategy-form/StrategyFormHeader'
 import { STRATEGY_FORM_DEFAULTS } from '../constants/strategy-form.defaults'
 import type { StrategyFormData } from '../types/strategy-form.types'
+
+type ApiErrorShape = {
+    response?: {
+        data?: {
+            message?: string
+            errors?: unknown
+        }
+    }
+}
 
 export default function CreateEditStrategyPage() {
     const navigate = useNavigate()
@@ -21,11 +30,45 @@ export default function CreateEditStrategyPage() {
         handleSubmit,
         watch,
         setValue,
+        setError,
+        clearErrors,
         reset,
         formState: { isSubmitting },
     } = useForm<StrategyFormData>({
         defaultValues: STRATEGY_FORM_DEFAULTS,
     })
+    type FormFieldPath = Parameters<typeof setError>[0]
+
+    const getBackendFieldErrors = (errors: unknown): Array<{ path: string; message: string }> => {
+        const fieldErrors: Array<{ path: string; message: string }> = []
+
+        const walk = (value: unknown, currentPath: string) => {
+            if (Array.isArray(value)) {
+                const firstMessage = value.find((item) => typeof item === 'string')
+                if (firstMessage && currentPath) {
+                    fieldErrors.push({ path: currentPath, message: firstMessage })
+                }
+                return
+            }
+
+            if (typeof value === 'string') {
+                if (currentPath) {
+                    fieldErrors.push({ path: currentPath, message: value })
+                }
+                return
+            }
+
+            if (value && typeof value === 'object') {
+                Object.entries(value).forEach(([key, nestedValue]) => {
+                    const nextPath = currentPath ? `${currentPath}.${key}` : key
+                    walk(nestedValue, nextPath)
+                })
+            }
+        }
+
+        walk(errors, '')
+        return fieldErrors
+    }
 
     // Fetch existing strategy data in edit mode
     useEffect(() => {
@@ -36,7 +79,7 @@ export default function CreateEditStrategyPage() {
                 setIsLoading(true)
                 const response = await instanceService.getInstance(id)
                 const instance = response.data
-                
+
                 // Map API response to form data
                 const formData: StrategyFormData = {
                     name: instance.name,
@@ -58,11 +101,12 @@ export default function CreateEditStrategyPage() {
                     risk: instance.risk,
                     strategyExits: instance.strategyExits,
                 }
-                
+
                 reset(formData)
-            } catch (error: any) {
+            } catch (error: unknown) {
+                const apiError = error as ApiErrorShape
                 console.error('Failed to fetch strategy:', error)
-                toast.error(error?.response?.data?.message || 'Failed to load strategy')
+                toast.error(apiError?.response?.data?.message || 'Failed to load strategy')
                 navigate('/strategy-management')
             } finally {
                 setIsLoading(false)
@@ -74,6 +118,8 @@ export default function CreateEditStrategyPage() {
 
     const onSubmit = async (data: StrategyFormData) => {
         try {
+            clearErrors()
+
             if (isEditMode && id) {
                 await instanceService.updateInstance(id, data)
                 toast.success('Strategy updated successfully')
@@ -83,9 +129,20 @@ export default function CreateEditStrategyPage() {
                 toast.success('Strategy created successfully')
                 navigate(`/strategy-management/${response.data._id}`)
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const apiError = error as ApiErrorShape
             console.error('Failed to save strategy:', error)
-            const errorMessage = error?.response?.data?.message || 'Failed to save strategy'
+            const backendFieldErrors = getBackendFieldErrors(apiError?.response?.data?.errors)
+
+            if (backendFieldErrors.length > 0) {
+                backendFieldErrors.forEach(({ path, message }) => {
+                    setError(path as FormFieldPath, { type: 'server', message })
+                })
+                toast.error('Please fix the highlighted form errors')
+                return
+            }
+
+            const errorMessage = apiError?.response?.data?.message || 'Failed to save strategy'
             toast.error(errorMessage)
         }
     }
