@@ -3,8 +3,9 @@ import type { BinanceApiFormData } from '@/components/ui/AddBinanceApiKeyModal'
 import AddBinanceApiKeyModal from '@/components/ui/AddBinanceApiKeyModal'
 import { Button } from '@/components/ui/button'
 import { Add, Copy, Trash } from 'iconsax-reactjs'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
+import * as investorService from '@/services/investorService'
 
 type StoredApiKey = {
     apiKey: string
@@ -12,19 +13,62 @@ type StoredApiKey = {
     addedAt: Date
 }
 
-function truncateKey(key: string): string {
-    if (key.length <= 16) return key
-    return `${key.slice(0, 8)}••••••••${key.slice(-4)}`
-}
-
 export default function ConfigurationSettingsPage() {
     const [storedKey, setStoredKey] = useState<StoredApiKey | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [modalMode, setModalMode] = useState<'add' | 'replace'>('add')
+    const [loading, setLoading] = useState(true)
+    const [saving, setSaving] = useState(false)
 
-    const handleSave = (data: BinanceApiFormData) => {
-        setStoredKey({ ...data, addedAt: new Date() })
-        toast.success(modalMode === 'replace' ? 'API key replaced successfully' : 'API key added successfully')
+    // Fetch credentials status on mount
+    useEffect(() => {
+        const fetchCredentials = async () => {
+            try {
+                const credentials = await investorService.getBinanceCredentials()
+                if (credentials.hasCredentials && credentials.apiKeyMasked) {
+                    setStoredKey({
+                        apiKey: credentials.apiKeyMasked,
+                        secretKey: '••••••••',
+                        addedAt: credentials.lastUpdated ? new Date(credentials.lastUpdated) : new Date(),
+                    })
+                }
+            } catch (error: any) {
+                console.error('Failed to fetch credentials:', error)
+                toast.error(error.response?.data?.message || 'Failed to load credentials')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchCredentials()
+    }, [])
+
+    const handleSave = async (data: BinanceApiFormData) => {
+        setSaving(true)
+        try {
+            // Map secretKey to apiSecret for backend
+            await investorService.updateBinanceCredentials({
+                apiKey: data.apiKey,
+                apiSecret: data.secretKey,
+            })
+
+            // Fetch updated credentials to get the masked key
+            const credentials = await investorService.getBinanceCredentials()
+            if (credentials.hasCredentials && credentials.apiKeyMasked) {
+                setStoredKey({
+                    apiKey: credentials.apiKeyMasked,
+                    secretKey: '••••••••',
+                    addedAt: credentials.lastUpdated ? new Date(credentials.lastUpdated) : new Date(),
+                })
+            }
+
+            toast.success(modalMode === 'replace' ? 'API key replaced successfully' : 'API key added successfully')
+        } catch (error: any) {
+            console.error('Failed to save credentials:', error)
+            toast.error(error.response?.data?.message || 'Failed to save API credentials')
+        } finally {
+            setSaving(false)
+        }
     }
 
     const handleCopy = () => {
@@ -33,9 +77,15 @@ export default function ConfigurationSettingsPage() {
         toast.success('API key copied to clipboard')
     }
 
-    const handleRemove = () => {
-        setStoredKey(null)
-        toast.success('API key removed')
+    const handleRemove = async () => {
+        try {
+            await investorService.removeBinanceCredentials()
+            setStoredKey(null)
+            toast.success('API key removed')
+        } catch (error: any) {
+            console.error('Failed to remove credentials:', error)
+            toast.error(error.response?.data?.message || 'Failed to remove API credentials')
+        }
     }
 
     const openAdd = () => {
@@ -61,17 +111,11 @@ export default function ConfigurationSettingsPage() {
                 </div>
             </div>
 
-            {/* Section Header */}
-            {/* <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                    <h2 className="text-lg font-semibold text-neutral-50">Binance API Keys</h2>
-                    <p className="text-sm text-neutral-400">
-                        Add and manage your Binance API keys securely. Your keys are encrypted and never shared.
-                    </p>
+            {loading ? (
+                <div className="flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-700 border-t-blue-500" />
                 </div>
-            </div> */}
-
-            {storedKey ? (
+            ) : storedKey ? (
                 /* ── Connected State ── */
                 <div className="flex justify-between space-y-5 rounded-xl border border-white/10 bg-white/5 p-6">
                     <div className="flex items-start justify-between gap-4">
@@ -88,7 +132,7 @@ export default function ConfigurationSettingsPage() {
                             <div className="flex items-center gap-2">
                                 <div className="flex h-[52px] flex-1 items-center rounded-full border border-white/10 bg-white/5 px-4">
                                     <span className="font-mono text-sm tracking-wider text-neutral-200">
-                                        {truncateKey(storedKey.apiKey)}
+                                        {storedKey.apiKey}
                                     </span>
                                     <Button
                                         type="button"
@@ -154,6 +198,7 @@ export default function ConfigurationSettingsPage() {
                 onSave={handleSave}
                 existingApiKey={storedKey?.apiKey}
                 mode={modalMode}
+                isSubmitting={saving}
             />
         </div>
     )

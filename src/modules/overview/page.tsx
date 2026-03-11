@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { StatsCard } from '@/components/ui/stats-card'
 import OverviewTop from './components/OverviewTop'
 import StrategyOverviewTable from './components/StrategyOverviewTable'
@@ -7,27 +8,57 @@ import imgVuesaxBoldChart from '@/assets/icon/imgVuesaxBoldChart.svg'
 import imgVuesaxBoldWallet from '@/assets/icon/imgVuesaxBoldWallet.svg'
 import imgVuesaxBoldGraph from '@/assets/icon/imgVuesaxBoldGraph.svg'
 import imgVuesaxBoldMoney from '@/assets/icon/imgVuesaxBoldMoney.svg'
+import { instanceService, DashboardResponse, InstanceOverview } from '@/services/instanceService'
 
 export default function OverviewPage() {
+    const [dashboardData, setDashboardData] = useState<DashboardResponse['data'] | null>(null)
+    const [overviewData, setOverviewData] = useState<InstanceOverview[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setIsLoading(true)
+                const [dashboard, overview] = await Promise.all([
+                    instanceService.getDashboard(),
+                    instanceService.getOverview(),
+                ])
+                setDashboardData(dashboard.data)
+                setOverviewData(overview.data)
+            } catch (error) {
+                console.error('Failed to fetch overview data:', error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchData()
+    }, [])
+
     const statsData = [
         {
             id: 1,
             title: 'Portfolio',
             description: 'Total capital currently allocated',
-            quantity: '100,02,680.90',
+            quantity: dashboardData
+                ? `$${dashboardData.portfolio.totalCapital.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                  })}`
+                : '$0.00',
             icon: (
                 <div className="relative size-6">
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldGraph} />
                 </div>
             ),
             variant: 'progress' as const,
-            progressPercent: 42,
+            progressPercent: dashboardData ? Math.round(dashboardData.portfolio.portfolioPercentage) : 0,
             amountIcon: (
                 <div className="relative size-6 shrink-0">
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldWallet} />
                 </div>
             ),
-            isLoading: false,
+            isLoading,
         },
         {
             id: 2,
@@ -38,15 +69,21 @@ export default function OverviewPage() {
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldChart} />
                 </div>
             ),
-            quantity: '+124.50',
+            quantity: dashboardData
+                ? `${dashboardData.todaysPerformance.pnl >= 0 ? '+' : ''}$${Math.abs(
+                      dashboardData.todaysPerformance.pnl,
+                  ).toFixed(2)}`
+                : '$0.00',
             variant: 'increase' as const,
-            increaseText: '2.3% Yesterday',
+            increaseText: dashboardData
+                ? `${dashboardData.todaysPerformance.percentageChange >= 0 ? '+' : ''}${dashboardData.todaysPerformance.percentageChange.toFixed(1)}% Yesterday`
+                : '0% Yesterday',
             amountIcon: (
                 <div className="relative size-6 shrink-0">
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldMoney} />
                 </div>
             ),
-            isLoading: false,
+            isLoading,
         },
         {
             id: 3,
@@ -57,9 +94,9 @@ export default function OverviewPage() {
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldLayer} />
                 </div>
             ),
-            quantity: '12',
+            quantity: dashboardData ? dashboardData.totalStrategies.toString() : '0',
             variant: 'simple' as const,
-            isLoading: false,
+            isLoading,
         },
         {
             id: 4,
@@ -70,9 +107,9 @@ export default function OverviewPage() {
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldVideoCircle} />
                 </div>
             ),
-            quantity: '03',
+            quantity: dashboardData ? dashboardData.activeStrategies.toString().padStart(2, '0') : '00',
             variant: 'simple' as const,
-            isLoading: false,
+            isLoading,
         },
     ]
 
@@ -97,7 +134,7 @@ export default function OverviewPage() {
                 ))}
             </div>
 
-            <StrategyOverviewTable />
+            <StrategyOverviewTable data={overviewData} isLoading={isLoading} />
         </>
     )
 }

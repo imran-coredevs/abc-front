@@ -3,29 +3,33 @@ import TableHeader from '@/components/ui/table/table-header'
 import TablePagination from '@/components/ui/table/table-pagination'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DateRangePicker } from '@/components/ui/DateRangePicker'
-import { useState } from 'react'
-import { subDays } from 'date-fns'
+import { useState, useEffect } from 'react'
+import { subDays, format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { instanceService, type TradeHistoryItem } from '@/services/instanceService'
+import toast from 'react-hot-toast'
+import { DateRange } from 'react-day-picker'
 
 type TradeHistory = {
     tradeId: string
     strategyName: string
     tradingPair: string
-    direction: 'Long' | 'Short'
+    direction: 'LONG' | 'SHORT'
     entryPrice: number
     exitPrice: number
-    leverage: string
+    leverage: number
     size: number
     pnl: number
+    pnlPercentage: number
     duration: string
-    exitReason: 'Take Profit' | 'Stop Loss'
+    exitReason: string
     closed: string
 }
 
 const DirectionBadge = ({ direction }: { direction: TradeHistory['direction'] }) => {
     const styles: Record<TradeHistory['direction'], string> = {
-        Long: 'bg-green-500/10 text-green-400',
-        Short: 'bg-red-500/10 text-red-400',
+        LONG: 'bg-green-500/10 text-green-400',
+        SHORT: 'bg-red-500/10 text-red-400',
     }
     return (
         <span
@@ -34,13 +38,13 @@ const DirectionBadge = ({ direction }: { direction: TradeHistory['direction'] })
                 styles[direction],
             )}
         >
-            {direction}
+            {direction === 'LONG' ? 'Long' : 'Short'}
         </span>
     )
 }
 
-const ExitReasonBadge = ({ reason }: { reason: TradeHistory['exitReason'] }) => {
-    const isProfit = reason === 'Take Profit'
+const ExitReasonBadge = ({ reason, pnl }: { reason: string; pnl: number }) => {
+    const isProfit = pnl >= 0
     return (
         <span
             className={cn(
@@ -52,121 +56,6 @@ const ExitReasonBadge = ({ reason }: { reason: TradeHistory['exitReason'] }) => 
         </span>
     )
 }
-
-const dummyTrades: TradeHistory[] = [
-    {
-        tradeId: 'TRD-001',
-        strategyName: 'Momentum Breakout',
-        tradingPair: 'BTC/USDT',
-        direction: 'Long',
-        entryPrice: 42500.0,
-        exitPrice: 43250.0,
-        leverage: '5x',
-        size: 0.5,
-        pnl: 375.0,
-        duration: '2h 15m',
-        exitReason: 'Take Profit',
-        closed: '2 hours ago',
-    },
-    {
-        tradeId: 'TRD-002',
-        strategyName: 'Mean Reversion',
-        tradingPair: 'ETH/USDT',
-        direction: 'Short',
-        entryPrice: 2850.5,
-        exitPrice: 2820.0,
-        leverage: '3x',
-        size: 2.0,
-        pnl: 182.75,
-        duration: '45m',
-        exitReason: 'Take Profit',
-        closed: '3 hours ago',
-    },
-    {
-        tradeId: 'TRD-003',
-        strategyName: 'Grid Trading',
-        tradingPair: 'BNB/USDT',
-        direction: 'Long',
-        entryPrice: 320.0,
-        exitPrice: 315.5,
-        leverage: '2x',
-        size: 5.0,
-        pnl: -45.2,
-        duration: '1h 30m',
-        exitReason: 'Stop Loss',
-        closed: '5 hours ago',
-    },
-    {
-        tradeId: 'TRD-004',
-        strategyName: 'Scalping Pro',
-        tradingPair: 'SOL/USDT',
-        direction: 'Long',
-        entryPrice: 98.5,
-        exitPrice: 101.2,
-        leverage: '10x',
-        size: 10.0,
-        pnl: 270.0,
-        duration: '15m',
-        exitReason: 'Take Profit',
-        closed: '6 hours ago',
-    },
-    {
-        tradeId: 'TRD-005',
-        strategyName: 'Swing Strategy',
-        tradingPair: 'MATIC/USDT',
-        direction: 'Short',
-        entryPrice: 0.85,
-        exitPrice: 0.88,
-        leverage: '2x',
-        size: 1000.0,
-        pnl: -60.0,
-        duration: '4h 20m',
-        exitReason: 'Stop Loss',
-        closed: '8 hours ago',
-    },
-    {
-        tradeId: 'TRD-006',
-        strategyName: 'Arbitrage Hunter',
-        tradingPair: 'ADA/USDT',
-        direction: 'Long',
-        entryPrice: 0.52,
-        exitPrice: 0.55,
-        leverage: '4x',
-        size: 500.0,
-        pnl: 120.0,
-        duration: '30m',
-        exitReason: 'Take Profit',
-        closed: '10 hours ago',
-    },
-    {
-        tradeId: 'TRD-007',
-        strategyName: 'Momentum Breakout',
-        tradingPair: 'BTC/USDT',
-        direction: 'Short',
-        entryPrice: 43100.0,
-        exitPrice: 42800.0,
-        leverage: '5x',
-        size: 0.3,
-        pnl: 150.0,
-        duration: '1h 45m',
-        exitReason: 'Take Profit',
-        closed: '12 hours ago',
-    },
-    {
-        tradeId: 'TRD-008',
-        strategyName: 'Scalping Pro',
-        tradingPair: 'SOL/USDT',
-        direction: 'Long',
-        entryPrice: 100.0,
-        exitPrice: 99.2,
-        leverage: '10x',
-        size: 8.0,
-        pnl: -64.0,
-        duration: '8m',
-        exitReason: 'Stop Loss',
-        closed: '14 hours ago',
-    },
-]
 
 const columns: TableColumn<TradeHistory>[] = [
     {
@@ -220,7 +109,7 @@ const columns: TableColumn<TradeHistory>[] = [
         key: 'leverage',
         type: 'dynamic',
         render: (row) => (
-            <span className="text-sm font-semibold text-orange-400">{row.leverage}</span>
+            <span className="text-sm font-semibold text-orange-400">{row.leverage}x</span>
         ),
     },
     {
@@ -254,7 +143,7 @@ const columns: TableColumn<TradeHistory>[] = [
         title: 'Exit Reason',
         key: 'exitReason',
         type: 'dynamic',
-        render: (row) => <ExitReasonBadge reason={row.exitReason} />,
+        render: (row) => <ExitReasonBadge reason={row.exitReason} pnl={row.pnl} />,
     },
     {
         title: 'Closed',
@@ -268,39 +157,90 @@ export default function HistoryTable() {
     const [result, setResult] = useState<string>('all')
     const [direction, setDirection] = useState<string>('all')
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 10
-
-    const filteredTrades = dummyTrades.filter((trade) => {
-        const resultMatch =
-            result === 'all' ||
-            (result === 'profit' && trade.pnl >= 0) ||
-            (result === 'loss' && trade.pnl < 0)
-
-        const directionMatch =
-            direction === 'all' ||
-            (direction === 'long' && trade.direction === 'Long') ||
-            (direction === 'short' && trade.direction === 'Short')
-
-        return resultMatch && directionMatch
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+        from: subDays(new Date(), 7),
+        to: new Date(),
+    })
+    const [trades, setTrades] = useState<TradeHistory[]>([])
+    const [loading, setLoading] = useState(true)
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
     })
 
-    const totalDocs = filteredTrades.length
-    const totalPages = Math.ceil(totalDocs / itemsPerPage)
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const currentTrades = filteredTrades.slice(startIndex, startIndex + itemsPerPage)
+    const itemsPerPage = 10
+
+    // Fetch trade history
+    useEffect(() => {
+        const fetchHistory = async () => {
+            setLoading(true)
+            try {
+                const filters: any = {
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    result,
+                    direction,
+                }
+
+                if (dateRange?.from) {
+                    filters.dateFrom = format(dateRange.from, 'yyyy-MM-dd')
+                }
+                if (dateRange?.to) {
+                    filters.dateTo = format(dateRange.to, 'yyyy-MM-dd')
+                }
+
+                const response = await instanceService.getTradeHistory(filters)
+                
+                // Map API response to component format
+                const formattedTrades: TradeHistory[] = response.data.map((trade) => ({
+                    tradeId: trade.tradeId,
+                    strategyName: trade.strategyName,
+                    tradingPair: trade.tradingPair,
+                    direction: trade.direction,
+                    entryPrice: trade.entryPrice,
+                    exitPrice: trade.exitPrice,
+                    leverage: trade.leverage,
+                    size: trade.size,
+                    pnl: trade.pnl,
+                    pnlPercentage: trade.pnlPercentage,
+                    duration: trade.duration,
+                    exitReason: trade.exitReason,
+                    closed: trade.closed,
+                }))
+
+                setTrades(formattedTrades)
+                setPagination(response.meta.pagination)
+            } catch (error: any) {
+                console.error('Failed to fetch trade history:', error)
+                toast.error(error.response?.data?.message || 'Failed to load trade history')
+                setTrades([])
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchHistory()
+    }, [currentPage, result, direction, dateRange])
 
     const handleFilterChange = (setter: (v: string) => void) => (value: string) => {
         setter(value)
         setCurrentPage(1)
     }
 
+    const handleDateRangeChange = (range: DateRange | undefined) => {
+        setDateRange(range)
+        setCurrentPage(1)
+    }
+
     const paginationOptions: TablePagination = {
         page: currentPage,
         limit: itemsPerPage,
-        totalPages,
-        totalDocs,
-        pagingCounter: totalDocs === 0 ? 0 : startIndex + 1,
-        hasNextPage: currentPage < totalPages,
+        totalPages: pagination.totalPages,
+        totalDocs: pagination.total,
+        pagingCounter: pagination.total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1,
+        hasNextPage: currentPage < pagination.totalPages,
         hasPrevPage: currentPage > 1,
         onPageChange: (page: number) => setCurrentPage(page),
     }
@@ -331,18 +271,28 @@ export default function HistoryTable() {
                         </SelectContent>
                     </Select>
 
-                    <DateRangePicker initialDateFrom={subDays(new Date(), 7)} initialDateTo={new Date()} />
+                    <DateRangePicker 
+                        initialDateFrom={dateRange?.from} 
+                        initialDateTo={dateRange?.to}
+                        onUpdate={(values) => handleDateRangeChange(values.range)}
+                    />
                 </div>
             </TableHeader>
 
             <div className="relative overflow-hidden mt-5">
-                <Table columns={columns} tableData={currentTrades} />
+                {loading ? (
+                    <div className="flex items-center justify-center py-20">
+                        <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-700 border-t-blue-500" />
+                    </div>
+                ) : (
+                    <Table columns={columns} tableData={trades} />
+                )}
                 <div className="absolute -bottom-[20%] left-[50%] z-1 -translate-x-1/2 pointer-events-none">
                     <div className="h-200 w-200 rounded-full bg-linear-to-b from-blue-900 to-blue-800 blur-[500px]" />
                 </div>
             </div>
 
-            <TablePagination paginationOptions={paginationOptions} tableName="trades" />
+            {!loading && <TablePagination paginationOptions={paginationOptions} tableName="trades" />}
         </div>
     )
 }

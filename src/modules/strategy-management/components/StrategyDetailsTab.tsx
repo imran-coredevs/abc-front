@@ -1,18 +1,19 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Separator from '@/components/ui/Separator'
-import { useStrategyStore } from '@/store/useStrategyStore'
+import { instanceService } from '@/services/instanceService'
 import { Edit, PlayCircle, Trash } from 'iconsax-reactjs'
 import { StopCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import toast from 'react-hot-toast'
 
 type StrategyData = {
     name: string
     status: 'LIVE' | 'STOPPED' | 'DRAFT' | 'STARTING' | 'STOPPING' | 'BACKTESTING'
     symbol: string
     timeframe: string
-    tradeDirection: 'BUY' | 'SELL' | 'BOTH'
+    tradeDirection: 'LONG' | 'SHORT' | 'BOTH'
     capitalAllocationType: 'PERCENTAGE_OF_PORTFOLIO' | 'FIXED_AMOUNT'
     allocationValue: number
     leverage: number
@@ -48,27 +49,57 @@ const isLiveStatus = (s: string) => s === 'LIVE' || s === 'STARTING'
 
 export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabProps) {
     const [status, setStatus] = useState(strategyData.status)
+    const [isToggling, setIsToggling] = useState(false)
     const navigate = useNavigate()
     const { id } = useParams()
-    const { toggleStatus, deleteStrategy } = useStrategyStore()
 
-    const handleToggleStatus = () => {
-        if (id) toggleStatus(id)
-        setStatus((prev) => (isLiveStatus(prev) ? 'STOPPED' : 'LIVE'))
+    const handleToggleStatus = async () => {
+        if (!id) return
+
+        try {
+            setIsToggling(true)
+            if (isLiveStatus(status)) {
+                await instanceService.stopInstance(id, 'User manual stop')
+                toast.success('Strategy stopped successfully')
+                setStatus('STOPPED')
+            } else {
+                await instanceService.startInstance(id)
+                toast.success('Strategy started successfully')
+                setStatus('STARTING')
+            }
+        } catch (error: any) {
+            console.error('Failed to toggle strategy status:', error)
+            toast.error(error?.response?.data?.message || 'Failed to toggle strategy status')
+        } finally {
+            setIsToggling(false)
+        }
     }
 
     const handleEdit = () => navigate(`/strategy-management/${id}/edit`)
-    const handleDelete = () => {
-        if (id) deleteStrategy(id)
-        navigate('/strategy-management')
+
+    const handleDelete = async () => {
+        if (!id) return
+        
+        if (!window.confirm('Are you sure you want to delete this strategy? This action cannot be undone.')) {
+            return
+        }
+
+        try {
+            await instanceService.deleteInstance(id)
+            toast.success('Strategy deleted successfully')
+            navigate('/strategy-management')
+        } catch (error: any) {
+            console.error('Failed to delete strategy:', error)
+            toast.error(error?.response?.data?.message || 'Failed to delete strategy')
+        }
     }
 
     const directionColor =
-        strategyData.tradeDirection === 'BUY'
+        strategyData.tradeDirection === 'LONG'
             ? 'text-green-500'
-            : strategyData.tradeDirection === 'SELL'
+            : strategyData.tradeDirection === 'SHORT'
               ? 'text-red-500'
-              : 'text-neutral-50'
+              : 'text-violet-500'
 
     const allocationLabel =
         strategyData.capitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO'
@@ -102,23 +133,34 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
 
                         <button
                             onClick={handleToggleStatus}
-                            className="flex items-center gap-2 rounded-[40px] border border-white/30 px-6 py-3 text-base text-neutral-50 hover:bg-white/5"
+                            disabled={isToggling}
+                            className={`flex items-center gap-2 rounded-[40px] border border-white/30 px-6 py-3 text-base text-neutral-50 ${
+                                isToggling ? 'cursor-not-allowed opacity-50' : 'hover:bg-white/5'
+                            }`}
                         >
                             {isLiveStatus(status) ? (
                                 <StopCircle size={20} className="text-red-500" />
                             ) : (
                                 <PlayCircle size={20} className="text-green-500" variant="Bold" />
                             )}
-                            {isLiveStatus(status) ? 'Stop' : 'Run'}
+                            {isToggling ? 'Processing...' : isLiveStatus(status) ? 'Stop' : 'Run'}
                         </button>
                     </div>
 
-                    {!isLiveStatus(status) && (
-                        <Button onClick={handleEdit} variant="secondary" className="border-neutral-700">
-                            <Edit size={20} className="mr-2 mb-1 inline" />
-                            Edit Strategy
-                        </Button>
-                    )}
+                    <div className="flex items-center gap-3">
+                        {!isLiveStatus(status) && (
+                            <>
+                                <Button onClick={handleEdit} variant="secondary" className="border-neutral-700">
+                                    <Edit size={20} className="mr-2 mb-1 inline" />
+                                    Edit Strategy
+                                </Button>
+                                <Button onClick={handleDelete} variant="secondary" className="border-red-700 text-red-500 hover:bg-red-500/10">
+                                    <Trash size={20} className="mr-2 mb-1 inline" />
+                                    Delete
+                                </Button>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 <Separator />
