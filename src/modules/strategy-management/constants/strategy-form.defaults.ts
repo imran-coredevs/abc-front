@@ -36,7 +36,10 @@ export const STRATEGY_FORM_DEFAULTS: StrategyFormData = {
 // Full DTO timeframe list. UI enforces min 5m — 1m/3m are excluded from the dropdown.
 export const TIMEFRAMES = ['5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w']
 export const TRADE_DIRECTIONS = ['LONG', 'SHORT', 'BOTH']
-export const CAPITAL_ALLOCATION_TYPES = ['PERCENTAGE_OF_PORTFOLIO', 'FIXED_AMOUNT']
+export const CAPITAL_ALLOCATION_TYPES = [
+    { value: 'PERCENTAGE_OF_PORTFOLIO', label: 'Percentage of Portfolio' },
+    { value: 'FIXED_AMOUNT', label: 'Fixed Amount' },
+]
 export const POSITION_SIZING_METHODS = ['FIXED', 'PERCENTAGE']
 export const CANDLE_TYPES = ['STANDARD', 'HEIKIN_ASHI']
 export const MARGIN_TYPES = ['CROSSED', 'ISOLATED']
@@ -45,7 +48,14 @@ export const SUPERTREND_SRC = ['close', 'hl2', 'hlc3', 'ohlc4']
 export const RSI_SMOOTHING = ['None', 'SMA', 'SMA + Bollinger Bands', 'EMA', 'RMA', 'WMA']
 export const ADX_CONDITIONS = ['Above', 'Below', 'Rising', 'Falling', 'CrossingAbove', 'CrossingBelow']
 export const HULL_MODES = ['Hma', 'Thma', 'Ehma']
-export const STOP_LOSS_TYPES = ['FIXED_PERCENTAGE', 'STRUCTURAL']
-export const TAKE_PROFIT_TYPES = ['FIXED_PERCENTAGE', 'RISK_REWARD', 'MULTI_LEVEL']
+export const STOP_LOSS_TYPES = [
+    { value: 'FIXED_PERCENTAGE', label: 'Fixed Percentage' },
+    { value: 'STRUCTURAL', label: 'Structural' },
+]
+export const TAKE_PROFIT_TYPES = [
+    { value: 'FIXED_PERCENTAGE', label: 'Fixed Percentage' },
+    { value: 'RISK_REWARD', label: 'Risk Reward' },
+    { value: 'MULTI_LEVEL', label: 'Multi Level' },
+]
 export const INDICATOR_ROLES = ['signal', 'filterOnly']
 export const ADX_ROLES = ['filterOnly']

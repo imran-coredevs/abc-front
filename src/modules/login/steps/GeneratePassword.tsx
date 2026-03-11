@@ -86,8 +86,16 @@ export const GeneratePassword = ({ setStage }: { setStage: (stage: Stage) => voi
                                 value: 8,
                                 message: 'Password must be at least 8 characters',
                             },
-                            validate: (value) =>
-                                value.trim() === value || 'Password should not have leading or trailing spaces',
+                            validate: {
+                                noWhitespace: (value) =>
+                                    value.trim() === value || 'Password should not have leading or trailing spaces',
+                                hasLowercase: (value) =>
+                                    /[a-z]/.test(value) || 'Password must contain at least one lowercase letter',
+                                hasUppercase: (value) =>
+                                    /[A-Z]/.test(value) || 'Password must contain at least one uppercase letter',
+                                hasNumber: (value) =>
+                                    /[0-9]/.test(value) || 'Password must contain at least one number',
+                            },
                         }}
                     />
 

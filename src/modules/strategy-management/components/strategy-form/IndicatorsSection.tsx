@@ -1,4 +1,5 @@
 import Separator from '@/components/ui/Separator'
+import FormSelect from '@/components/ui/FormSelect'
 import type { StrategyControl, StrategyWatch } from '../../types/strategy-form.types'
 import AdxIndicator from './indicators/AdxIndicator'
 import HullSuiteIndicator from './indicators/HullSuiteIndicator'
@@ -7,6 +8,11 @@ import SqueezeMomentumIndicator from './indicators/SqueezeMomentumIndicator'
 import SupertrendIndicator from './indicators/SupertrendIndicator'
 import UtBotIndicator from './indicators/UtBotIndicator'
 import { InfoCircle } from 'iconsax-reactjs'
+
+const MARKET_DATA_OPTIONS = [
+    { value: 'STANDARD', label: 'Classic (Standard OHLC)' },
+    { value: 'HEIKIN_ASHI', label: 'Heikin-Ashi' },
+]
 
 type Props = {
     control: StrategyControl
@@ -25,6 +31,20 @@ export default function IndicatorsSection({ control, watch }: Props) {
                     At least one indicator must be enabled
                 </div>
             </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+                <FormSelect
+                    label="Market Data Source"
+                    name="candleType"
+                    control={control}
+                    options={MARKET_DATA_OPTIONS}
+                    description="Select which candle type indicators should use for calculation"
+                />
+            </div>
+
+            <Separator />
 
             <div className="grid grid-cols-1 gap-5">
                 <RsiIndicator control={control} watch={watch} />

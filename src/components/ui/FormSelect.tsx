@@ -2,15 +2,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils'
 import { Controller, type Control, type FieldValues, type Path, type RegisterOptions } from 'react-hook-form'
 
+type SelectOption = string | { value: string; label: string }
+
 type FormSelectProps<T extends FieldValues> = {
     label: string
     name: Path<T>
     control: Control<T>
-    options: string[]
+    options: SelectOption[]
     required?: boolean
     horizontal?: boolean
     rules?: Omit<RegisterOptions<T, Path<T>>, 'disabled' | 'setValueAs' | 'valueAsNumber' | 'valueAsDate'>
     className?: string
+    description?: string
 }
 
 export default function FormSelect<T extends FieldValues>({
@@ -22,7 +25,15 @@ export default function FormSelect<T extends FieldValues>({
     horizontal = false,
     rules,
     className,
+    description,
 }: FormSelectProps<T>) {
+    const normalizeOption = (opt: SelectOption) => {
+        if (typeof opt === 'string') {
+            return { value: opt, label: opt }
+        }
+        return opt
+    }
+
     return (
         <Controller
             name={name}
@@ -34,7 +45,10 @@ export default function FormSelect<T extends FieldValues>({
                         {label}
                         {required && <span className="ml-0.5 text-neutral-200">*</span>}
                     </label>
-                    <div className={cn(horizontal && '')}>
+                    <div className={cn('w-full', horizontal && '')}>
+                        {description && (
+                            <p className="mb-2 text-sm text-neutral-300">{description}</p>
+                        )}
                         <Select
                             onValueChange={field.onChange}
                             value={field.value as string}
@@ -50,11 +64,14 @@ export default function FormSelect<T extends FieldValues>({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {options.map((opt) => (
-                                    <SelectItem key={opt} value={opt}>
-                                        {opt}
-                                    </SelectItem>
-                                ))}
+                                {options.map((opt) => {
+                                    const normalized = normalizeOption(opt)
+                                    return (
+                                        <SelectItem key={normalized.value} value={normalized.value}>
+                                            {normalized.label}
+                                        </SelectItem>
+                                    )
+                                })}
                             </SelectContent>
                         </Select>
                         {fieldState.error && (

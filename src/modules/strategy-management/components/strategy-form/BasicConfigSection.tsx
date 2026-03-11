@@ -3,13 +3,15 @@ import { InputField } from '@/components/ui/InputField'
 import Separator from '@/components/ui/Separator'
 import SymbolSearchSelect from '@/components/ui/SymbolSearchSelect'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller } from 'react-hook-form'
 import { CAPITAL_ALLOCATION_TYPES, TIMEFRAMES } from '../../constants/strategy-form.defaults'
 import type { StrategyControl, StrategySetValue, StrategyWatch } from '../../types/strategy-form.types'
 import IndicatorsSection from './IndicatorsSection'
 import RiskManagementSection from './RiskManagementSection'
 import StrategyExitsSection from './StrategyExitsSection'
+import { useQuery } from '@tanstack/react-query'
+import investorService, { type BinanceBalance } from '@/services/investorService'
 
 type Props = {
     control: StrategyControl
@@ -19,6 +21,7 @@ type Props = {
 
 export default function BasicConfigSection({ control, watch, setValue }: Props) {
     const capitalAllocationType = watch('capitalAllocationType')
+    const allocationValue = watch('allocationValue')
     const positionSizingMethod = watch('positionSizingMethod')
     const leverage = watch('leverage')
     const maxTradeDuration = watch('maxTradeDuration')
@@ -28,6 +31,31 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
     const [durationDraft, setDurationDraft] = useState<string | null>(null)
     const figmaRadioClass =
         'relative size-5 appearance-none rounded-full border border-blue-800 bg-transparent outline-none transition checked:border-blue-800 checked:bg-[radial-gradient(circle,_#6545ee_0_35%,_transparent_36%)] focus-visible:ring-2 focus-visible:ring-blue-800/50 cursor-pointer'
+
+    // Fetch Binance balance
+    const { data: balanceData } = useQuery<BinanceBalance>({
+        queryKey: ['binance-balance'],
+        queryFn: investorService.getBinanceBalance,
+        retry: false,
+    })
+
+    // Calculate portfolio allocation
+    const calculatePortfolioAllocation = () => {
+        if (isPercentageAlloc && balanceData?.availableBalance) {
+            const percentage = Number(allocationValue) || 0
+            return (balanceData.availableBalance * percentage) / 100
+        }
+        return Number(allocationValue) || 0
+    }
+
+    const portfolioAllocation = calculatePortfolioAllocation()
+
+    // Cap allocation value at 100 when switching to percentage
+    useEffect(() => {
+        if (isPercentageAlloc && allocationValue > 100) {
+            setValue('allocationValue', 100, { shouldValidate: true })
+        }
+    }, [isPercentageAlloc, allocationValue, setValue])
 
     const getDurationMultiplier = (unit: 'SECOND' | 'MINUTE' | 'HOUR') => {
         if (unit === 'MINUTE') return 60
@@ -92,9 +120,12 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                 <InputField
                                     name="allocationValue"
                                     control={control}
-                                    label="Allocation Value"
+                                    label={isPercentageAlloc ? 'Allocation Percentage (%)' : 'Allocation Amount (USD)'}
                                     type="number"
                                     placeholder={isPercentageAlloc ? 'e.g., 20' : 'e.g., 1000'}
+                                    min={0.01}
+                                    max={isPercentageAlloc ? 100 : undefined}
+                                    step={isPercentageAlloc ? 0.01 : 1}
                                     rules={{
                                         required: 'Allocation value is required',
                                         min: { value: 0.01, message: 'Must be > 0' },
@@ -102,7 +133,16 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                     }}
                                 />
                                 <p className="text-sm font-medium text-neutral-300">
-                                    Portfolio Allocation: <span className="ml-2">$3,000.00</span>
+                                    Portfolio Allocation: 
+                                    <span className="ml-2">
+                                        {isPercentageAlloc && !balanceData ? (
+                                            <span className="text-neutral-400 text-xs">
+                                                (Fetching balance...)
+                                            </span>
+                                        ) : (
+                                            `$${portfolioAllocation.toFixed(2)}`
+                                        )}
+                                    </span>
                                 </p>
                             </div>
 
@@ -168,15 +208,6 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                             {...control.register('positionSizingMethod')}
                                         />
                                         <span className="text-base text-neutral-50">Percentage</span>
-                                    </label>
-                                    <label className="flex cursor-pointer items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            value="DYNAMIC"
-                                            className={figmaRadioClass}
-                                            {...control.register('positionSizingMethod')}
-                                        />
-                                        <span className="text-base text-neutral-50">Dynamic</span>
                                     </label>
                                 </div>
                             </div>
