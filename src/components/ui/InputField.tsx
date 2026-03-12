@@ -40,12 +40,12 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
     const containerRef = useRef<HTMLDivElement>(null)
 
     return (
-        <div className={cn('flex min-h-[52px] gap-2', horizontal ? 'flex-row items-center justify-between' : 'flex-col')}>
+        <div className={cn('flex min-h-[52px] gap-2', horizontal ? 'flex-col sm:flex-row sm:items-center sm:justify-between' : 'flex-col')}>
             {label && (
                 <label
                     className={cn(
                         'p-md flex items-center gap-1 font-medium text-neutral-50',
-                        horizontal && 'min-w-[150px] shrink-0',
+                        horizontal && 'sm:min-w-[150px] shrink-0',
                         props.disabled && 'cursor-not-allowed opacity-50',
                     )}
                 >
@@ -168,7 +168,7 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
 
                     // DEFAULT TEXT FIELD
                     return (
-                        <div className={cn('flex flex-col gap-1.5' + (horizontal ? ' w-full max-w-[10.5rem]' : ''))}>
+                        <div className={cn('flex flex-col gap-1.5' + (horizontal ? ' w-full sm:max-w-[10.5rem]' : ''))}>
                             <input
                                 {...field}
                                 {...props}

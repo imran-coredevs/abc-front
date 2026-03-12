@@ -116,49 +116,42 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
             <div className="absolute -bottom-[20%] left-[50%] -z-1 -translate-x-1/2">
                 <div className="h-200 w-200 rounded-full bg-linear-to-b from-blue-900 to-blue-800 blur-[500px]" />
             </div>
-            <div className="z-1 space-y-6 p-5">
+            <div className="z-1 space-y-6 p-3 sm:p-5">
                 {/* Header */}
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <h4 className="text-2xl font-semibold text-neutral-50">{strategyData.name}</h4>
-
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="text-xl sm:text-2xl font-semibold text-neutral-50">{strategyData.name}</h4>
                         <Badge
                             variant={isLiveStatus(status) ? 'success' : 'outline'}
-                            className={`rounded-[40px] bg-neutral-950 px-5 py-2 text-xs font-medium capitalize ${
+                            className={`rounded-[40px] bg-neutral-950 px-4 py-1.5 text-xs font-medium capitalize ${
                                 isLiveStatus(status) ? 'text-green-500' : 'text-red-500'
                             }`}
                         >
                             {status}
                         </Badge>
+                    </div>
 
+                    <div className="flex flex-wrap items-center gap-2">
                         <button
                             onClick={handleToggleStatus}
                             disabled={isToggling}
-                            className={`flex items-center gap-2 rounded-[40px] border border-white/30 px-6 py-3 text-base text-neutral-50 ${
+                            className={`flex items-center gap-2 rounded-[40px] border border-white/30 px-4 sm:px-6 py-2.5 text-sm sm:text-base text-neutral-50 ${
                                 isToggling ? 'cursor-not-allowed opacity-50' : 'hover:bg-white/5'
                             }`}
                         >
                             {isLiveStatus(status) ? (
-                                <StopCircle size={20} className="text-red-500" />
+                                <StopCircle size={18} className="text-red-500" />
                             ) : (
-                                <PlayCircle size={20} className="text-green-500" variant="Bold" />
+                                <PlayCircle size={18} className="text-green-500" variant="Bold" />
                             )}
                             {isToggling ? 'Processing...' : isLiveStatus(status) ? 'Stop' : 'Run'}
                         </button>
-                    </div>
 
-                    <div className="flex items-center gap-3">
                         {!isLiveStatus(status) && (
-                            <>
-                                <Button onClick={handleEdit} variant="secondary" className="border-neutral-700">
-                                    <Edit size={20} className="mr-2 mb-1 inline" />
-                                    Edit Strategy
-                                </Button>
-                                <Button onClick={handleDelete} variant="secondary" className="border-red-700 text-red-500 hover:bg-red-500/10">
-                                    <Trash size={20} className="mr-2 mb-1 inline" />
-                                    Delete
-                                </Button>
-                            </>
+                            <Button onClick={handleEdit} variant="secondary" className="border-neutral-700 px-4 sm:px-6 py-2.5 text-sm sm:text-base">
+                                <Edit size={18} className="mr-1.5 mb-0.5 inline" />
+                                Edit
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -166,7 +159,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                 <Separator />
 
                 {/* Strategy Details */}
-                <div className="space-y-3 rounded-lg bg-white/5 p-6">
+                <div className="space-y-3 rounded-lg bg-white/5 p-4 sm:p-6">
                     <h3 className="text-base font-semibold text-neutral-50">Strategy Details</h3>
                     <Separator />
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -195,12 +188,12 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                 {/* Risk Management */}
                 {strategyData.risk && (
                     <div className="space-y-4">
-                        <h3 className="text-xl font-semibold text-neutral-50">Risk Management</h3>
+                        <h3 className="text-lg sm:text-xl font-semibold text-neutral-50">Risk Management</h3>
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
                             {strategyData.risk.stopLoss && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <h4 className="font-semibold text-neutral-50">Stop Loss</h4>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <h4 className="text-sm sm:text-base font-semibold text-neutral-50">Stop Loss</h4>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         <div className="flex gap-2"><span className="text-neutral-400">Type:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.type}</span></div>
@@ -215,8 +208,8 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             )}
 
                             {strategyData.risk.takeProfit && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <h4 className="font-semibold text-neutral-50">Take Profit</h4>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <h4 className="text-sm sm:text-base font-semibold text-neutral-50">Take Profit</h4>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         <div className="flex gap-2"><span className="text-neutral-400">Type:</span><span className="font-semibold text-neutral-50">{strategyData.risk.takeProfit.type}</span></div>
@@ -238,8 +231,8 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             )}
 
                             {strategyData.risk.trailingStop && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <h4 className="font-semibold text-neutral-50">Trailing Stop</h4>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <h4 className="text-sm sm:text-base font-semibold text-neutral-50">Trailing Stop</h4>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         <div className="flex gap-2"><span className="text-neutral-400">Enabled:</span><span className={`font-semibold ${strategyData.risk.trailingStop.enabled ? 'text-green-500' : 'text-red-500'}`}>{strategyData.risk.trailingStop.enabled ? 'Yes' : 'No'}</span></div>
@@ -251,8 +244,8 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             )}
 
                             {strategyData.risk.breakEven && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <h4 className="font-semibold text-neutral-50">Break-Even</h4>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <h4 className="text-sm sm:text-base font-semibold text-neutral-50">Break-Even</h4>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         <div className="flex gap-2"><span className="text-neutral-400">Enabled:</span><span className={`font-semibold ${strategyData.risk.breakEven.enabled ? 'text-green-500' : 'text-red-500'}`}>{strategyData.risk.breakEven.enabled ? 'Yes' : 'No'}</span></div>
@@ -278,11 +271,11 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                 {/* Indicators */}
                 {strategyData.indicators && (
                     <div className="space-y-4">
-                        <h3 className="text-xl font-semibold text-neutral-50">Indicators</h3>
+                        <h3 className="text-lg sm:text-xl font-semibold text-neutral-50">Indicators</h3>
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                             {strategyData.indicators.rsi && strategyData.indicators.rsi.role !== 'disabled' && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <div className="flex items-center justify-between"><h4 className="font-semibold text-neutral-50">RSI</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.rsi.role}</Badge></div>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">RSI</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.rsi.role}</Badge></div>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         {strategyData.indicators.rsi.period != null && <div className="flex gap-2"><span className="text-neutral-400">Period:</span><span className="font-semibold text-neutral-50">{strategyData.indicators.rsi.period}</span></div>}
@@ -295,8 +288,8 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             )}
 
                             {strategyData.indicators.utBot && strategyData.indicators.utBot.role !== 'disabled' && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <div className="flex items-center justify-between"><h4 className="font-semibold text-neutral-50">UT Bot</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.utBot.role}</Badge></div>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">UT Bot</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.utBot.role}</Badge></div>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         {strategyData.indicators.utBot.atrPeriod != null && <div className="flex gap-2"><span className="text-neutral-400">ATR Period:</span><span className="font-semibold text-neutral-50">{strategyData.indicators.utBot.atrPeriod}</span></div>}
@@ -306,8 +299,8 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             )}
 
                             {strategyData.indicators.superTrend && strategyData.indicators.superTrend.role !== 'disabled' && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <div className="flex items-center justify-between"><h4 className="font-semibold text-neutral-50">Supertrend</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.superTrend.role}</Badge></div>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">Supertrend</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.superTrend.role}</Badge></div>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         {strategyData.indicators.superTrend.atrPeriod != null && <div className="flex gap-2"><span className="text-neutral-400">ATR Period:</span><span className="font-semibold text-neutral-50">{strategyData.indicators.superTrend.atrPeriod}</span></div>}
@@ -318,8 +311,8 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             )}
 
                             {strategyData.indicators.hullSuite && strategyData.indicators.hullSuite.role !== 'disabled' && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <div className="flex items-center justify-between"><h4 className="font-semibold text-neutral-50">Hull Suite</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.hullSuite.role}</Badge></div>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">Hull Suite</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.hullSuite.role}</Badge></div>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         {strategyData.indicators.hullSuite.length != null && <div className="flex gap-2"><span className="text-neutral-400">Length:</span><span className="font-semibold text-neutral-50">{strategyData.indicators.hullSuite.length}</span></div>}
@@ -330,8 +323,8 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             )}
 
                             {strategyData.indicators.adx && strategyData.indicators.adx.role !== 'disabled' && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <div className="flex items-center justify-between"><h4 className="font-semibold text-neutral-50">ADX</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.adx.role}</Badge></div>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">ADX</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.adx.role}</Badge></div>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         {strategyData.indicators.adx.diLength != null && <div className="flex gap-2"><span className="text-neutral-400">DI Length:</span><span className="font-semibold text-neutral-50">{strategyData.indicators.adx.diLength}</span></div>}
@@ -343,8 +336,8 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             )}
 
                             {strategyData.indicators.squeezeMomentum && strategyData.indicators.squeezeMomentum.role !== 'disabled' && (
-                                <div className="space-y-3 rounded-lg bg-white/5 p-5">
-                                    <div className="flex items-center justify-between"><h4 className="font-semibold text-neutral-50">Squeeze Momentum</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.squeezeMomentum.role}</Badge></div>
+                                <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
+                                    <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">Squeeze Momentum</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.squeezeMomentum.role}</Badge></div>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
                                         {strategyData.indicators.squeezeMomentum.bollingerBandsPeriod != null && <div className="flex gap-2"><span className="text-neutral-400">BB Period:</span><span className="font-semibold text-neutral-50">{strategyData.indicators.squeezeMomentum.bollingerBandsPeriod}</span></div>}
@@ -363,7 +356,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                     <>
                         <Separator />
                         <div className="space-y-4">
-                            <h3 className="text-xl font-semibold text-neutral-50">Strategy Exits</h3>
+                            <h3 className="text-lg sm:text-xl font-semibold text-neutral-50">Strategy Exits</h3>
                             <div className="grid grid-cols-1 gap-3 rounded-lg bg-white/5 p-5 sm:grid-cols-2">
                                 {[
                                     { label: 'Exit on Opposite Signal', value: strategyData.strategyExits.onOppositeSignal },

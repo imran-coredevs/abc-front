@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils'
 import { Edit2, Eye, ReceiveSquare, Trash } from 'iconsax-reactjs'
 import { Badge } from '../badge'
+import NoDataFound from '../no-data'
 
 type Props<T> = { columns: TableColumn<T>[]; tableData: T[]; actions?: TableActions<T>[] }
 
@@ -74,7 +75,14 @@ export default function Table<T extends Record<string, unknown>>({ columns, tabl
                 </thead>
 
                 <tbody>
-                    {tableData.map((row, rowIndex) => (
+                    {tableData.length === 0 ? (
+                        <tr>
+                            <td colSpan={columns.length + (actions ? 1 : 0)} className="py-10">
+                                <NoDataFound text="No records found" />
+                            </td>
+                        </tr>
+                    ) : (
+                    tableData.map((row, rowIndex) => (
                         <tr key={rowIndex} className={cn(rowIndex % 2 !== 0 && 'bg-white/5')}>
                             {columns.map((col, colIndex) => (
                                 <td
@@ -109,7 +117,8 @@ export default function Table<T extends Record<string, unknown>>({ columns, tabl
                                 </td>
                             )}
                         </tr>
-                    ))}
+                    ))
+                    )}
                 </tbody>
             </table>
         </div>

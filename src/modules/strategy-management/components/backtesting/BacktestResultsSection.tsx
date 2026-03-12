@@ -33,7 +33,7 @@ export default function BacktestResultsSection({
     }
 
     return (
-        <div className="relative space-y-6 overflow-hidden rounded-xl bg-white/5 p-5">
+        <div className="relative space-y-6 overflow-hidden rounded-xl bg-white/5 p-4 sm:p-5">
             <div className="pointer-events-none absolute -bottom-[25%] left-1/2 -z-1 h-200 w-200 -translate-x-1/2 rounded-full bg-linear-to-b from-blue-700 to-blue-900 blur-[500px]" />
 
             <div>
@@ -45,11 +45,11 @@ export default function BacktestResultsSection({
 
             <Separator />
 
-            <div className="space-y-3 rounded-lg bg-white/5 p-6">
-                <h4 className="text-xl font-semibold text-neutral-50">Performance Overview</h4>
+            <div className="space-y-3 rounded-lg bg-white/5 p-4 sm:p-6">
+                <h4 className="text-lg sm:text-xl font-semibold text-neutral-50">Performance Overview</h4>
                 <Separator />
 
-                <div className="space-y-2 text-lg leading-6">
+                <div className="space-y-2 text-sm sm:text-base leading-6">
                     <div className="flex items-center gap-3">
                         <span className="font-medium text-neutral-300">Net Profit:</span>
                         <span className={cn('font-bold', results.netProfit >= 0 ? 'text-green-500' : 'text-red-500')}>
@@ -66,7 +66,7 @@ export default function BacktestResultsSection({
                             activeIndicators.map((indicator) => (
                                 <span
                                     key={indicator}
-                                    className="rounded-full bg-white/10 px-3 py-1 text-lg leading-6 font-bold text-neutral-50"
+                                    className="rounded-full bg-white/10 px-3 py-1 text-sm sm:text-base font-bold text-neutral-50"
                                 >
                                     {INDICATOR_LABELS[indicator] ?? indicator.toUpperCase()}
                                 </span>
@@ -132,9 +132,9 @@ export default function BacktestResultsSection({
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
-                <div className="space-y-4 rounded-xl bg-neutral-950 p-5">
+                <div className="space-y-4 rounded-xl bg-neutral-950 p-4 sm:p-5">
                     <div>
-                        <h4 className="text-xl font-semibold text-neutral-200">Equity Curve</h4>
+                        <h4 className="text-lg sm:text-xl font-semibold text-neutral-200">Equity Curve</h4>
                         <p className="mt-2 text-sm text-neutral-200">
                             Shows how the simulated account balance changed during the selected period
                         </p>
@@ -142,52 +142,53 @@ export default function BacktestResultsSection({
 
                     <Separator />
 
-                    <ChartContainer config={EQUITY_CHART_CONFIG} className="h-64 w-full">
-                        <AreaChart data={equityCurve} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#6545ee" stopOpacity={0.45} />
-                                    <stop offset="95%" stopColor="#6545ee" stopOpacity={0.04} />
-                                </linearGradient>
-                            </defs>
-                            {/* <CartesianGrid vertical={false} stroke="#1f2634" strokeDasharray="0" /> */}
-                            <XAxis
-                                dataKey="month"
-                                tick={{ fill: '#f6f7f9', fontSize: 12 }}
-                                axisLine={false}
-                                tickLine={false}
-                                interval="preserveStartEnd"
-                            />
-                            <YAxis
-                                tick={{ fill: '#f6f7f9', fontSize: 12 }}
-                                axisLine={false}
-                                tickLine={false}
-                                tickFormatter={formatYAxis}
-                                width={50}
-                                domain={[chartMin, chartMax]}
-                            />
-                            <ChartTooltip
-                                content={<ChartTooltipContent />}
-                                formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Equity']}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="equity"
-                                stroke="#6545ee"
-                                strokeWidth={3}
-                                fill="url(#equityGradient)"
-                                dot={false}
-                                activeDot={{ r: 4, fill: '#6545ee' }}
-                            />
-                        </AreaChart>
-                    </ChartContainer>
+                    <div className="w-full overflow-hidden">
+                        <ChartContainer config={EQUITY_CHART_CONFIG} className="h-56 sm:h-64 w-full">
+                            <AreaChart data={equityCurve} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#6545ee" stopOpacity={0.45} />
+                                        <stop offset="95%" stopColor="#6545ee" stopOpacity={0.04} />
+                                    </linearGradient>
+                                </defs>
+                                <XAxis
+                                    dataKey="month"
+                                    tick={{ fill: '#f6f7f9', fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    interval="preserveStartEnd"
+                                />
+                                <YAxis
+                                    tick={{ fill: '#f6f7f9', fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tickFormatter={formatYAxis}
+                                    width={50}
+                                    domain={[chartMin, chartMax]}
+                                />
+                                <ChartTooltip
+                                    content={<ChartTooltipContent />}
+                                    formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Equity']}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="equity"
+                                    stroke="#6545ee"
+                                    strokeWidth={3}
+                                    fill="url(#equityGradient)"
+                                    dot={false}
+                                    activeDot={{ r: 4, fill: '#6545ee' }}
+                                />
+                            </AreaChart>
+                        </ChartContainer>
+                    </div>
                 </div>
 
-                <div className="space-y-3 rounded-lg bg-white/5 p-6">
-                    <h4 className="text-xl font-semibold text-neutral-50">Risk & Exposure Statistics</h4>
+                <div className="space-y-3 rounded-lg bg-white/5 p-4 sm:p-6">
+                    <h4 className="text-lg sm:text-xl font-semibold text-neutral-50">Risk & Exposure Statistics</h4>
                     <Separator />
 
-                    <div className="space-y-2 text-lg leading-6">
+                    <div className="space-y-2 text-sm sm:text-base leading-6">
                         {[
                             { label: 'Time in Market:', value: `${results.timeInMarket.toFixed(1)}%` },
                             { label: 'Avg Trade Duration:', value: results.avgTradeDuration },

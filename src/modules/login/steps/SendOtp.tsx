@@ -46,7 +46,7 @@ export const SendOtp = ({ setStage }: { setStage: (stage: Stage) => void }) => {
                     className="pointer-events-none absolute inset-0 h-full w-full object-clip opacity-70"
                 />
 
-                <div className="relative z-10 flex w-full flex-col gap-8 pt-10 lg:p-8">
+                <div className="relative z-10 flex w-full flex-col gap-8 p-4 pt-8 sm:p-6 lg:p-8">
                     <div className="flex w-full flex-col gap-3">
                         <div
                             onClick={() => setStage('login')}
@@ -55,8 +55,8 @@ export const SendOtp = ({ setStage }: { setStage: (stage: Stage) => void }) => {
                             <ArrowLeft size="24" className="text-neutral-50" />
                         </div>
 
-                        <h2 className="font-semibold text-neutral-50">Forgot Password</h2>
-                        <p className="text-neutral-400">
+                        <h2 className="text-xl font-semibold text-neutral-50">Forgot Password</h2>
+                        <p className="text-sm sm:text-base text-neutral-400">
                             Enter your registered email, and we'll send you a link to reset your password securely.
                         </p>
                     </div>

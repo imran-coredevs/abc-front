@@ -13,7 +13,7 @@ export default function FormActions({ isEditMode, id, isSubmitting }: Props) {
     const cancelPath = isEditMode ? `/strategy-management/${id}` : '/strategy-management'
 
     return (
-        <div className="flex items-center gap-4 pb-8">
+        <div className="flex flex-wrap items-center gap-4 pb-8">
             <Button type="submit" disabled={isSubmitting}>
                 {isEditMode ? 'Save Changes' : 'Create Strategy'}
             </Button>

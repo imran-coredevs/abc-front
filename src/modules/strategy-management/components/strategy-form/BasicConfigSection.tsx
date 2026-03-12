@@ -70,15 +70,15 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
     }
 
     return (
-        <div className="grid grid-cols-1 gap-5 space-y-4 rounded-lg bg-white/5 p-6 lg:grid-cols-2">
-            <div className="col-span-2 space-y-4">
+        <div className="grid grid-cols-1 gap-5 rounded-lg bg-white/5 p-4 sm:p-6 lg:grid-cols-2">
+            <div className="lg:col-span-2 space-y-4">
                 <h2 className="text-xl font-semibold text-neutral-50">Identity & scope</h2>
                 <Separator />
             </div>
 
             {/* Row 1: Name, Symbol, Timeframe */}
-            <div className="col-span-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="col-span-2">
+            <div className="lg:col-span-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
                     <InputField
                         name="name"
                         control={control}
@@ -190,7 +190,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                             {/* Position Sizing Method - Radio Buttons */}
                             <div className="space-y-4">
                                 <p className="text-base text-neutral-50">Position Sizing Method</p>
-                                <div className="flex gap-4">
+                                <div className="flex flex-wrap gap-4">
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"
@@ -326,7 +326,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                             {/* Trade Direction - Radio Buttons */}
                             <div className="space-y-4">
                                 <p className="text-base text-neutral-50">Trade Direction *</p>
-                                <div className="flex gap-4">
+                                <div className="flex flex-wrap gap-4">
                                     <label className="flex cursor-pointer items-center gap-2">
                                         <input
                                             type="radio"

@@ -47,11 +47,11 @@ export const LoginStep = ({ setStage }: { setStage: (stage: Stage) => void }) =>
                 className="pointer-events-none absolute inset-0 h-full w-full object-clip opacity-60"
             />
 
-            <div className="relative z-10 flex w-full flex-col gap-8 pt-10 lg:p-8">
+            <div className="relative z-10 flex w-full flex-col gap-8 p-4 pt-8 sm:p-6 lg:p-8">
                 <div className="flex w-full flex-col gap-3">
                     <img src="/full-logo.svg" alt="logo" className="mb-5 h-11" />
-                    <h3 className="text-center font-semibold text-neutral-50">Welcome Back</h3>
-                    <p className="text-center text-base text-neutral-400">Login to your account</p>
+                    <h3 className="text-center text-xl font-semibold text-neutral-50">Welcome Back</h3>
+                    <p className="text-center text-sm sm:text-base text-neutral-400">Login to your account</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3" noValidate>
@@ -90,7 +90,7 @@ export const LoginStep = ({ setStage }: { setStage: (stage: Stage) => void }) =>
                         }}
                     />
 
-                    <div className="flex w-full items-center justify-between gap-4">
+                    <div className="flex w-full flex-wrap items-center justify-between gap-3">
                         <div className="mt-3 flex items-center gap-3">
                             <Checkbox
                                 id="rememberMe"
@@ -107,7 +107,7 @@ export const LoginStep = ({ setStage }: { setStage: (stage: Stage) => void }) =>
                         </div>
                         <button
                             type="button"
-                            className="cursor-pointer text-base font-medium text-neutral-50"
+                            className="cursor-pointer text-sm sm:text-base font-medium text-neutral-50"
                             onClick={() => setStage('sendotp')}
                         >
                             Forgot Password

@@ -117,8 +117,8 @@ export default function ConfigurationSettingsPage() {
                 </div>
             ) : storedKey ? (
                 /* ── Connected State ── */
-                <div className="flex justify-between space-y-5 rounded-xl border border-white/10 bg-white/5 p-6">
-                    <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-5 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
+                    <div className="flex items-start gap-4">
                         <div className="space-y-1">
                             <h2 className="text-lg font-semibold text-neutral-50">Binance API Keys</h2>
                             <p className="text-sm text-neutral-400">
@@ -127,7 +127,7 @@ export default function ConfigurationSettingsPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                         <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-2">
                                 <div className="flex h-[52px] flex-1 items-center rounded-full border border-white/10 bg-white/5 px-4">
@@ -146,15 +146,15 @@ export default function ConfigurationSettingsPage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-6">
-                            <Button type="button" onClick={openReplace} variant="default" className="flex-1 lg:w-32">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <Button type="button" onClick={openReplace} variant="default" className="flex-1 sm:flex-none sm:w-32">
                                 Replace
                             </Button>
                             <Button
                                 type="button"
                                 variant="secondary"
                                 onClick={handleRemove}
-                                className="border-red-500/30 bg-transparent text-red-500 hover:bg-red-500/10"
+                                className="flex-1 sm:flex-none border-red-500/30 bg-transparent text-red-500 hover:bg-red-500/10"
                             >
                                 <Trash size={16} className="mr-2 inline" />
                                 Remove
@@ -164,7 +164,7 @@ export default function ConfigurationSettingsPage() {
                 </div>
             ) : (
                 /* ── Empty State ── */
-                <div className="space-y-5 rounded-xl border border-white/10 bg-white/5 p-6">
+                <div className="space-y-5 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-6">
                     <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1">
                             <h2 className="text-lg font-semibold text-neutral-50">Binance API Keys</h2>

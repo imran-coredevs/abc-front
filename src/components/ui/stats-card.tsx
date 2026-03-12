@@ -36,10 +36,10 @@ export const StatsCard: React.FC<CardProps> = ({
     const isSimple = variant === 'simple'
     const hasProgress = variant === 'progress'
     const hasIncrease = variant === 'increase'
-    const quantitySize = isSimple ? 'text-[28px] leading-9 tracking-[-0.56px]' : 'text-xl leading-7'
+    const quantitySize = isSimple ? 'text-[28px] lg:text-xl xl:text-[28px] leading-9 tracking-[-0.56px]' : 'text-xl lg:text-base xl:text-xl leading-7'
 
     return (
-        <div className="relative flex w-full flex-col gap-6 overflow-clip rounded-xl bg-white/5 p-5">
+        <div className="relative flex w-full flex-col gap-5 overflow-clip rounded-xl bg-white/5 p-5 lg:p-3.5 xl:p-5">
             {/* Top gradient line */}
                 <div className="absolute top-px left-1/2 h-0 w-[230px] -translate-x-1/2">
                     <div className="absolute inset-[-1px_0_0_0]">
@@ -58,8 +58,8 @@ export const StatsCard: React.FC<CardProps> = ({
                     </div>
                     {icon}
                 </div>
-                <div className="flex shrink-0 flex-col gap-1 whitespace-nowrap">
-                    <p className="text-xl leading-7 font-bold text-[#f5f5f5]">{title}</p>
+                <div className="flex min-w-0 flex-col gap-1">
+                    <p className="text-xl lg:text-sm xl:text-xl leading-tight font-bold text-[#f5f5f5]">{title}</p>
                     <p className="text-sm leading-[18px] font-normal text-[#b5b8bf]">{description}</p>
                 </div>
             </div>

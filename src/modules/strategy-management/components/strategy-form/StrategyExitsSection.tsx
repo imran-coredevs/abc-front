@@ -44,7 +44,7 @@ export default function StrategyExitsSection({ control, watch }: Props) {
     const allowReEntry = watch('strategyExits.allowReEntryOnActiveSignal')
 
     return (
-        <div className="space-y-4 rounded-lg bg-white/5 p-6">
+        <div className="space-y-4 rounded-lg bg-white/5 p-4 sm:p-6">
             <h2 className="text-xl font-semibold text-neutral-50">Strategy Exits</h2>
             <Separator />
 

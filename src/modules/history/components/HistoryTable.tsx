@@ -246,7 +246,7 @@ export default function HistoryTable() {
     }
 
     return (
-        <div className="mt-5 rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+        <div className="mt-5 rounded-2xl border border-neutral-800 bg-neutral-900 p-4 sm:p-6">
             <TableHeader title="History">
                 <div className="flex flex-wrap items-center gap-3">
                     <Select value={result} onValueChange={handleFilterChange(setResult)}>
@@ -292,7 +292,7 @@ export default function HistoryTable() {
                 </div>
             </div>
 
-            {!loading && <TablePagination paginationOptions={paginationOptions} tableName="trades" />}
+            {!loading && trades.length > 0 && <TablePagination paginationOptions={paginationOptions} tableName="trades" />}
         </div>
     )
 }

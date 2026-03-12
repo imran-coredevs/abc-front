@@ -123,15 +123,23 @@ const columns: TableColumn<InstanceOverview>[] = [
     },
 ]
 
-export default function StrategyOverviewTable({ data }: StrategyOverviewTableProps) {
+export default function StrategyOverviewTable({ data, isLoading }: StrategyOverviewTableProps) {
     return (
-        <div className="mt-5 rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+        <div className="mt-5 rounded-2xl border border-neutral-800 bg-neutral-900 p-4 sm:p-6">
             <TableHeader title="Strategy Overview" />
             <div className="mt-6">
-                <Table 
-                    columns={columns as unknown as TableColumn<Record<string, unknown>>[]} 
-                    tableData={data as unknown as Record<string, unknown>[]} 
-                />
+                {isLoading ? (
+                    <div className="space-y-2">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="h-16 animate-pulse rounded-lg bg-neutral-800/60" />
+                        ))}
+                    </div>
+                ) : (
+                    <Table 
+                        columns={columns as unknown as TableColumn<Record<string, unknown>>[]} 
+                        tableData={data as unknown as Record<string, unknown>[]} 
+                    />
+                )}
             </div>
         </div>
     )

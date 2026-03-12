@@ -21,7 +21,7 @@ type Props = {
 
 export default function IndicatorsSection({ control, watch }: Props) {
     return (
-        <div className="w-full space-y-4 rounded-lg bg-white/5 p-6">
+        <div className="w-full space-y-4 rounded-lg bg-white/5 p-4 sm:p-6">
             <h2 className="text-xl font-semibold text-neutral-50">Indicators</h2>
             <Separator />
 

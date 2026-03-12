@@ -63,7 +63,7 @@ export default function StrategyDetailsPage() {
         <div>
             <StrategyDetailsTop />
 
-            <div className='bg-white/5 rounded-xl p-5 mt-8'>
+            <div className='bg-white/5 rounded-xl p-3 sm:p-5 mt-8'>
                 <StrategyTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
                 <div className="mt-6">

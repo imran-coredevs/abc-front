@@ -15,7 +15,7 @@ type Props = {
 
 export default function RiskManagementSection({ control, watch }: Props) {
     return (
-        <div className="w-full space-y-4 rounded-lg border border-white/10 bg-white/5 p-5">
+        <div className="w-full space-y-4 rounded-lg border border-white/10 bg-white/5 p-4 sm:p-5">
             <h2 className="text-xl font-semibold text-neutral-50">Risk Management</h2>
             <Separator />
 

@@ -10,7 +10,7 @@ export default function RootLayout() {
                     <img src={BGCircleShadow} alt="Background Circle Shadow" className="object-cover" />
                 </div>
                 <TopBar />
-                <main className="relative overflow-x-clip overflow-y-auto p-6 pt-30">
+                <main className="relative overflow-x-clip overflow-y-auto p-4 pt-24 sm:p-6 sm:pt-28 lg:pt-30">
                     <Outlet />
                 </main>
             </div>

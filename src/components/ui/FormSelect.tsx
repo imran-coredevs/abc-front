@@ -40,8 +40,8 @@ export default function FormSelect<T extends FieldValues>({
             control={control}
             rules={required ? { required: 'This field is required', ...rules } : rules}
             render={({ field, fieldState }) => (
-                <div className={cn('flex gap-2', horizontal ? 'flex-row items-center justify-between' : 'flex-col')}>
-                    <label className={cn('font-medium text-neutral-50', horizontal && 'min-w-[150px] shrink-0')}>
+                <div className={cn('flex gap-2', horizontal ? 'flex-col sm:flex-row sm:items-center sm:justify-between' : 'flex-col')}>
+                    <label className={cn('font-medium text-neutral-50', horizontal && 'sm:min-w-[150px] shrink-0')}>
                         {label}
                         {required && <span className="ml-0.5 text-neutral-200">*</span>}
                     </label>

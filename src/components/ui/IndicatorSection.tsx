@@ -38,7 +38,7 @@ export default function IndicatorSection<T extends FieldValues>({
     return (
         <div
             className={cn(
-                'space-y-4 rounded-lg border p-6 transition-colors',
+                'space-y-4 rounded-lg border p-4 sm:p-6 transition-colors',
                 isEnabled ? 'border-white/10 bg-white/5' : 'border-white/5 opacity-60',
             )}
         >

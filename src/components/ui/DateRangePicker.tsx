@@ -242,17 +242,17 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
                         triggerClassName,
                     )}
                 >
-                    <div className="flex w-full items-center gap-2 lg:w-max">
-                        <Calendar size={20} className="text-neutral-300" />
-                        <p className="text-sm text-neutral-200">{displayRangeText()}</p>
-                        <ArrowDown2 variant="Bold" size={20} className="text-neutral-300" />
+                    <div className="flex w-full items-center gap-2">
+                        <Calendar size={20} className="shrink-0 text-neutral-300" />
+                        <p className="truncate text-sm text-neutral-200">{displayRangeText()}</p>
+                        <ArrowDown2 variant="Bold" size={20} className="shrink-0 text-neutral-300" />
                     </div>
                 </Button>
             </PopoverTrigger>
 
             <PopoverContent
                 align={align}
-                className="w-full max-w-[95vw] rounded-xl border-neutral-700 bg-neutral-800 p-4 shadow-md sm:max-w-md lg:max-w-lg"
+                className="w-full max-w-[95vw] overflow-y-auto max-h-[80vh] rounded-xl border-neutral-700 bg-neutral-800 p-4 shadow-md sm:max-w-md lg:max-w-lg"
             >
                 <div className="flex flex-col gap-4 lg:flex-row">
                     {/* Calendar - First on mobile/tablet, side by side on desktop */}

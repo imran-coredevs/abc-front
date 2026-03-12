@@ -63,7 +63,7 @@ export default function TopBar() {
 
     return (
         <>
-            <header className="fixed top-0 left-0 right-0 z-[99] flex w-full items-center justify-between border-b border-neutral-600 bg-white/8 p-6 pb-3 backdrop-blur-3xl">
+            <header className="fixed top-0 left-0 right-0 z-[99] flex w-full items-center justify-between border-b border-neutral-600 bg-white/8 px-4 py-3 sm:p-6 sm:pb-3 backdrop-blur-3xl">
                 <Logo onClick={() => navigate('/')} />
                 
                 {/* Desktop Navigation */}
@@ -91,7 +91,7 @@ export default function TopBar() {
                                 Access navigation links and account options
                             </SheetDescription>
                             {/* Profile Section at Top */}
-                            <div className="flex items-center gap-3 pt-4 pb-6 border-b border-neutral-700">
+                            {/* <div className="flex items-center gap-3 pt-4 pb-6 border-b border-neutral-700">
                                 <ImageWrapper
                                     src={user?.profileImage}
                                     alt={`Avatar of ${user?.firstName}-${user?.lastName}`}
@@ -104,7 +104,7 @@ export default function TopBar() {
                                     </h3>
                                     <p className="text-sm text-neutral-400">{user?.email}</p>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Navigation Menu */}
                             <nav className="flex-1 flex flex-col gap-2 py-6" aria-label="Mobile navigation menu">

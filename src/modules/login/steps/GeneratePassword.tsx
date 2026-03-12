@@ -64,10 +64,10 @@ export const GeneratePassword = ({ setStage }: { setStage: (stage: Stage) => voi
                 className="pointer-events-none absolute inset-0 h-full w-full object-clip opacity-70"
             />
 
-            <div className="relative z-10 flex w-full flex-col gap-8 pt-10 lg:p-8">
+            <div className="relative z-10 flex w-full flex-col gap-8 p-4 pt-8 sm:p-6 lg:p-8">
                 <div className="flex w-full flex-col gap-3">
-                    <h3 className="text-center font-semibold text-neutral-50">Generate New Password</h3>
-                    <p className="text-center text-base text-neutral-400">
+                    <h3 className="text-center text-xl font-semibold text-neutral-50">Generate New Password</h3>
+                    <p className="text-center text-sm sm:text-base text-neutral-400">
                         Please enter your new password below to reset your account password.
                     </p>
                 </div>
