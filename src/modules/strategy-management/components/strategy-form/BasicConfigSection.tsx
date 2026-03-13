@@ -139,6 +139,8 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                             <span className="text-neutral-400 text-xs">
                                                 (Fetching balance...)
                                             </span>
+                                        ) : isPercentageAlloc ? (
+                                            `${allocationValue}% of total portfolio ($${portfolioAllocation.toFixed(2)})`
                                         ) : (
                                             `$${portfolioAllocation.toFixed(2)}`
                                         )}

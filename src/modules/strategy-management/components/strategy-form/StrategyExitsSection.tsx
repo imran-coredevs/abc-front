@@ -70,8 +70,8 @@ export default function StrategyExitsSection({ control, watch }: Props) {
                         control={control}
                         label="Re-Entry Cooldown (Bars)"
                         type="number"
-                        placeholder="1"
-                        rules={{ required: 'Required', min: { value: 1, message: 'Min 1' } }}
+                        placeholder="0"
+                        rules={{ required: 'Required', min: { value: 0, message: 'Min 0' } }}
                     />
                 )}
             </div>

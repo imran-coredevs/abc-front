@@ -79,17 +79,6 @@ export default function RsiIndicator({ control, watch }: Props) {
                 rules={{ min: { value: 0, message: 'Min 0' }, max: { value: 50, message: 'Max 50' } }}
                 horizontal
             />
-            {isSignal && (
-                <InputField
-                    name="indicators.rsi.signalLookbackBars"
-                    control={control}
-                    label="Signal Lookback Bars"
-                    type="number"
-                    placeholder="1"
-                    rules={{ min: { value: 0, message: 'Min 0' } }}
-                    horizontal
-                />
-            )}
 
             <Separator />
 

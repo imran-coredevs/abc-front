@@ -38,17 +38,6 @@ export default function HullSuiteIndicator({ control, watch }: Props) {
                 options={HULL_MODES}
                 horizontal
             />
-            {isSignal && (
-                <InputField
-                    name="indicators.hullSuite.signalLookbackBars"
-                    control={control}
-                    label="Signal Lookback Bars"
-                    type="number"
-                    placeholder="1"
-                    rules={{ min: { value: 0, message: 'Min 0' } }}
-                    horizontal
-                />
-            )}
 
             <Separator />
 

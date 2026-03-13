@@ -8,9 +8,6 @@ import type { StrategyControl, StrategyWatch } from '../../../types/strategy-for
 type Props = { control: StrategyControl; watch: StrategyWatch }
 
 export default function SupertrendIndicator({ control, watch }: Props) {
-    const role = watch('indicators.superTrend.role')
-    const isSignal = role === 'signal'
-
     return (
         <IndicatorSection title="Supertrend" roleFieldName="indicators.superTrend.role" control={control} watch={watch}>
             <InputField
@@ -38,17 +35,6 @@ export default function SupertrendIndicator({ control, watch }: Props) {
                 options={SUPERTREND_SRC}
                 horizontal
             />
-            {isSignal && (
-                <InputField
-                    name="indicators.superTrend.signalLookbackBars"
-                    control={control}
-                    label="Signal Lookback Bars"
-                    type="number"
-                    placeholder="1"
-                    rules={{ min: { value: 0, message: 'Min 0' } }}
-                    horizontal
-                />
-            )}
 
             <Separator />
 
