@@ -51,7 +51,6 @@ const FULL_TEST_STRATEGY: StoredStrategy = {
                 smoothingType: 'EMA',
                 smoothingLength: 9,
                 bbMultiplier: 2,
-                signalLookbackBars: 2,
             },
             utBot: {
                 role: 'signal',
@@ -65,14 +64,12 @@ const FULL_TEST_STRATEGY: StoredStrategy = {
                 atrPeriod: 12,
                 atrMultiplier: 3,
                 srcPrice: 'hl2',
-                signalLookbackBars: 1,
             },
             hullSuite: {
                 role: 'filterOnly',
                 length: 55,
                 lengthMultiplier: 2,
                 mode: 'Hma',
-                signalLookbackBars: 1,
             },
             adx: {
                 role: 'filterOnly',
@@ -131,13 +128,13 @@ const INITIAL_STRATEGIES: StoredStrategy[] = [
     mkStrategy('4', 'binance-api-4480c1b2d7e6f5a4b3c2d1e0f9a8b7c6', 'LIVE', {
         name: 'Scalping Pro',
         symbol: 'SOLUSDT',
-        tradeDirection: 'SELL',
+        tradeDirection: 'SHORT',
         allocationValue: 4000,
     }),
     mkStrategy('5', 'binance-api-5591d2c3e8f7a6b5c4d3e2f1a0b9c8d7', 'STOPPED', {
         name: 'Swing Strategy',
         symbol: 'MATICUSDT',
-        tradeDirection: 'BUY',
+        tradeDirection: 'LONG',
         allocationValue: 1500,
     }),
     mkStrategy('6', 'binance-api-6602e3d4f9a8b7c6d5e4f3a2b1c0d9e8', 'LIVE', {
@@ -149,13 +146,7 @@ const INITIAL_STRATEGIES: StoredStrategy[] = [
     mkStrategy('7', 'binance-api-7713f4e5a0b9c8d7e6f5a4b3c2d1e0f9', 'STOPPED', {
         name: 'Trend Follower',
         symbol: 'XRPUSDT',
-        tradeDirection: 'BUY',
-        allocationValue: 3000,
-    }),
-    mkStrategy('8', 'binance-api-8824a5f6b1c0d9e8f7a6b5c4d3e2f1a0', 'LIVE', {
-        name: 'Volatility Master',
-        symbol: 'AVAXUSDT',
-        tradeDirection: 'SELL',
+        tradeDirection: 'SHORT',
         allocationValue: 3200,
     }),
 ]

@@ -44,7 +44,6 @@ export type StrategyFormData = {
             smoothingType: RsiSmoothing
             smoothingLength: number
             bbMultiplier: number
-            signalLookbackBars: number
         }
         utBot: {
             role: IndicatorRole
@@ -58,14 +57,12 @@ export type StrategyFormData = {
             atrPeriod: number
             atrMultiplier: number
             srcPrice: SuperTrendSrc
-            signalLookbackBars: number
         }
         hullSuite: {
             role: IndicatorRole
             length: number
             lengthMultiplier: number
             mode: HullMode
-            signalLookbackBars: number
         }
         adx: { role: AdxRole; diLength: number; adxLength: number; threshold: number; conditionType: AdxCondition }
         squeezeMomentum: {

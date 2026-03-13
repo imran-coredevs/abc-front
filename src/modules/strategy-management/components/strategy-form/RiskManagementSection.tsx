@@ -51,6 +51,7 @@ function StopLossCard({ control, watch }: Props) {
                         label="Fixed Stop Loss (%)"
                         type="number"
                         placeholder="e.g. 2"
+                        step="0.01"
                         rules={{ required: 'Required', min: { value: 0.01, message: 'Min 0.01' } }}
                         horizontal
                     />
@@ -61,6 +62,7 @@ function StopLossCard({ control, watch }: Props) {
                         control={control}
                         label="Structural Lookback (Candles)"
                         type="number"
+                        step="1"
                         horizontal
                         placeholder="e.g. 10"
                         rules={{ required: 'Required', min: { value: 1, message: 'Min 1' } }}
@@ -95,6 +97,7 @@ function TakeProfitCard({ control, watch }: Props) {
                         label="Fixed Take Profit (%)"
                         type="number"
                         placeholder="e.g. 4"
+                        step="0.01"
                         rules={{ required: 'Required', min: { value: 0.01, message: 'Min 0.01' } }}
                         horizontal
                     />
@@ -106,6 +109,7 @@ function TakeProfitCard({ control, watch }: Props) {
                         label="Risk:Reward Ratio"
                         type="number"
                         placeholder="e.g. 2"
+                        step="0.1"
                         rules={{ required: 'Required', min: { value: 0.1, message: 'Min 0.1' } }}
                         horizontal
                     />
@@ -121,6 +125,7 @@ function TakeProfitCard({ control, watch }: Props) {
                                         label={index === 0 ? 'Trigger (%)' : ''}
                                         type="number"
                                         placeholder="e.g. 2"
+                                        step="0.01"
                                         rules={{ required: 'Required' }}
                                     />
                                 </div>
@@ -130,6 +135,7 @@ function TakeProfitCard({ control, watch }: Props) {
                                     label={index === 0 ? 'Close (%)' : ''}
                                     type="number"
                                     placeholder="e.g. 50"
+                                    step="0.01"
                                     rules={{ required: 'Required' }}
                                 />
                                 <Button
@@ -203,6 +209,7 @@ function TrailingStopCard({ control, watch }: Props) {
                             label="Trailing Distance (%)"
                             type="number"
                             placeholder="e.g. 1"
+                            step="0.01"
                             rules={{ required: 'Required', min: { value: 0.01, message: 'Min 0.01' } }}
                             horizontal
                         />
@@ -257,6 +264,7 @@ function BreakEvenCard({ control, watch }: Props) {
                             label="Trigger Profit (%)"
                             type="number"
                             placeholder="e.g. 1"
+                            step="0.01"
                             rules={{ required: 'Required', min: { value: 0.01, message: 'Min 0.01' } }}
                             horizontal
                         />
@@ -266,6 +274,7 @@ function BreakEvenCard({ control, watch }: Props) {
                             label="Offset (%)"
                             type="number"
                             placeholder="e.g. 0.1"
+                            step="0.01"
                             rules={{ required: 'Required' }}
                             horizontal
                         />
