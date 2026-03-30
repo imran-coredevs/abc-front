@@ -1,5 +1,6 @@
 import envConfig from '@/config/envConfig'
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
+import { useLoginUserStore } from '@/store/useLoginUserStore'
 
 // Base API configuration
 export const api = axios.create({
@@ -131,17 +132,12 @@ api.interceptors.response.use(
     },
 )
 
-// Helper function to clear auth data
+// Helper function to clear auth data and redirect to login
 function clearAuthData() {
-    localStorage.removeItem('cda-trading-bot-auth-storage-user')
-    localStorage.removeItem('cda-trading-bot-auth-storage-token')
-    localStorage.removeItem('cda-trading-bot-refresh-token')
-    sessionStorage.removeItem('cda-trading-bot-auth-storage-user')
-    sessionStorage.removeItem('cda-trading-bot-auth-storage-token')
-    sessionStorage.removeItem('cda-trading-bot-refresh-token')
+    // Clear auth state from Zustand store
+    const store = useLoginUserStore.getState()
+    store.clear()
 
-    // Redirect to login if not already there
-    if (window.location.pathname !== '/login' && window.location.pathname !== '/reset-password') {
-        window.location.href = '/login'
-    }
+    // Dispatch custom event for components to listen to
+    window.dispatchEvent(new CustomEvent('auth-expired'))
 }

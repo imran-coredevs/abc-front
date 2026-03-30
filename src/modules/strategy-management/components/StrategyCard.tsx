@@ -8,7 +8,7 @@ type StrategyCardProps = {
     apiKey: string
     strategyName: string
     status: 'Running' | 'Stopped' | 'Starting' | 'Stopping' | 'Draft'
-    pair: string
+    pair: string[]
     direction: 'Long' | 'Short' | 'Both'
     allocation: number
     onToggleStatus: () => void
@@ -81,7 +81,7 @@ export default function StrategyCard({
             {/* Details section */}
             <div className="relative z-10 flex flex-col gap-3">
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-start gap-1">
+                    {/* <div className="flex items-start gap-1">
                         <img src={imgBinanceLogo} alt="Binance" className="size-5 shrink-0 rounded-full" />
                         <div className="flex items-center gap-2">
                             <p className="text-sm leading-4.5 font-normal text-neutral-400">{truncateApiKey(apiKey)}</p>
@@ -92,7 +92,7 @@ export default function StrategyCard({
                                 <Copy variant="Bold" size={18} />
                             </button>
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* Name and Status */}
                     <div className="flex items-center gap-2">
@@ -102,10 +102,12 @@ export default function StrategyCard({
                 </div>
 
                 {/* Pair and Direction */}
-                <div className="flex items-center gap-4 text-sm leading-4.5">
+                <div className="flex flex-col gap-4 text-sm leading-4.5">
                     <div className="flex items-center gap-2">
                         <span className="font-normal text-neutral-200">Pair:</span>
-                        <span className="font-medium text-neutral-50">{pair}</span>
+                        <span className="font-medium text-neutral-50">
+                            {pair.length > 0 ? pair.join(', ') : 'N/A'}
+                        </span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="font-normal text-neutral-200">Direction:</span>

@@ -15,7 +15,6 @@ type BacktestingTabProps = {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
-    const [selectedAsset, setSelectedAsset] = useState<string>(strategyData?.symbol ?? '')
     const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined })
     const [backtestStatus, setBacktestStatus] = useState<BacktestStatus>('idle')
     const [hasResults, setHasResults] = useState(false)
@@ -31,7 +30,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
 
     const stopLoss = strategyData?.risk?.stopLoss
     const takeProfit = strategyData?.risk?.takeProfit
-    const isRunDisabled = !selectedAsset || !dateRange.from || !dateRange.to || backtestStatus === 'running'
+    const isRunDisabled = !dateRange.from || !dateRange.to || backtestStatus === 'running'
 
     const stopLossText = stopLoss
         ? stopLoss.type === 'FIXED_PERCENTAGE'
@@ -116,7 +115,6 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
     }
 
     const handleReset = () => {
-        setSelectedAsset(strategyData?.symbol ?? '')
         setDateRange({ from: undefined, to: undefined })
         setBacktestStatus('idle')
         setHasResults(false)
@@ -175,7 +173,6 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
     return (
         <div className="space-y-6">
             <BacktestConfigurationSection
-                selectedAsset={selectedAsset}
                 dateRange={dateRange}
                 backtestStatus={backtestStatus}
                 isRunDisabled={isRunDisabled}
@@ -184,7 +181,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
                 stopLossText={stopLossText}
                 takeProfitText={takeProfitText}
                 hasResults={hasResults}
-                onAssetChange={setSelectedAsset}
+                showSymbolTabs={true}
                 onDateRangeChange={setDateRange}
                 onRunBacktest={handleRunBacktest}
                 onReset={handleReset}

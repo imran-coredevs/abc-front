@@ -3,6 +3,11 @@ import { InputField } from '@/components/ui/InputField'
 import Separator from '@/components/ui/Separator'
 import SymbolSearchSelect from '@/components/ui/SymbolSearchSelect'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
+import investorService, { type BinanceBalance } from '@/services/investorService'
+import { useQuery } from '@tanstack/react-query'
+import { InfoCircle } from 'iconsax-reactjs'
+import { CirclePercent } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Controller } from 'react-hook-form'
 import { CAPITAL_ALLOCATION_TYPES, TIMEFRAMES } from '../../constants/strategy-form.defaults'
@@ -10,8 +15,6 @@ import type { StrategyControl, StrategySetValue, StrategyWatch } from '../../typ
 import IndicatorsSection from './IndicatorsSection'
 import RiskManagementSection from './RiskManagementSection'
 import StrategyExitsSection from './StrategyExitsSection'
-import { useQuery } from '@tanstack/react-query'
-import investorService, { type BinanceBalance } from '@/services/investorService'
 
 type Props = {
     control: StrategyControl
@@ -25,10 +28,18 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
     const positionSizingMethod = watch('positionSizingMethod')
     const leverage = watch('leverage')
     const maxTradeDuration = watch('maxTradeDuration')
+    const maxPortfolioExposurePercentage = watch('maxPortfolioExposurePercentage')
 
     const isPercentageAlloc = capitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO'
     const [durationUnit, setDurationUnit] = useState<'SECOND' | 'MINUTE' | 'HOUR'>('SECOND')
     const [durationDraft, setDurationDraft] = useState<string | null>(null)
+    const [portfolioExposureLimitEnabled, setPortfolioExposureLimitEnabled] = useState(
+        maxPortfolioExposurePercentage > 0,
+    )
+    const [exposureData, setExposureData] = useState<{
+        totalExposure: number
+        effectiveLeverage: number
+    } | null>(null)
     const figmaRadioClass =
         'relative size-5 appearance-none rounded-full border border-blue-800 bg-transparent outline-none transition checked:border-blue-800 checked:bg-[radial-gradient(circle,_#6545ee_0_35%,_transparent_36%)] focus-visible:ring-2 focus-visible:ring-blue-800/50 cursor-pointer'
 
@@ -49,6 +60,9 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
     }
 
     const portfolioAllocation = calculatePortfolioAllocation()
+    const portfolioBalance = Number(balanceData?.availableBalance) || 0
+    const exposureLimitPercentage = Number(maxPortfolioExposurePercentage) || 0
+    const maximumAllowedExposure = portfolioBalance * (1 + exposureLimitPercentage / 100)
 
     // Cap allocation value at 100 when switching to percentage
     useEffect(() => {
@@ -56,6 +70,49 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
             setValue('allocationValue', 100, { shouldValidate: true })
         }
     }, [isPercentageAlloc, allocationValue, setValue])
+
+    // Fetch exposure data when allocation parameters change
+    useEffect(() => {
+        const shouldFetchExposure = allocationValue > 0 && leverage > 0
+
+        if (shouldFetchExposure) {
+            const fetchExposureData = async () => {
+                try {
+                    const response = await investorService.getAllocationPreview({
+                        capitalAllocationType,
+                        allocationValue: Number(allocationValue),
+                        leverage: Number(leverage),
+                        maxPortfolioExposurePercentage: portfolioExposureLimitEnabled
+                            ? Number(maxPortfolioExposurePercentage)
+                            : 0,
+                    })
+                    setExposureData({
+                        totalExposure: response.projectedEntryNotional,
+                        effectiveLeverage: leverage,
+                    })
+                } catch (error) {
+                    console.error('Failed to fetch allocation data:', error)
+                    // Fallback to mock calculation if API fails
+                    const baseAmount = portfolioAllocation
+                    const totalExposure = baseAmount * leverage
+                    setExposureData({
+                        totalExposure,
+                        effectiveLeverage: leverage,
+                    })
+                }
+            }
+            fetchExposureData()
+        } else {
+            setExposureData(null)
+        }
+    }, [
+        capitalAllocationType,
+        allocationValue,
+        leverage,
+        portfolioAllocation,
+        portfolioExposureLimitEnabled,
+        maxPortfolioExposurePercentage,
+    ])
 
     const getDurationMultiplier = (unit: 'SECOND' | 'MINUTE' | 'HOUR') => {
         if (unit === 'MINUTE') return 60
@@ -71,13 +128,13 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
 
     return (
         <div className="grid grid-cols-1 gap-5 rounded-lg bg-white/5 p-4 sm:p-6 lg:grid-cols-2">
-            <div className="lg:col-span-2 space-y-4">
+            <div className="space-y-4 lg:col-span-2">
                 <h2 className="text-xl font-semibold text-neutral-50">Identity & scope</h2>
                 <Separator />
             </div>
 
             {/* Row 1: Name, Symbol, Timeframe */}
-            <div className="lg:col-span-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
                 <div className="sm:col-span-2">
                     <InputField
                         name="name"
@@ -94,7 +151,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                 </div>
 
                 {/* Binance FAPI searchable symbol dropdown */}
-                <SymbolSearchSelect label="Symbol" name="symbol" control={control} required />
+                <SymbolSearchSelect label="Trading Pair" name="symbols" control={control} required />
 
                 <FormSelect label="Timeframe" name="timeframe" control={control} options={TIMEFRAMES} required />
             </div>
@@ -133,12 +190,10 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                     }}
                                 />
                                 <p className="text-sm font-medium text-neutral-300">
-                                    Portfolio Allocation: 
+                                    Portfolio Allocation:
                                     <span className="ml-2">
                                         {isPercentageAlloc && !balanceData ? (
-                                            <span className="text-neutral-400 text-xs">
-                                                (Fetching balance...)
-                                            </span>
+                                            <span className="text-neutral-400">Percentage of total balance</span>
                                         ) : isPercentageAlloc ? (
                                             `${allocationValue}% of total portfolio ($${portfolioAllocation.toFixed(2)})`
                                         ) : (
@@ -188,6 +243,152 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                     Stepper Input: <span className="ml-2">0 - 125X</span>
                                 </p>
                             </div>
+
+                            {/* Max Portfolio Exposure Percentage */}
+                            {isPercentageAlloc && (
+                                <div className="space-y-3">
+                                    <Separator />
+
+                                    {/* Portfolio Exposure Limit Toggle */}
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-base font-medium text-neutral-50">
+                                            Portfolio Exposure Limit
+                                        </label>
+                                        <label className="relative inline-flex cursor-pointer items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={portfolioExposureLimitEnabled}
+                                                onChange={(e) => {
+                                                    const isEnabled = e.target.checked
+                                                    setPortfolioExposureLimitEnabled(isEnabled)
+                                                    if (!isEnabled) {
+                                                        setValue('maxPortfolioExposurePercentage', 0, {
+                                                            shouldValidate: false,
+                                                        })
+                                                    } else {
+                                                        setValue('maxPortfolioExposurePercentage', 10, {
+                                                            shouldValidate: true,
+                                                        })
+                                                    }
+                                                }}
+                                                className="peer sr-only"
+                                            />
+                                            <div
+                                                className={cn(
+                                                    'relative h-5 w-9 rounded-full transition-all duration-300',
+                                                    portfolioExposureLimitEnabled ? 'bg-blue-700' : 'bg-neutral-600',
+                                                )}
+                                            >
+                                                <div
+                                                    className={cn(
+                                                        'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-all duration-300',
+                                                        portfolioExposureLimitEnabled
+                                                            ? 'translate-x-4'
+                                                            : 'translate-x-0',
+                                                    )}
+                                                />
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {portfolioExposureLimitEnabled && (
+                                        <>
+                                            <div className="space-y-2 rounded-lg bg-neutral-900 p-4">
+                                                <Controller
+                                                    name="maxPortfolioExposurePercentage"
+                                                    control={control}
+                                                    rules={{
+                                                        required: 'Max portfolio exposure is required',
+                                                        min: { value: 0.01, message: 'Must be greater than 0' },
+                                                        max: { value: 300, message: 'Maximum is 300%' },
+                                                    }}
+                                                    render={({ field, fieldState }) => (
+                                                        <div className="space-y-2">
+                                                            <label className="text-base leading-[21px] font-normal text-neutral-50">
+                                                                Max Exposure *
+                                                            </label>
+                                                            <div className="flex h-12 items-center justify-between rounded-lg bg-white/10 px-3 py-2">
+                                                                <div className="flex items-center gap-3">
+                                                                    <CirclePercent
+                                                                        size={20}
+                                                                        className="text-neutral-300"
+                                                                    />
+                                                                    <input
+                                                                        type="number"
+                                                                        min={0.01}
+                                                                        max={300}
+                                                                        step={0.01}
+                                                                        autoComplete="off"
+                                                                        value={field.value ?? ''}
+                                                                        onBlur={field.onBlur}
+                                                                        onChange={(e) => {
+                                                                            const nextValue = Number(e.target.value)
+                                                                            field.onChange(
+                                                                                Number.isNaN(nextValue) ? 0 : nextValue,
+                                                                            )
+                                                                        }}
+                                                                        placeholder="e.g., 10"
+                                                                        className="w-full border-none bg-transparent text-base leading-[21px] font-normal text-neutral-300 outline-none"
+                                                                    />
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => field.onChange(300)}
+                                                                    className="text-base leading-[21px] font-semibold text-blue-500"
+                                                                >
+                                                                    Max
+                                                                </button>
+                                                            </div>
+                                                            {fieldState.error && (
+                                                                <p className="text-xs leading-tight text-red-500">
+                                                                    {fieldState.error.message}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                />
+                                                <p className="text-sm font-medium text-neutral-300">
+                                                    Stepper Input: 0 - 300%
+                                                </p>
+                                            </div>
+
+                                            {/* Calculated Exposure Display */}
+                                            {exposureData && (
+                                                <div className="space-y-3 rounded-lg bg-white/8 px-3 py-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <InfoCircle size="16" className="shrink-0 text-blue-700" />
+                                                        <p className="text-sm leading-[18px] text-neutral-200">
+                                                            Total exposure includes all active trades across all
+                                                            selected assets and leverage
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="space-y-2 text-base leading-[21px]">
+                                                        <p className="font-semibold text-neutral-50">
+                                                            Portfolio Balance: ${' '}
+                                                            {portfolioBalance.toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </p>
+                                                        <p className="text-neutral-400">
+                                                            Max Exposure: {exposureLimitPercentage}%
+                                                            <br />
+                                                            Maximum Allowed Exposure: ${' '}
+                                                            {maximumAllowedExposure.toLocaleString('en-US', {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+
+                                    <Separator />
+                                </div>
+                            )}
 
                             {/* Position Sizing Method - Radio Buttons */}
                             <div className="space-y-4">

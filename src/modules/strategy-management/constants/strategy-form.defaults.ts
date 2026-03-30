@@ -2,7 +2,7 @@ import type { StrategyFormData } from '../types/strategy-form.types'
 
 export const STRATEGY_FORM_DEFAULTS: StrategyFormData = {
     name: '',
-    symbol: 'BTCUSDT',
+    symbols: [],
     timeframe: '15m',
     tradeDirection: 'BOTH',
     candleType: 'STANDARD',
@@ -11,6 +11,7 @@ export const STRATEGY_FORM_DEFAULTS: StrategyFormData = {
     allocationValue: 1000,
     leverage: 5,
     maxOpenPositions: 1,
+    maxPortfolioExposurePercentage: 100,
     maxTradeDuration: 0,
     positionSizingMethod: 'PERCENTAGE',
     fixedTradeAmount: 100,

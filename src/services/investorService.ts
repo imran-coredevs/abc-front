@@ -60,6 +60,31 @@ export interface FeeTierResponse {
   feeTier: FeeTier;
 }
 
+export interface AllocationPreviewRequest {
+  capitalAllocationType: 'PERCENTAGE_OF_PORTFOLIO' | 'FIXED_AMOUNT';
+  allocationValue: number;
+  leverage?: number;
+  maxPortfolioExposurePercentage?: number;
+}
+
+export interface AllocationPreviewResponse {
+  capitalAllocationType: 'PERCENTAGE_OF_PORTFOLIO' | 'FIXED_AMOUNT';
+  allocationValue: number;
+  leverage: number;
+  maxPortfolioExposurePercentage: number;
+  exposureLimitType: 'unlimited' | 'limited';
+  portfolioBalance: number;
+  availableBalance: number;
+  balanceSource: 'cache' | 'live';
+  allocatedAmount: number;
+  realTakerFeePercentage: number;
+  realTakerFeeAmount: number;
+  usableAmount: number;
+  projectedEntryNotional: number;
+  maxAllowedExposureAmount: number | null;
+  remainingExposureCapacity: number | null;
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Investor Service
 // ──────────────────────────────────────────────────────────────────────────────
@@ -137,6 +162,20 @@ export const deleteAccount = async (): Promise<{ message: string }> => {
   return response.data;
 };
 
+/**
+ * Get allocation preview based on capital allocation and leverage
+ * Shows total exposure across all selected symbols
+ */
+export const getAllocationPreview = async (
+  data: AllocationPreviewRequest
+): Promise<AllocationPreviewResponse> => {
+  const response = await api.post<AllocationPreviewResponse>(
+    '/investor/allocation-preview',
+    data
+  );
+  return response.data;
+};
+
 export default {
   getProfile,
   updateProfile,
@@ -146,4 +185,5 @@ export default {
   getBinanceBalance,
   updateFeeTier,
   deleteAccount,
+  getAllocationPreview,
 };

@@ -1,19 +1,6 @@
 import type { ChartConfig } from '@/components/ui/chart'
 import type { BacktestResult, EquityCurvePoint } from './types'
 
-export const TRADING_ASSETS = [
-    'BTCUSDT',
-    'ETHUSDT',
-    'BNBUSDT',
-    'SOLUSDT',
-    'XRPUSDT',
-    'ADAUSDT',
-    'DOGEUSDT',
-    'AVAXUSDT',
-    'MATICUSDT',
-    'LINKUSDT',
-]
-
 export const INDICATOR_LABELS: Record<string, string> = {
     utBot: 'UT Bot',
     superTrend: 'SuperTrend',

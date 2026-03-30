@@ -134,6 +134,7 @@ export interface TradeHistoryFilters {
 
 export interface InstanceDetailResponse {
     data: {
+        maxPortfolioExposurePercentage: number
         _id: string
         name: string
         symbol: string

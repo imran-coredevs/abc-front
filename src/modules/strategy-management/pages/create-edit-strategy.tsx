@@ -83,7 +83,7 @@ export default function CreateEditStrategyPage() {
                 // Map API response to form data
                 const formData: StrategyFormData = {
                     name: instance.name,
-                    symbol: instance.symbol,
+                    symbols: [instance.symbol],
                     timeframe: instance.timeframe,
                     tradeDirection: instance.tradeDirection,
                     candleType: instance.candleType,
@@ -92,6 +92,7 @@ export default function CreateEditStrategyPage() {
                     allocationValue: instance.allocationValue,
                     leverage: instance.leverage,
                     maxOpenPositions: instance.maxOpenPositions,
+                    maxPortfolioExposurePercentage: instance.maxPortfolioExposurePercentage,
                     maxTradeDuration: 0,
                     positionSizingMethod: instance.positionSizingMethod,
                     fixedTradeAmount: instance.fixedTradeAmount || 0,

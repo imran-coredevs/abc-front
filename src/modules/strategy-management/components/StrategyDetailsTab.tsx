@@ -11,13 +11,14 @@ import toast from 'react-hot-toast'
 type StrategyData = {
     name: string
     status: 'LIVE' | 'STOPPED' | 'DRAFT' | 'STARTING' | 'STOPPING' | 'BACKTESTING'
-    symbol: string
+    symbols: string[]
     timeframe: string
     tradeDirection: 'LONG' | 'SHORT' | 'BOTH'
     capitalAllocationType: 'PERCENTAGE_OF_PORTFOLIO' | 'FIXED_AMOUNT'
     allocationValue: number
     leverage: number
     maxOpenPositions: number
+    maxPortfolioExposurePercentage?: number
     positionSizingMethod: 'FIXED' | 'PERCENTAGE'
     fixedTradeAmount?: number
     capitalPercentagePerTrade?: number
@@ -55,9 +56,11 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
 
     const handleToggleStatus = async () => {
         if (!id) return
+        
+        // Disable button immediately to prevent race condition
+        setIsToggling(true)
 
         try {
-            setIsToggling(true)
             if (isLiveStatus(status)) {
                 await instanceService.stopInstance(id, 'User manual stop')
                 toast.success('Strategy stopped successfully')
@@ -95,21 +98,21 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
     }
 
     const directionColor =
-        strategyData.tradeDirection === 'LONG'
+        strategyData?.tradeDirection === 'LONG'
             ? 'text-green-500'
-            : strategyData.tradeDirection === 'SHORT'
+            : strategyData?.tradeDirection === 'SHORT'
               ? 'text-red-500'
               : 'text-violet-500'
 
     const allocationLabel =
-        strategyData.capitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO'
-            ? `${strategyData.allocationValue}%`
-            : `$${strategyData.allocationValue.toLocaleString()}`
+        strategyData?.capitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO'
+            ? `${strategyData?.allocationValue ?? 0}%`
+            : `$${(strategyData?.allocationValue ?? 0).toLocaleString()}`
 
     const positionSizingValue =
-        strategyData.positionSizingMethod === 'FIXED'
-            ? `$${strategyData.fixedTradeAmount ?? '-'}`
-            : `${strategyData.capitalPercentagePerTrade ?? '-'}%`
+        strategyData?.positionSizingMethod === 'FIXED'
+            ? `$${strategyData?.fixedTradeAmount ?? '-'}`
+            : `${strategyData?.capitalPercentagePerTrade ?? '-'}%`
 
     return (
         <div className="relative overflow-hidden">
@@ -120,7 +123,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                 {/* Header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                     <div className="flex flex-wrap items-center gap-2">
-                        <h4 className="text-xl sm:text-2xl font-semibold text-neutral-50">{strategyData.name}</h4>
+                        <h4 className="text-xl sm:text-2xl font-semibold text-neutral-50">{strategyData?.name ?? 'Unnamed Strategy'}</h4>
                         <Badge
                             variant={isLiveStatus(status) ? 'success' : 'outline'}
                             className={`rounded-[40px] bg-neutral-950 px-4 py-1.5 text-xs font-medium capitalize ${
@@ -164,16 +167,23 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                     <Separator />
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         {[
-                            { label: 'Symbol', value: strategyData.symbol, color: 'text-blue-400' },
-                            { label: 'Timeframe', value: strategyData.timeframe },
-                            { label: 'Trade Direction', value: strategyData.tradeDirection, color: directionColor },
-                            { label: 'Capital Allocation', value: `${strategyData.capitalAllocationType} — ${allocationLabel}` },
-                            { label: 'Leverage', value: `${strategyData.leverage}x` },
-                            { label: 'Max Open Positions', value: String(strategyData.maxOpenPositions) },
-                            { label: 'Position Sizing', value: `${strategyData.positionSizingMethod} — ${positionSizingValue}` },
-                            { label: 'Candle Type', value: strategyData.candleType },
-                            { label: 'Margin Type', value: strategyData.marginType },
-                            { label: 'Min Signal Agreement', value: String(strategyData.minSignalAgreement) },
+                            { label: 'Trading Pairs', value: Array.isArray(strategyData?.symbols) ? strategyData.symbols.join(', ') : (strategyData?.symbols ?? 'N/A'), color: 'text-blue-400' },
+                            { label: 'Timeframe', value: strategyData?.timeframe ?? 'N/A' },
+                            { label: 'Trade Direction', value: strategyData?.tradeDirection ?? 'N/A', color: directionColor },
+                            { label: 'Capital Allocation', value: `${strategyData?.capitalAllocationType ?? 'N/A'} — ${allocationLabel}` },
+                            { label: 'Leverage', value: `${strategyData?.leverage ?? 1}x` },
+                            { label: 'Max Open Positions', value: String(strategyData?.maxOpenPositions ?? 0) },
+                            { 
+                                label: 'Max Portfolio Exposure', 
+                                value: strategyData?.maxPortfolioExposurePercentage === 0 || strategyData?.maxPortfolioExposurePercentage == null
+                                    ? 'Unlimited' 
+                                    : `${strategyData.maxPortfolioExposurePercentage}%`,
+                                color: strategyData?.maxPortfolioExposurePercentage === 0 ? 'text-amber-500' : 'text-neutral-50'
+                            },
+                            { label: 'Position Sizing', value: `${strategyData?.positionSizingMethod ?? 'N/A'} — ${positionSizingValue}` },
+                            { label: 'Candle Type', value: strategyData?.candleType ?? 'N/A' },
+                            { label: 'Margin Type', value: strategyData?.marginType ?? 'N/A' },
+                            { label: 'Min Signal Agreement', value: String(strategyData?.minSignalAgreement ?? 0) },
                         ].map(({ label, value, color }) => (
                             <div key={label} className="flex gap-2 text-sm">
                                 <span className="text-neutral-400">{label}:</span>
@@ -186,43 +196,43 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                 <Separator />
 
                 {/* Risk Management */}
-                {strategyData.risk && (
+                {strategyData?.risk && Object.keys(strategyData.risk).length > 0 && (
                     <div className="space-y-4">
                         <h3 className="text-lg sm:text-xl font-semibold text-neutral-50">Risk Management</h3>
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
-                            {strategyData.risk.stopLoss && (
+                            {strategyData.risk?.stopLoss && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <h4 className="text-sm sm:text-base font-semibold text-neutral-50">Stop Loss</h4>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
-                                        <div className="flex gap-2"><span className="text-neutral-400">Type:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.type}</span></div>
-                                        {strategyData.risk.stopLoss.type === 'FIXED_PERCENTAGE' && strategyData.risk.stopLoss.fixedPercentage != null && (
+                                        <div className="flex gap-2"><span className="text-neutral-400">Type:</span><span className="font-semibold text-neutral-50">{strategyData.risk?.stopLoss?.type ?? 'N/A'}</span></div>
+                                        {strategyData.risk?.stopLoss?.type === 'FIXED_PERCENTAGE' && strategyData.risk.stopLoss.fixedPercentage != null && (
                                             <div className="flex gap-2"><span className="text-neutral-400">Fixed %:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.fixedPercentage}%</span></div>
                                         )}
-                                        {strategyData.risk.stopLoss.type === 'STRUCTURAL' && strategyData.risk.stopLoss.structuralLookback != null && (
+                                        {strategyData.risk?.stopLoss?.type === 'STRUCTURAL' && strategyData.risk.stopLoss.structuralLookback != null && (
                                             <div className="flex gap-2"><span className="text-neutral-400">Lookback:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.structuralLookback} candles</span></div>
                                         )}
                                     </div>
                                 </div>
                             )}
 
-                            {strategyData.risk.takeProfit && (
+                            {strategyData.risk?.takeProfit && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <h4 className="text-sm sm:text-base font-semibold text-neutral-50">Take Profit</h4>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
-                                        <div className="flex gap-2"><span className="text-neutral-400">Type:</span><span className="font-semibold text-neutral-50">{strategyData.risk.takeProfit.type}</span></div>
-                                        {strategyData.risk.takeProfit.type === 'FIXED_PERCENTAGE' && strategyData.risk.takeProfit.fixedPercentage != null && (
+                                        <div className="flex gap-2"><span className="text-neutral-400">Type:</span><span className="font-semibold text-neutral-50">{strategyData.risk?.takeProfit?.type ?? 'N/A'}</span></div>
+                                        {strategyData.risk?.takeProfit?.type === 'FIXED_PERCENTAGE' && strategyData.risk.takeProfit.fixedPercentage != null && (
                                             <div className="flex gap-2"><span className="text-neutral-400">Fixed %:</span><span className="font-semibold text-neutral-50">{strategyData.risk.takeProfit.fixedPercentage}%</span></div>
                                         )}
-                                        {strategyData.risk.takeProfit.type === 'RISK_REWARD' && strategyData.risk.takeProfit.riskRewardRatio != null && (
+                                        {strategyData.risk?.takeProfit?.type === 'RISK_REWARD' && strategyData.risk.takeProfit.riskRewardRatio != null && (
                                             <div className="flex gap-2"><span className="text-neutral-400">R:R Ratio:</span><span className="font-semibold text-neutral-50">{strategyData.risk.takeProfit.riskRewardRatio}</span></div>
                                         )}
-                                        {strategyData.risk.takeProfit.type === 'MULTI_LEVEL' && strategyData.risk.takeProfit.partialLevels && (
+                                        {strategyData.risk?.takeProfit?.type === 'MULTI_LEVEL' && strategyData.risk.takeProfit.partialLevels && Array.isArray(strategyData.risk.takeProfit.partialLevels) && (
                                             <div className="space-y-1">
                                                 {strategyData.risk.takeProfit.partialLevels.map((lvl, i) => (
-                                                    <div key={i} className="flex gap-2"><span className="text-neutral-400">Level {i + 1}:</span><span className="font-semibold text-neutral-50">Trigger {lvl.triggerPercentage}% / Close {lvl.closePercentage}%</span></div>
+                                                    <div key={i} className="flex gap-2"><span className="text-neutral-400">Level {i + 1}:</span><span className="font-semibold text-neutral-50">Trigger {lvl?.triggerPercentage ?? 0}% / Close {lvl?.closePercentage ?? 0}%</span></div>
                                                 ))}
                                             </div>
                                         )}
@@ -230,26 +240,26 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                                 </div>
                             )}
 
-                            {strategyData.risk.trailingStop && (
+                            {strategyData.risk?.trailingStop && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <h4 className="text-sm sm:text-base font-semibold text-neutral-50">Trailing Stop</h4>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
-                                        <div className="flex gap-2"><span className="text-neutral-400">Enabled:</span><span className={`font-semibold ${strategyData.risk.trailingStop.enabled ? 'text-green-500' : 'text-red-500'}`}>{strategyData.risk.trailingStop.enabled ? 'Yes' : 'No'}</span></div>
-                                        {strategyData.risk.trailingStop.enabled && strategyData.risk.trailingStop.trailingPercentage != null && (
+                                        <div className="flex gap-2"><span className="text-neutral-400">Enabled:</span><span className={`font-semibold ${strategyData.risk?.trailingStop?.enabled ? 'text-green-500' : 'text-red-500'}`}>{strategyData.risk?.trailingStop?.enabled ? 'Yes' : 'No'}</span></div>
+                                        {strategyData.risk?.trailingStop?.enabled && strategyData.risk.trailingStop.trailingPercentage != null && (
                                             <div className="flex gap-2"><span className="text-neutral-400">Trailing %:</span><span className="font-semibold text-neutral-50">{strategyData.risk.trailingStop.trailingPercentage}%</span></div>
                                         )}
                                     </div>
                                 </div>
                             )}
 
-                            {strategyData.risk.breakEven && (
+                            {strategyData.risk?.breakEven && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <h4 className="text-sm sm:text-base font-semibold text-neutral-50">Break-Even</h4>
                                     <Separator />
                                     <div className="space-y-1 text-sm">
-                                        <div className="flex gap-2"><span className="text-neutral-400">Enabled:</span><span className={`font-semibold ${strategyData.risk.breakEven.enabled ? 'text-green-500' : 'text-red-500'}`}>{strategyData.risk.breakEven.enabled ? 'Yes' : 'No'}</span></div>
-                                        {strategyData.risk.breakEven.enabled && (
+                                        <div className="flex gap-2"><span className="text-neutral-400">Enabled:</span><span className={`font-semibold ${strategyData.risk?.breakEven?.enabled ? 'text-green-500' : 'text-red-500'}`}>{strategyData.risk?.breakEven?.enabled ? 'Yes' : 'No'}</span></div>
+                                        {strategyData.risk?.breakEven?.enabled && (
                                             <>
                                                 {strategyData.risk.breakEven.triggerPercentage != null && (
                                                     <div className="flex gap-2"><span className="text-neutral-400">Trigger:</span><span className="font-semibold text-neutral-50">{strategyData.risk.breakEven.triggerPercentage}%</span></div>
@@ -269,11 +279,11 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                 <Separator />
 
                 {/* Indicators */}
-                {strategyData.indicators && (
+                {strategyData?.indicators && Object.keys(strategyData.indicators).length > 0 && (
                     <div className="space-y-4">
                         <h3 className="text-lg sm:text-xl font-semibold text-neutral-50">Indicators</h3>
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                            {strategyData.indicators.rsi && strategyData.indicators.rsi.role !== 'disabled' && (
+                            {strategyData.indicators?.rsi && strategyData.indicators.rsi.role !== 'disabled' && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">RSI</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.rsi.role}</Badge></div>
                                     <Separator />
@@ -287,7 +297,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                                 </div>
                             )}
 
-                            {strategyData.indicators.utBot && strategyData.indicators.utBot.role !== 'disabled' && (
+                            {strategyData.indicators?.utBot && strategyData.indicators.utBot.role !== 'disabled' && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">UT Bot</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.utBot.role}</Badge></div>
                                     <Separator />
@@ -298,7 +308,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                                 </div>
                             )}
 
-                            {strategyData.indicators.superTrend && strategyData.indicators.superTrend.role !== 'disabled' && (
+                            {strategyData.indicators?.superTrend && strategyData.indicators.superTrend.role !== 'disabled' && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">Supertrend</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.superTrend.role}</Badge></div>
                                     <Separator />
@@ -310,7 +320,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                                 </div>
                             )}
 
-                            {strategyData.indicators.hullSuite && strategyData.indicators.hullSuite.role !== 'disabled' && (
+                            {strategyData.indicators?.hullSuite && strategyData.indicators.hullSuite.role !== 'disabled' && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">Hull Suite</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.hullSuite.role}</Badge></div>
                                     <Separator />
@@ -322,7 +332,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                                 </div>
                             )}
 
-                            {strategyData.indicators.adx && strategyData.indicators.adx.role !== 'disabled' && (
+                            {strategyData.indicators?.adx && strategyData.indicators.adx.role !== 'disabled' && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">ADX</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.adx.role}</Badge></div>
                                     <Separator />
@@ -335,7 +345,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                                 </div>
                             )}
 
-                            {strategyData.indicators.squeezeMomentum && strategyData.indicators.squeezeMomentum.role !== 'disabled' && (
+                            {strategyData.indicators?.squeezeMomentum && strategyData.indicators.squeezeMomentum.role !== 'disabled' && (
                                 <div className="space-y-3 rounded-lg bg-white/5 p-3 sm:p-5">
                                     <div className="flex items-center justify-between"><h4 className="text-sm sm:text-base font-semibold text-neutral-50">Squeeze Momentum</h4><Badge variant="outline" className="text-xs text-blue-400">{strategyData.indicators.squeezeMomentum.role}</Badge></div>
                                     <Separator />
@@ -352,23 +362,23 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                 )}
 
                 {/* Strategy Exits */}
-                {strategyData.strategyExits && (
+                {strategyData?.strategyExits && Object.keys(strategyData.strategyExits).length > 0 && (
                     <>
                         <Separator />
                         <div className="space-y-4">
                             <h3 className="text-lg sm:text-xl font-semibold text-neutral-50">Strategy Exits</h3>
                             <div className="grid grid-cols-1 gap-3 rounded-lg bg-white/5 p-5 sm:grid-cols-2">
                                 {[
-                                    { label: 'Exit on Opposite Signal', value: strategyData.strategyExits.onOppositeSignal },
-                                    { label: 'Exit on Trend Change', value: strategyData.strategyExits.onTrendChange },
-                                    { label: 'Allow Re-Entry on Active Signal', value: strategyData.strategyExits.allowReEntryOnActiveSignal },
+                                    { label: 'Exit on Opposite Signal', value: strategyData.strategyExits?.onOppositeSignal },
+                                    { label: 'Exit on Trend Change', value: strategyData.strategyExits?.onTrendChange },
+                                    { label: 'Allow Re-Entry on Active Signal', value: strategyData.strategyExits?.allowReEntryOnActiveSignal },
                                 ].map(({ label, value }) => (
                                     <div key={label} className="flex gap-2 text-sm">
                                         <span className="text-neutral-400">{label}:</span>
                                         <span className={`font-semibold ${value ? 'text-green-500' : 'text-red-500'}`}>{value ? 'Yes' : 'No'}</span>
                                     </div>
                                 ))}
-                                {strategyData.strategyExits.allowReEntryOnActiveSignal && strategyData.strategyExits.reEntryCooldownBars != null && (
+                                {strategyData.strategyExits?.allowReEntryOnActiveSignal && strategyData.strategyExits.reEntryCooldownBars != null && (
                                     <div className="flex gap-2 text-sm">
                                         <span className="text-neutral-400">Re-Entry Cooldown:</span>
                                         <span className="font-semibold text-neutral-50">{strategyData.strategyExits.reEntryCooldownBars} bars</span>

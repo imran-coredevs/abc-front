@@ -1,9 +1,8 @@
 import Loader from '@/components/ui/loader'
 import formatAmount from '@/lib/formatAmount'
-
-const imgLine = 'https://www.figma.com/api/mcp/asset/f1f11500-f783-4d86-9a73-6657b9f42fa5'
-const imgShadow = 'https://www.figma.com/api/mcp/asset/8b3b4703-fcc8-40a0-8441-238a60d6fb9f'
-const imgIncrease = 'https://www.figma.com/api/mcp/asset/1ddd1c09-5428-4c96-aad0-6dd9a622acd7'
+import imgLine from '@/assets/images/stats-card/line.svg'
+import imgShadow from '@/assets/images/stats-card/shadow.svg'
+import imgIncrease from '@/assets/images/stats-card/increase.svg'
 
 type CardVariant = 'progress' | 'increase' | 'simple'
 

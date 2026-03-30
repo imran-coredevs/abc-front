@@ -9,6 +9,7 @@ export type StrategyInfo = {
         stopLoss?: { type: string; fixedPercentage?: number; structuralLookback?: number }
         takeProfit?: { type: string; fixedPercentage?: number; riskRewardRatio?: number }
     }
+    symbols?: string[] | string
 }
 
 export type BacktestResult = {

@@ -20,7 +20,7 @@ export type PartialTpLevel = { triggerPercentage: number; closePercentage: numbe
 
 export type StrategyFormData = {
     name: string
-    symbol: string
+    symbols: string[]
     timeframe: string
     tradeDirection: TradeDirection
     candleType: CandleType
@@ -29,6 +29,7 @@ export type StrategyFormData = {
     allocationValue: number
     leverage: number
     maxOpenPositions: number
+    maxPortfolioExposurePercentage: number
     maxTradeDuration: number
     positionSizingMethod: PositionSizingMethod
     fixedTradeAmount: number

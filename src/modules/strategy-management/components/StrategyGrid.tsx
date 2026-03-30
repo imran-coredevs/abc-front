@@ -4,11 +4,6 @@ import { instanceService, InstanceOverview } from '@/services/instanceService'
 import toast from 'react-hot-toast'
 import StrategyCard from './StrategyCard'
 
-function formatSymbol(symbol: string): string {
-    if (symbol.endsWith('USDT')) return `${symbol.slice(0, -4)}/USDT`
-    if (symbol.endsWith('BUSD')) return `${symbol.slice(0, -4)}/BUSD`
-    return symbol
-}
 
 function mapDirection(dir: 'LONG' | 'SHORT' | 'BOTH'): 'Long' | 'Short' | 'Both' {
     if (dir === 'LONG') return 'Long'
@@ -184,7 +179,7 @@ export default function StrategyGrid() {
                     apiKey="binance-api-key"
                     strategyName={strategy.strategyName}
                     status={mapStatus(strategy.status)}
-                    pair={formatSymbol(strategy.tradingPair)}
+                    pair={strategy?.symbols && strategy.symbols.length > 0 ? (strategy.symbols) : []}
                     direction={mapDirection(strategy.direction)}
                     allocation={strategy.allocatedCapital}
                     onToggleStatus={() => handleToggleStatus(strategy.id, strategy.status)}

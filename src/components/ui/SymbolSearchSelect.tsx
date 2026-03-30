@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { ChevronDown, Search } from 'lucide-react'
+import { ChevronDown, Search, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Controller, type Control, type FieldValues, type Path, type RegisterOptions } from 'react-hook-form'
 
@@ -104,92 +104,136 @@ export default function SymbolSearchSelect<T extends FieldValues>({ label, name,
         <Controller
             name={name}
             control={control}
-            rules={required ? { required: 'Symbol is required', ...rules } : rules}
-            render={({ field, fieldState }) => (
-                <div ref={containerRef} className="relative flex flex-col gap-2">
-                    <label className="font-medium text-neutral-50">
-                        {label}
-                        {required && <span className="ml-0.5 text-neutral-200">*</span>}
-                    </label>
+            rules={required ? { required: 'At least one symbol is required', ...rules } : rules}
+            render={({ field, fieldState }) => {
+                const selectedSymbols = Array.isArray(field.value) ? field.value : []
 
-                    {/* Trigger button */}
-                    <button
-                        type="button"
-                        onClick={() => setOpen((o) => !o)}
-                        className={cn(
-                            'flex h-[52px] w-full items-center justify-between rounded-lg border border-transparent bg-white/10 px-4 text-left transition-colors focus:outline-none focus:border-blue-700',
-                            fieldState.error && 'border-red-500',
-                        )}
-                    >
-                        <span className={field.value ? 'text-neutral-50' : 'text-neutral-500'}>
-                            {loading ? 'Loading futures symbols…' : (field.value || 'Search futures symbol…')}
-                        </span>
-                        <ChevronDown size={16} className={cn('text-neutral-400 transition-transform', open && 'rotate-180')} />
-                    </button>
+                const handleSelectSymbol = (symbol: string) => {
+                    const updated = selectedSymbols.includes(symbol)
+                        ? selectedSymbols.filter((s) => s !== symbol)
+                        : [...selectedSymbols, symbol]
+                    field.onChange(updated)
+                }
 
-                    {/* Dropdown */}
-                    {open && (
-                        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-lg border border-white/10 bg-neutral-900 shadow-xl">
-                            {/* Search input */}
-                            <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
-                                <Search size={14} className="shrink-0 text-neutral-400" />
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    placeholder="Search e.g. BTC, ETH, SOL…"
-                                    autoComplete="off"
-                                    className="w-full bg-transparent text-sm text-neutral-100 placeholder-neutral-500 outline-none"
-                                />
-                                {loading && (
-                                    <span className="shrink-0 text-xs text-neutral-500">Loading…</span>
-                                )}
-                                {!loading && !error && (
-                                    <span className="shrink-0 text-xs text-neutral-600">
-                                        {filtered.length} of {symbols.length}
-                                    </span>
-                                )}
-                            </div>
+                const handleRemoveSymbol = (symbol: string) => {
+                    field.onChange(selectedSymbols.filter((s) => s !== symbol))
+                }
 
-                            {/* Symbol list */}
-                            <ul className="max-h-60 overflow-y-auto py-1">
-                                {loading && (
-                                    <li className="px-3 py-2 text-sm text-neutral-500">Fetching from Binance Futures API…</li>
-                                )}
-                                {error && !loading && (
-                                    <li className="px-3 py-2 text-sm text-red-400">
-                                        Could not load symbols. Check your connection.
-                                    </li>
-                                )}
-                                {!loading && !error && filtered.length === 0 && (
-                                    <li className="px-3 py-2 text-sm text-neutral-500">No matching futures symbol.</li>
-                                )}
-                                {filtered.map(({ symbol, base }) => (
-                                    <li
+                return (
+                    <div ref={containerRef} className="relative flex flex-col gap-2">
+                        <label className="font-medium text-neutral-50">
+                            {label}
+                            {required && <span className="ml-0.5 text-neutral-200">*</span>}
+                        </label>
+
+                        {/* Trigger button */}
+                        <button
+                            type="button"
+                            onClick={() => setOpen((o) => !o)}
+                            className={cn(
+                                'flex h-[52px] w-full items-center justify-between rounded-lg border border-transparent bg-white/10 px-4 text-left transition-colors focus:border-blue-700 focus:outline-none',
+                                fieldState.error && 'border-red-500',
+                            )}
+                        >
+                            <span className={selectedSymbols.length > 0 ? 'text-neutral-50' : 'text-neutral-500'}>
+                                {loading
+                                    ? 'Loading futures symbols…'
+                                    : selectedSymbols.length > 0
+                                      ? `${selectedSymbols.length} trading pair${selectedSymbols.length !== 1 ? 's' : ''} selected`
+                                      : 'Search futures symbol…'}
+                            </span>
+                            <ChevronDown
+                                size={16}
+                                className={cn('shrink-0 text-neutral-400 transition-transform', open && 'rotate-180')}
+                            />
+                        </button>
+
+                        {/* Selected symbols display */}
+                        {selectedSymbols.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {selectedSymbols.map((symbol) => (
+                                    <div
                                         key={symbol}
-                                        onClick={() => {
-                                            field.onChange(symbol)
-                                            setOpen(false)
-                                        }}
-                                        className={cn(
-                                            'flex cursor-pointer items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-white/10',
-                                            field.value === symbol ? 'bg-blue-700/30 text-blue-300' : 'text-neutral-200',
-                                        )}
+                                        className="flex items-center gap-2 rounded-full border border-white/30 bg-neutral-900 px-3 py-1.5 text-sm"
                                     >
                                         <span className="font-medium">{symbol}</span>
-                                        <span className="text-xs text-neutral-500">{base} · USDT Perp</span>
-                                    </li>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveSymbol(symbol)}
+                                            className="inline-flex shrink-0 transition-colors text-white hover:text-blue-200"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
                                 ))}
-                            </ul>
-                        </div>
-                    )}
+                            </div>
+                        )}
 
-                    {fieldState.error && (
-                        <p className="text-xs leading-tight text-red-500">{fieldState.error.message}</p>
-                    )}
-                </div>
-            )}
+                        {/* Dropdown */}
+                        {open && (
+                            <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-lg border border-white/10 bg-neutral-900 shadow-xl">
+                                {/* Search input */}
+                                <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
+                                    <Search size={14} className="shrink-0 text-neutral-400" />
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={query}
+                                        onChange={(e) => setQuery(e.target.value)}
+                                        placeholder="Search e.g. BTC, ETH, SOL…"
+                                        autoComplete="off"
+                                        className="w-full bg-transparent text-sm text-neutral-100 placeholder-neutral-500 outline-none"
+                                    />
+                                    {loading && <span className="shrink-0 text-xs text-neutral-500">Loading…</span>}
+                                    {!loading && !error && (
+                                        <span className="shrink-0 text-xs text-neutral-600">
+                                            {filtered.length} of {symbols.length}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Symbol list */}
+                                <ul className="max-h-60 overflow-y-auto py-1">
+                                    {loading && (
+                                        <li className="px-3 py-2 text-sm text-neutral-500">
+                                            Fetching from Binance Futures API…
+                                        </li>
+                                    )}
+                                    {error && !loading && (
+                                        <li className="px-3 py-2 text-sm text-red-400">
+                                            Could not load symbols. Check your connection.
+                                        </li>
+                                    )}
+                                    {!loading && !error && filtered.length === 0 && (
+                                        <li className="px-3 py-2 text-sm text-neutral-500">
+                                            No matching futures symbol.
+                                        </li>
+                                    )}
+                                    {filtered.map(({ symbol, base }) => (
+                                        <li
+                                            key={symbol}
+                                            onClick={() => handleSelectSymbol(symbol)}
+                                            className={cn(
+                                                'flex cursor-pointer items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-white/10',
+                                                selectedSymbols.includes(symbol)
+                                                    ? 'bg-blue-700/30 text-blue-300'
+                                                    : 'text-neutral-200',
+                                            )}
+                                        >
+                                            <span className="font-medium">{symbol}</span>
+                                            <span className="text-xs text-neutral-500">{base} · USDT Perp</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {fieldState.error && (
+                            <p className="text-xs leading-tight text-red-500">{fieldState.error.message}</p>
+                        )}
+                    </div>
+                )
+            }}
         />
     )
 }

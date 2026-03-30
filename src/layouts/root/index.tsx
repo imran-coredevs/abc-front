@@ -1,8 +1,11 @@
 import BGCircleShadow from '@/assets/images/BGCircleShadow.png'
 import TopBar from '@/components/shared/TopBar'
 import { Outlet } from 'react-router'
+import { useAuthExpired } from '@/hooks/useAuthExpired'
 
 export default function RootLayout() {
+    useAuthExpired()
+
     return (
         <main className="custom-scrollbar min-h-screen max-w-full overflow-hidden">
             <div className="flex flex-1 flex-col relative">

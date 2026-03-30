@@ -24,6 +24,16 @@ export default function BacktestResultsSection({
     const chartMin = Math.max(0, minEquity - padding)
     const chartMax = maxEquity + padding
 
+    // Calculate optimal X-axis interval based on data points
+    const calculateTickInterval = (dataLength: number): number => {
+        if (dataLength <= 10) return 0 // Show all ticks
+        if (dataLength <= 30) return Math.floor(dataLength / 6) // ~6 labels
+        if (dataLength <= 100) return Math.floor(dataLength / 8) // ~8 labels
+        return Math.floor(dataLength / 10) // ~10 labels max
+    }
+
+    const tickInterval = calculateTickInterval(equityCurve.length)
+
     // Format Y-axis values dynamically
     const formatYAxis = (value: number) => {
         if (value >= 1000) {
@@ -144,7 +154,11 @@ export default function BacktestResultsSection({
 
                     <div className="w-full overflow-hidden">
                         <ChartContainer config={EQUITY_CHART_CONFIG} className="h-56 sm:h-64 w-full">
-                            <AreaChart data={equityCurve} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                            <AreaChart 
+                                data={equityCurve} 
+                                margin={{ top: 5, right: 5, left: 0, bottom: 0 }}
+                                syncMethod="index"
+                            >
                                 <defs>
                                     <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#6545ee" stopOpacity={0.45} />
@@ -156,7 +170,8 @@ export default function BacktestResultsSection({
                                     tick={{ fill: '#f6f7f9', fontSize: 10 }}
                                     axisLine={false}
                                     tickLine={false}
-                                    interval="preserveStartEnd"
+                                    interval={tickInterval}
+                                    minTickGap={30}
                                 />
                                 <YAxis
                                     tick={{ fill: '#f6f7f9', fontSize: 10 }}
@@ -169,6 +184,9 @@ export default function BacktestResultsSection({
                                 <ChartTooltip
                                     content={<ChartTooltipContent />}
                                     formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Equity']}
+                                    animationDuration={0}
+                                    isAnimationActive={false}
+                                    cursor={{ stroke: '#6545ee', strokeWidth: 1, strokeDasharray: '5 5' }}
                                 />
                                 <Area
                                     type="monotone"
@@ -177,7 +195,8 @@ export default function BacktestResultsSection({
                                     strokeWidth={3}
                                     fill="url(#equityGradient)"
                                     dot={false}
-                                    activeDot={{ r: 4, fill: '#6545ee' }}
+                                    activeDot={{ r: 4, fill: '#6545ee', strokeWidth: 0 }}
+                                    isAnimationActive={false}
                                 />
                             </AreaChart>
                         </ChartContainer>
