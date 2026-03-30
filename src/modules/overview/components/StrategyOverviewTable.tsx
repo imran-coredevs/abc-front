@@ -90,7 +90,7 @@ const columns: TableColumn<InstanceOverview>[] = [
         key: 'allocatedCapital',
         type: 'dynamic',
         render: (row) => (
-            <span className="text-sm font-normal text-neutral-50">${row.allocatedCapital.toLocaleString()}</span>
+            <span className="text-sm font-normal text-neutral-50">${row.allocatedCapital?.toLocaleString()}</span>
         ),
     },
     {

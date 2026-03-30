@@ -33,14 +33,14 @@ function useBinanceSymbols() {
             .then((res) => res.json() as Promise<BinanceExchangeInfo>)
             .then((data) => {
                 if (cancelled) return
-                const filtered: SymbolEntry[] = data.symbols
+                const filtered: SymbolEntry[] = (data?.symbols ?? [])
                     .filter(
                         (s) =>
-                            s.contractType === 'PERPETUAL' &&
-                            s.status === 'TRADING' &&
-                            s.quoteAsset === 'USDT',   // USDT-margined perps only
+                            s?.contractType === 'PERPETUAL' &&
+                            s?.status === 'TRADING' &&
+                            s?.quoteAsset === 'USDT',   // USDT-margined perps only
                     )
-                    .map((s) => ({ symbol: s.symbol, base: s.baseAsset }))
+                    .map((s) => ({ symbol: s?.symbol ?? '', base: s?.baseAsset ?? '' }))
                     .sort((a, b) => a.symbol.localeCompare(b.symbol))
                 setSymbols(filtered)
             })
@@ -113,6 +113,7 @@ export default function SymbolSearchSelect<T extends FieldValues>({ label, name,
                         ? selectedSymbols.filter((s) => s !== symbol)
                         : [...selectedSymbols, symbol]
                     field.onChange(updated)
+                    setQuery('') // Clear search after selection
                 }
 
                 const handleRemoveSymbol = (symbol: string) => {
@@ -229,7 +230,7 @@ export default function SymbolSearchSelect<T extends FieldValues>({ label, name,
                         )}
 
                         {fieldState.error && (
-                            <p className="text-xs leading-tight text-red-500">{fieldState.error.message}</p>
+                            <p className="text-xs leading-tight text-red-500">{fieldState?.error?.message}</p>
                         )}
                     </div>
                 )

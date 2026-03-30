@@ -74,19 +74,19 @@ export default function SelectInput({ iconPosition = 'before', required, ...prop
 
                                             (selected?.variant === 'success' ||
                                                 defaultSelected?.variant === 'success' ||
-                                                props.options[0].variant === 'success') &&
+                                                props.options?.[0]?.variant === 'success') &&
                                                 'text-green-500',
 
                                             (selected?.variant === 'danger' ||
                                                 defaultSelected?.variant === 'danger' ||
-                                                props.options[0].variant === 'danger') &&
+                                                props.options?.[0]?.variant === 'danger') &&
                                                 'text-red-500',
                                         )}
                                     >
                                         {defaultSelected?.label ||
                                             selected?.label ||
                                             props.placeholder ||
-                                            props.options[0].label}
+                                            props.options?.[0]?.label}
                                     </span>
 
                                     {iconPosition === 'after' && (selected?.icon ?? props.icon)}
@@ -125,7 +125,7 @@ export default function SelectInput({ iconPosition = 'before', required, ...prop
                                 ))}
                             </SelectContent>
 
-                            {error && <span className="overline-1 text-red-500">{error.message}</span>}
+                            {error && <span className="overline-1 text-red-500">{error?.message}</span>}
                         </Select>
                     </div>
                 )

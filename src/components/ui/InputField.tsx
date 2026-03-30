@@ -130,8 +130,8 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                                         )}
                                     </button>
                                 </div>
-                                {fieldState.error && (
-                                    <p className="text-xs leading-tight text-red-500">{fieldState.error.message}</p>
+                                {fieldState?.error && (
+                                    <p className="text-xs leading-tight text-red-500">{fieldState?.error?.message}</p>
                                 )}
                             </div>
                         )
@@ -172,6 +172,28 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                             <input
                                 {...field}
                                 {...props}
+                                value={field.value ?? ''}
+                                onChange={(e) => {
+                                    if (type === 'number') {
+                                        const rawValue = e.target.value
+                                        // Allow empty string for clearing
+                                        if (rawValue === '') {
+                                            field.onChange('')
+                                            return
+                                        }
+                                        // Parse and pass the exact value typed
+                                        const numValue = parseFloat(rawValue)
+                                        field.onChange(Number.isNaN(numValue) ? rawValue : numValue)
+                                    } else {
+                                        field.onChange(e.target.value)
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    // Disable arrow key increment/decrement for number inputs
+                                    if (type === 'number' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                                        e.preventDefault()
+                                    }
+                                }}
                                 type={type}
                                 autoComplete="off"
                                 disabled={props.disabled}
@@ -185,8 +207,8 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                                 )}
                             />
 
-                            {fieldState.error && (
-                                <p className="text-xs leading-tight text-red-500">{fieldState.error.message}</p>
+                            {fieldState?.error && (
+                                <p className="text-xs leading-tight text-red-500">{fieldState?.error?.message}</p>
                             )}
                         </div>
                     )

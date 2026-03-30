@@ -21,22 +21,22 @@ export function useAuth() {
         mutationFn: ({ email, password }: { email: string; password: string; rememberMe?: boolean }) =>
             authService.login(email, password),
         onSuccess: (data, variables) => {
-            const { firstName, lastName } = parseName(data.data.investor.name)
+            const { firstName, lastName } = parseName(data?.data?.investor?.name)
             const user = {
-                id: data.data.investor.id,
-                email: data.data.investor.email,
+                id: data?.data?.investor?.id ?? '',
+                email: data?.data?.investor?.email ?? '',
                 firstName,
                 lastName,
                 profileImage: '',
             }
 
             setUser(user)
-            setToken(data.data.token)
+            setToken(data?.data?.token ?? '')
 
             if (variables.rememberMe) {
-                saveToLocalStorage(user, data.data.token, data.data.refreshToken || '')
+                saveToLocalStorage(user, data?.data?.token ?? '', data?.data?.refreshToken ?? '')
             } else {
-                saveToSessionStorage(user, data.data.token, data.data.refreshToken || '')
+                saveToSessionStorage(user, data?.data?.token ?? '', data?.data?.refreshToken ?? '')
             }
 
             toast.success('Login successful!')

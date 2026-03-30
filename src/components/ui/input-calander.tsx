@@ -59,7 +59,7 @@ export default function InputCalander({ name, control, label, required = true, d
                         )}
                     </Popover>
 
-                    {error && <span className="overline-1 text-red-500">{error.message}</span>}
+                    {error && <span className="overline-1 text-red-500">{error?.message}</span>}
                 </div>
             )}
         />

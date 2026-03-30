@@ -6,7 +6,7 @@ function formatAmount(value: number | string): string {
 
     // Use toLocaleString for Indian numbering system
     // 'en-IN' locale provides the Indian numbering format (lakhs and crores)
-    return num.toLocaleString('en-IN', {
+    return num?.toLocaleString('en-IN', {
         minimumFractionDigits: 2, // Ensure two decimal places
         maximumFractionDigits: 2, // Ensure two decimal places
     })

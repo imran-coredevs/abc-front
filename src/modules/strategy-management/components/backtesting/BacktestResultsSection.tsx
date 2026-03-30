@@ -183,7 +183,7 @@ export default function BacktestResultsSection({
                                 />
                                 <ChartTooltip
                                     content={<ChartTooltipContent />}
-                                    formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Equity']}
+                                    formatter={(value) => [`$${Number(value)?.toLocaleString()}`, 'Equity']}
                                     animationDuration={0}
                                     isAnimationActive={false}
                                     cursor={{ stroke: '#6545ee', strokeWidth: 1, strokeDasharray: '5 5' }}

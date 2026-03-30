@@ -49,8 +49,8 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
         : '—'
 
     const transformBacktestData = (data: BacktestData): BacktestResult => {
-        const metrics = data.metrics!
-        const initialCapital = data.equityCurve[0]?.equity ?? 1000
+        const metrics = data?.metrics!
+        const initialCapital = data?.equityCurve?.[0]?.equity ?? 1000
         const netProfitPct = (metrics.netProfit / initialCapital) * 100
 
         return {
@@ -94,7 +94,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
             setBacktestStatus('running')
 
             // Poll for completion in the background
-            const backtestData = await pollBacktestStatus(startResponse.data.instanceId, (status) => {
+            const backtestData = await pollBacktestStatus(startResponse?.data?.instanceId, (status) => {
                 console.log('Backtest status:', status)
             })
 
@@ -130,10 +130,10 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
 
             try {
                 const response = await getBacktestStatus(strategyData._id)
-                const backtestData = response.data.backtest
+                const backtestData = response?.data?.backtest
 
                 // Only show results if backtest is completed
-                if (backtestData.status === 'COMPLETED' && backtestData.metrics && backtestData.equityCurve.length > 0) {
+                if (backtestData?.status === 'COMPLETED' && backtestData?.metrics && backtestData?.equityCurve?.length > 0) {
                     const transformedResults = transformBacktestData(backtestData)
                     const formattedEquityCurve = formatEquityCurve(backtestData.equityCurve, 'date')
 
@@ -143,13 +143,13 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
                     setHasResults(true)
 
                     // Optionally set the date range from the existing backtest
-                    if (backtestData.startDate && backtestData.endDate) {
+                    if (backtestData?.startDate && backtestData?.endDate) {
                         setDateRange({
                             from: new Date(backtestData.startDate),
                             to: new Date(backtestData.endDate),
                         })
                     }
-                } else if (backtestData.status === 'RUNNING' || backtestData.status === 'PENDING') {
+                } else if (backtestData?.status === 'RUNNING' || backtestData?.status === 'PENDING') {
                     // If backtest is still running, poll for completion
                     setBacktestStatus('running')
                     const completedData = await pollBacktestStatus(strategyData._id)

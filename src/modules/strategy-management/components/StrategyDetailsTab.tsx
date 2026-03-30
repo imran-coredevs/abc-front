@@ -107,7 +107,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
     const allocationLabel =
         strategyData?.capitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO'
             ? `${strategyData?.allocationValue ?? 0}%`
-            : `$${(strategyData?.allocationValue ?? 0).toLocaleString()}`
+            : `$${(strategyData?.allocationValue ?? 0)?.toLocaleString()}`
 
     const positionSizingValue =
         strategyData?.positionSizingMethod === 'FIXED'
@@ -170,6 +170,7 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             { label: 'Trading Pairs', value: Array.isArray(strategyData?.symbols) ? strategyData.symbols.join(', ') : (strategyData?.symbols ?? 'N/A'), color: 'text-blue-400' },
                             { label: 'Timeframe', value: strategyData?.timeframe ?? 'N/A' },
                             { label: 'Trade Direction', value: strategyData?.tradeDirection ?? 'N/A', color: directionColor },
+                            { label: 'Margin Type', value: strategyData?.marginType ?? 'N/A' },
                             { label: 'Capital Allocation', value: `${strategyData?.capitalAllocationType ?? 'N/A'} — ${allocationLabel}` },
                             { label: 'Leverage', value: `${strategyData?.leverage ?? 1}x` },
                             { label: 'Max Open Positions', value: String(strategyData?.maxOpenPositions ?? 0) },
@@ -182,7 +183,6 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             },
                             { label: 'Position Sizing', value: `${strategyData?.positionSizingMethod ?? 'N/A'} — ${positionSizingValue}` },
                             { label: 'Candle Type', value: strategyData?.candleType ?? 'N/A' },
-                            { label: 'Margin Type', value: strategyData?.marginType ?? 'N/A' },
                             { label: 'Min Signal Agreement', value: String(strategyData?.minSignalAgreement ?? 0) },
                         ].map(({ label, value, color }) => (
                             <div key={label} className="flex gap-2 text-sm">

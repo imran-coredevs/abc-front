@@ -163,6 +163,31 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                         <Separator />
 
                         <div className="space-y-5">
+                            {/* Margin Type - Radio Buttons */}
+                            <div className="space-y-4">
+                                <p className="text-base text-neutral-50">Margin Type *</p>
+                                <div className="flex flex-wrap gap-4">
+                                    <label className="flex cursor-pointer items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="CROSSED"
+                                            className={figmaRadioClass}
+                                            {...control.register('marginType')}
+                                        />
+                                        <span className="text-base text-neutral-50">Crossed</span>
+                                    </label>
+                                    <label className="flex cursor-pointer items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="ISOLATED"
+                                            className={figmaRadioClass}
+                                            {...control.register('marginType')}
+                                        />
+                                        <span className="text-base text-neutral-50">Isolated</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             {/* Allocation Type */}
                             <FormSelect
                                 label="Allocation Type"
@@ -200,47 +225,6 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                             `$${portfolioAllocation.toFixed(2)}`
                                         )}
                                     </span>
-                                </p>
-                            </div>
-
-                            {/* Leverage Count - Stepper */}
-                            <div className="space-y-3">
-                                <p className="text-xs text-neutral-200">Leverage Count</p>
-                                <div className="flex items-center justify-between rounded-lg bg-white/10 p-3">
-                                    <button
-                                        type="button"
-                                        className="flex size-5 items-center justify-center"
-                                        onClick={() => handleLeverageChange(-1)}
-                                    >
-                                        <span className="text-neutral-50">−</span>
-                                    </button>
-                                    <span className="text-sm font-medium text-neutral-100">
-                                        {Number(leverage) || 0}X
-                                    </span>
-                                    <button
-                                        type="button"
-                                        className="flex size-5 items-center justify-center"
-                                        onClick={() => handleLeverageChange(1)}
-                                    >
-                                        <span className="text-neutral-50">+</span>
-                                    </button>
-                                </div>
-                                <div className="hidden">
-                                    <InputField
-                                        name="leverage"
-                                        control={control}
-                                        label=""
-                                        type="number"
-                                        placeholder="0"
-                                        rules={{
-                                            required: 'Leverage is required',
-                                            min: { value: 1, message: 'Min 1' },
-                                            max: { value: 125, message: 'Max 125' },
-                                        }}
-                                    />
-                                </div>
-                                <p className="text-sm font-medium text-neutral-300">
-                                    Stepper Input: <span className="ml-2">0 - 125X</span>
                                 </p>
                             </div>
 
@@ -320,11 +304,28 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                                         step={0.01}
                                                                         autoComplete="off"
                                                                         value={field.value ?? ''}
-                                                                        onBlur={field.onBlur}
+                                                                        onKeyDown={(e) => {
+                                                                            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                                                                e.preventDefault()
+                                                                            }
+                                                                        }}
+                                                                        onBlur={(e) => {
+                                                                            field.onBlur()
+                                                                            // On blur, if empty, reset to minimum valid value
+                                                                            if (e.target.value === '') {
+                                                                                field.onChange(0.01)
+                                                                            }
+                                                                        }}
                                                                         onChange={(e) => {
-                                                                            const nextValue = Number(e.target.value)
+                                                                            const rawValue = e.target.value
+                                                                            // Allow empty string for typing
+                                                                            if (rawValue === '') {
+                                                                                field.onChange('')
+                                                                                return
+                                                                            }
+                                                                            const nextValue = Number(rawValue)
                                                                             field.onChange(
-                                                                                Number.isNaN(nextValue) ? 0 : nextValue,
+                                                                                Number.isNaN(nextValue) ? '' : nextValue,
                                                                             )
                                                                         }}
                                                                         placeholder="e.g., 10"
@@ -341,15 +342,15 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                             </div>
                                                             {fieldState.error && (
                                                                 <p className="text-xs leading-tight text-red-500">
-                                                                    {fieldState.error.message}
+                                                                    {fieldState?.error?.message}
                                                                 </p>
                                                             )}
                                                         </div>
                                                     )}
                                                 />
-                                                <p className="text-sm font-medium text-neutral-300">
+                                                {/* <p className="text-sm font-medium text-neutral-300">
                                                     Stepper Input: 0 - 300%
-                                                </p>
+                                                </p> */}
                                             </div>
 
                                             {/* Calculated Exposure Display */}
@@ -366,7 +367,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                     <div className="space-y-2 text-base leading-[21px]">
                                                         <p className="font-semibold text-neutral-50">
                                                             Portfolio Balance: ${' '}
-                                                            {portfolioBalance.toLocaleString('en-US', {
+                                                            {portfolioBalance?.toLocaleString('en-US', {
                                                                 minimumFractionDigits: 2,
                                                                 maximumFractionDigits: 2,
                                                             })}
@@ -375,7 +376,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                             Max Exposure: {exposureLimitPercentage}%
                                                             <br />
                                                             Maximum Allowed Exposure: ${' '}
-                                                            {maximumAllowedExposure.toLocaleString('en-US', {
+                                                            {maximumAllowedExposure?.toLocaleString('en-US', {
                                                                 minimumFractionDigits: 2,
                                                                 maximumFractionDigits: 2,
                                                             })}
@@ -457,6 +458,47 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                 />
                             </div>
 
+                            {/* Leverage Count - Stepper */}
+                            <div className="space-y-3">
+                                <p className="font-medium text-neutral-50">Leverage Count</p>
+                                <div className="flex items-center justify-between rounded-lg bg-white/10 p-3">
+                                    <button
+                                        type="button"
+                                        className="flex size-5 items-center justify-center"
+                                        onClick={() => handleLeverageChange(-1)}
+                                    >
+                                        <span className="text-neutral-50">−</span>
+                                    </button>
+                                    <span className="text-sm font-medium text-neutral-100">
+                                        {Number(leverage) || 0}X
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="flex size-5 items-center justify-center"
+                                        onClick={() => handleLeverageChange(1)}
+                                    >
+                                        <span className="text-neutral-50">+</span>
+                                    </button>
+                                </div>
+                                <div className="hidden">
+                                    <InputField
+                                        name="leverage"
+                                        control={control}
+                                        label=""
+                                        type="number"
+                                        placeholder="0"
+                                        rules={{
+                                            required: 'Leverage is required',
+                                            min: { value: 1, message: 'Min 1' },
+                                            max: { value: 125, message: 'Max 125' },
+                                        }}
+                                    />
+                                </div>
+                                <p className="text-sm font-medium text-neutral-300">
+                                    Stepper Input: <span className="ml-2">0 - 125X</span>
+                                </p>
+                            </div>
+
                             {/* Maximum Trade Duration */}
                             <Controller
                                 name="maxTradeDuration"
@@ -482,6 +524,11 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                     step="any"
                                                     value={inputValue}
                                                     autoComplete="off"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                                            e.preventDefault()
+                                                        }
+                                                    }}
                                                     onChange={(e) => {
                                                         const raw = e.target.value
                                                         setDurationDraft(raw)
@@ -518,7 +565,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
 
                                             {fieldState.error && (
                                                 <p className="text-xs leading-tight text-red-500">
-                                                    {fieldState.error.message}
+                                                    {fieldState?.error?.message}
                                                 </p>
                                             )}
                                         </div>

@@ -90,7 +90,7 @@ const columns: TableColumn<TradeHistory>[] = [
         type: 'dynamic',
         render: (row) => (
             <span className="text-sm font-normal text-neutral-50">
-                ${row.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${row.entryPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
         ),
     },
@@ -100,7 +100,7 @@ const columns: TableColumn<TradeHistory>[] = [
         type: 'dynamic',
         render: (row) => (
             <span className="text-sm font-normal text-neutral-50">
-                ${row.exitPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${row.exitPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
         ),
     },
@@ -194,27 +194,27 @@ export default function HistoryTable() {
                 const response = await instanceService.getTradeHistory(filters)
                 
                 // Map API response to component format
-                const formattedTrades: TradeHistory[] = response.data.map((trade) => ({
-                    tradeId: trade.tradeId,
-                    strategyName: trade.strategyName,
-                    tradingPair: trade.tradingPair,
-                    direction: trade.direction,
-                    entryPrice: trade.entryPrice,
-                    exitPrice: trade.exitPrice,
-                    leverage: trade.leverage,
-                    size: trade.size,
-                    pnl: trade.pnl,
-                    pnlPercentage: trade.pnlPercentage,
-                    duration: trade.duration,
-                    exitReason: trade.exitReason,
-                    closed: trade.closed,
-                }))
+                const formattedTrades: TradeHistory[] = response?.data?.map((trade) => ({
+                    tradeId: trade?.tradeId ?? '',
+                    strategyName: trade?.strategyName ?? '',
+                    tradingPair: trade?.tradingPair ?? '',
+                    direction: trade?.direction ?? 'LONG',
+                    entryPrice: trade?.entryPrice ?? 0,
+                    exitPrice: trade?.exitPrice ?? 0,
+                    leverage: trade?.leverage ?? 1,
+                    size: trade?.size ?? 0,
+                    pnl: trade?.pnl ?? 0,
+                    pnlPercentage: trade?.pnlPercentage ?? 0,
+                    duration: trade?.duration ?? '',
+                    exitReason: trade?.exitReason ?? '',
+                    closed: trade?.closed ?? '',
+                })) ?? []
 
                 setTrades(formattedTrades)
-                setPagination(response.meta.pagination)
+                setPagination(response?.meta?.pagination ?? { page: 1, limit: 10, total: 0, totalPages: 0 })
             } catch (error: any) {
                 console.error('Failed to fetch trade history:', error)
-                toast.error(error.response?.data?.message || 'Failed to load trade history')
+                toast.error(error?.response?.data?.message || 'Failed to load trade history')
                 setTrades([])
             } finally {
                 setLoading(false)

@@ -11,7 +11,7 @@ export function usePassword() {
             toast.success('Password updated successfully!')
         },
         onError: (error: any) => {
-            const message = error.response?.data?.message || 'Failed to update password'
+            const message = error?.response?.data?.message || 'Failed to update password'
             toast.error(message)
         },
     })

@@ -119,7 +119,7 @@ export default function StrategyCard({
                 <div className="flex flex-col gap-1">
                     <p className="text-sm leading-4.5 font-normal text-neutral-200">Allocation</p>
                     <p className="text-2xl leading-8 font-bold tracking-[-0.48px] text-neutral-50">
-                        USDT {allocation.toLocaleString()}
+                        USDT {allocation?.toLocaleString()}
                     </p>
                 </div>
             </div>

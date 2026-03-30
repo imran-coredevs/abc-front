@@ -193,14 +193,14 @@ export default function StrategyGrid() {
                 <StrategyCard
                     key={strategy.id}
                     apiKey="binance-api-key"
-                    strategyName={strategy.strategyName}
-                    status={mapStatus(strategy.status)}
-                    pair={strategy?.symbols && strategy.symbols.length > 0 ? (strategy.symbols) : []}
-                    direction={mapDirection(strategy.direction)}
-                    allocation={strategy.allocatedCapital}
+                    strategyName={strategy?.strategyName ?? ''}
+                    status={mapStatus(strategy?.status ?? 'DRAFT')}
+                    pair={strategy?.symbols?.length > 0 ? strategy.symbols : []}
+                    direction={mapDirection(strategy?.direction ?? 'BOTH')}
+                    allocation={strategy?.allocatedCapital ?? 0}
                     onToggleStatus={() => handleToggleStatus(strategy.id, strategy.status)}
                     onViewDetails={() => navigate(`/strategy-management/${strategy.id}`)}
-                    isToggling={togglingIds.has(strategy.id) || strategy.status === 'STARTING' || strategy.status === 'STOPPING'}
+                    isToggling={togglingIds.has(strategy.id) || strategy?.status === 'STARTING' || strategy?.status === 'STOPPING'}
                 />
             ))}
         </div>

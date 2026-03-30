@@ -74,8 +74,8 @@ export default function FormSelect<T extends FieldValues>({
                                 })}
                             </SelectContent>
                         </Select>
-                        {fieldState.error && (
-                            <p className="text-xs leading-tight text-red-500">{fieldState.error.message}</p>
+                        {fieldState?.error && (
+                            <p className="text-xs leading-tight text-red-500">{fieldState?.error?.message}</p>
                         )}
                     </div>
                 </div>

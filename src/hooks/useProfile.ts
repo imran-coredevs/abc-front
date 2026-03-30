@@ -47,7 +47,7 @@ export function useProfile() {
             toast.success('Profile updated successfully!')
         },
         onError: (error: any) => {
-            const message = error.response?.data?.message || 'Failed to update profile'
+            const message = error?.response?.data?.message || 'Failed to update profile'
             toast.error(message)
         },
     })
@@ -94,7 +94,7 @@ export function useProfile() {
             toast.success('Profile image updated successfully!')
         },
         onError: (error: any) => {
-            const message = error.response?.data?.message || 'Failed to update profile image'
+            const message = error?.response?.data?.message || 'Failed to update profile image'
             toast.error(message)
         },
     })

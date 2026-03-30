@@ -41,10 +41,10 @@ export default function OverviewPage() {
             title: 'Portfolio',
             description: 'Total capital currently allocated',
             quantity: dashboardData
-                ? `$${dashboardData.portfolio.totalCapital.toLocaleString('en-US', {
+                ? `$${dashboardData?.portfolio?.totalCapital?.toLocaleString('en-US', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                  })}`
+                  }) ?? '0.00'}`
                 : '$0.00',
             icon: (
                 <div className="relative size-6">
@@ -52,7 +52,7 @@ export default function OverviewPage() {
                 </div>
             ),
             variant: 'progress' as const,
-            progressPercent: dashboardData ? Math.round(dashboardData.portfolio.portfolioPercentage) : 0,
+            progressPercent: dashboardData ? Math.round(dashboardData?.portfolio?.portfolioPercentage ?? 0) : 0,
             amountIcon: (
                 <div className="relative size-6 shrink-0">
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldWallet} />
@@ -70,13 +70,13 @@ export default function OverviewPage() {
                 </div>
             ),
             quantity: dashboardData
-                ? `${dashboardData.todaysPerformance.pnl >= 0 ? '+' : ''}$${Math.abs(
-                      dashboardData.todaysPerformance.pnl,
+                ? `${(dashboardData?.todaysPerformance?.pnl ?? 0) >= 0 ? '+' : ''}$${Math.abs(
+                      dashboardData?.todaysPerformance?.pnl ?? 0,
                   ).toFixed(2)}`
                 : '$0.00',
             variant: 'increase' as const,
             increaseText: dashboardData
-                ? `${dashboardData.todaysPerformance.percentageChange >= 0 ? '+' : ''}${dashboardData.todaysPerformance.percentageChange.toFixed(1)}% Yesterday`
+                ? `${(dashboardData?.todaysPerformance?.percentageChange ?? 0) >= 0 ? '+' : ''}${(dashboardData?.todaysPerformance?.percentageChange ?? 0).toFixed(1)}% Yesterday`
                 : '0% Yesterday',
             amountIcon: (
                 <div className="relative size-6 shrink-0">
@@ -94,7 +94,7 @@ export default function OverviewPage() {
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldLayer} />
                 </div>
             ),
-            quantity: dashboardData ? dashboardData.totalStrategies.toString() : '0',
+            quantity: dashboardData ? (dashboardData?.totalStrategies?.toString() ?? '0') : '0',
             variant: 'simple' as const,
             isLoading,
         },
@@ -107,7 +107,7 @@ export default function OverviewPage() {
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldVideoCircle} />
                 </div>
             ),
-            quantity: dashboardData ? dashboardData.activeStrategies.toString().padStart(2, '0') : '00',
+            quantity: dashboardData ? (dashboardData?.activeStrategies?.toString()?.padStart(2, '0') ?? '00') : '00',
             variant: 'simple' as const,
             isLoading,
         },

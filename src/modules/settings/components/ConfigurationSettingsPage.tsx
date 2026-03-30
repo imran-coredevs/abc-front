@@ -34,7 +34,7 @@ export default function ConfigurationSettingsPage() {
                 }
             } catch (error: any) {
                 console.error('Failed to fetch credentials:', error)
-                toast.error(error.response?.data?.message || 'Failed to load credentials')
+                toast.error(error?.response?.data?.message || 'Failed to load credentials')
             } finally {
                 setLoading(false)
             }
@@ -65,7 +65,7 @@ export default function ConfigurationSettingsPage() {
             toast.success(modalMode === 'replace' ? 'API key replaced successfully' : 'API key added successfully')
         } catch (error: any) {
             console.error('Failed to save credentials:', error)
-            toast.error(error.response?.data?.message || 'Failed to save API credentials')
+            toast.error(error?.response?.data?.message || 'Failed to save API credentials')
         } finally {
             setSaving(false)
         }
@@ -84,7 +84,7 @@ export default function ConfigurationSettingsPage() {
             toast.success('API key removed')
         } catch (error: any) {
             console.error('Failed to remove credentials:', error)
-            toast.error(error.response?.data?.message || 'Failed to remove API credentials')
+            toast.error(error?.response?.data?.message || 'Failed to remove API credentials')
         }
     }
 
