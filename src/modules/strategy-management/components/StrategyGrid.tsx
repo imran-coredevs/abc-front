@@ -22,6 +22,7 @@ function mapStatus(status: InstanceOverview['status']): 'Running' | 'Stopped' | 
 export default function StrategyGrid() {
     const [strategies, setStrategies] = useState<InstanceOverview[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set())
     const navigate = useNavigate()
     const pollingTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
     const pollingAttemptsRef = useRef<Map<string, number>>(new Map())
@@ -129,7 +130,15 @@ export default function StrategyGrid() {
     }
 
     const handleToggleStatus = async (id: string, currentStatus: InstanceOverview['status']) => {
+        // Prevent double-clicks while already processing
+        if (togglingIds.has(id)) {
+            return
+        }
+
         try {
+            // Mark as toggling to disable button immediately
+            setTogglingIds(prev => new Set(prev).add(id))
+
             if (currentStatus === 'LIVE') {
                 await instanceService.stopInstance(id, 'User manual stop')
                 toast.success('Strategy stopping...')
@@ -149,6 +158,13 @@ export default function StrategyGrid() {
         } catch (error: any) {
             console.error('Failed to toggle strategy status:', error)
             toast.error(error?.response?.data?.message || 'Failed to toggle strategy status')
+        } finally {
+            // Remove from toggling set after API call completes
+            setTogglingIds(prev => {
+                const newSet = new Set(prev)
+                newSet.delete(id)
+                return newSet
+            })
         }
     }
 
@@ -184,7 +200,7 @@ export default function StrategyGrid() {
                     allocation={strategy.allocatedCapital}
                     onToggleStatus={() => handleToggleStatus(strategy.id, strategy.status)}
                     onViewDetails={() => navigate(`/strategy-management/${strategy.id}`)}
-                    isToggling={strategy.status === 'STARTING' || strategy.status === 'STOPPING'}
+                    isToggling={togglingIds.has(strategy.id) || strategy.status === 'STARTING' || strategy.status === 'STOPPING'}
                 />
             ))}
         </div>
