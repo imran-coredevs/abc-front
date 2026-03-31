@@ -45,6 +45,7 @@ export interface BacktestData {
     __v: number
     completedAt?: string
     metrics?: BacktestMetrics
+    errorMessage?: string
     indicators: any[]
 }
 
@@ -130,7 +131,7 @@ export const pollBacktestStatus = async (
                 if (backtest.status === 'COMPLETED') {
                     resolve(backtest)
                 } else if (backtest.status === 'FAILED') {
-                    reject(new Error('Backtest failed'))
+                    reject(new Error(backtest.errorMessage || response.data.message || 'Backtest failed'))
                 } else {
                     // Continue polling
                     setTimeout(poll, pollInterval)

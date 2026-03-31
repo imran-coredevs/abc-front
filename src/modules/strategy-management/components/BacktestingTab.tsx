@@ -2,6 +2,7 @@ import type { DateRange } from '@/components/ui/DateRangePicker'
 import { formatEquityCurve, formatTradeDuration } from '@/lib/formatBacktestData'
 import type { BacktestData } from '@/services/backtestService'
 import { getBacktestStatus, pollBacktestStatus, startBacktest } from '@/services/backtestService'
+import { AxiosError } from 'axios'
 import { useEffect, useState } from 'react'
 import BacktestConfigurationSection from './backtesting/BacktestConfigurationSection'
 import BacktestLoadingState from './backtesting/BacktestLoadingState'
@@ -49,7 +50,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
         : '—'
 
     const transformBacktestData = (data: BacktestData): BacktestResult => {
-        const metrics = data?.metrics!
+        const metrics = data.metrics!
         const initialCapital = data?.equityCurve?.[0]?.equity ?? 1000
         const netProfitPct = (metrics.netProfit / initialCapital) * 100
 
@@ -74,6 +75,21 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
             maxConsecutiveWins: metrics.maxConsecutiveWins,
             maxConsecutiveLosses: metrics.maxConsecutiveLosses,
         }
+    }
+
+    const extractBacktestErrorMessage = (error: unknown): string => {
+        if (error instanceof AxiosError) {
+            const responseMessage = error.response?.data?.data?.message || error.response?.data?.message
+            if (typeof responseMessage === 'string' && responseMessage.trim()) {
+                return responseMessage
+            }
+        }
+
+        if (error instanceof Error && error.message.trim()) {
+            return error.message
+        }
+
+        return 'An error occurred during backtesting'
     }
 
     const handleRunBacktest = async () => {
@@ -109,7 +125,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
         } catch (error) {
             console.error('Backtest error:', error)
             setBacktestStatus('failed')
-            setErrorMessage(error instanceof Error ? error.message : 'An error occurred during backtesting')
+            setErrorMessage(extractBacktestErrorMessage(error))
             setHasResults(false)
         }
     }
@@ -133,7 +149,11 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
                 const backtestData = response?.data?.backtest
 
                 // Only show results if backtest is completed
-                if (backtestData?.status === 'COMPLETED' && backtestData?.metrics && backtestData?.equityCurve?.length > 0) {
+                if (
+                    backtestData?.status === 'COMPLETED' &&
+                    backtestData?.metrics &&
+                    backtestData?.equityCurve?.length > 0
+                ) {
                     const transformedResults = transformBacktestData(backtestData)
                     const formattedEquityCurve = formatEquityCurve(backtestData.equityCurve, 'date')
 
@@ -160,6 +180,12 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
                     setEquityCurve(formattedEquityCurve)
                     setBacktestStatus('completed')
                     setHasResults(true)
+                } else if (backtestData?.status === 'FAILED') {
+                    setBacktestStatus('failed')
+                    setHasResults(false)
+                    setBacktestResults(null)
+                    setEquityCurve([])
+                    setErrorMessage(backtestData.errorMessage || response?.data?.message || 'Backtest failed')
                 }
             } catch (error) {
                 // No existing backtest found or error fetching - this is okay, user can run a new one
@@ -191,8 +217,8 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
 
             {backtestStatus === 'failed' && errorMessage && (
                 <div className="rounded-lg bg-red-500/10 p-4 text-red-500">
-                    <p className="font-semibold">Backtest Failed</p>
-                    <p className="text-sm">{errorMessage}</p>
+                    <p className="font-semibold text-lg mb-2">Backtest Failed</p>
+                    <p className="text-sm text-neutral-100">{errorMessage}</p>
                 </div>
             )}
 

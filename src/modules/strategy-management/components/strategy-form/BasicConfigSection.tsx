@@ -229,167 +229,165 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                             </div>
 
                             {/* Max Portfolio Exposure Percentage */}
-                            {isPercentageAlloc && (
-                                <div className="space-y-3">
-                                    <Separator />
+                            <div className="space-y-3">
+                                <Separator />
 
-                                    {/* Portfolio Exposure Limit Toggle */}
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-base font-medium text-neutral-50">
-                                            Portfolio Exposure Limit
-                                        </label>
-                                        <label className="relative inline-flex cursor-pointer items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={portfolioExposureLimitEnabled}
-                                                onChange={(e) => {
-                                                    const isEnabled = e.target.checked
-                                                    setPortfolioExposureLimitEnabled(isEnabled)
-                                                    if (!isEnabled) {
-                                                        setValue('maxPortfolioExposurePercentage', 0, {
-                                                            shouldValidate: false,
-                                                        })
-                                                    } else {
-                                                        setValue('maxPortfolioExposurePercentage', 10, {
-                                                            shouldValidate: true,
-                                                        })
-                                                    }
-                                                }}
-                                                className="peer sr-only"
-                                            />
+                                {/* Portfolio Exposure Limit Toggle */}
+                                <div className="flex items-center justify-between">
+                                    <label className="text-base font-medium text-neutral-50">
+                                        Portfolio Exposure Limit
+                                    </label>
+                                    <label className="relative inline-flex cursor-pointer items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={portfolioExposureLimitEnabled}
+                                            onChange={(e) => {
+                                                const isEnabled = e.target.checked
+                                                setPortfolioExposureLimitEnabled(isEnabled)
+                                                if (!isEnabled) {
+                                                    setValue('maxPortfolioExposurePercentage', 0, {
+                                                        shouldValidate: false,
+                                                    })
+                                                } else {
+                                                    setValue('maxPortfolioExposurePercentage', 10, {
+                                                        shouldValidate: true,
+                                                    })
+                                                }
+                                            }}
+                                            className="peer sr-only"
+                                        />
+                                        <div
+                                            className={cn(
+                                                'relative h-5 w-9 rounded-full transition-all duration-300',
+                                                portfolioExposureLimitEnabled ? 'bg-blue-700' : 'bg-neutral-600',
+                                            )}
+                                        >
                                             <div
                                                 className={cn(
-                                                    'relative h-5 w-9 rounded-full transition-all duration-300',
-                                                    portfolioExposureLimitEnabled ? 'bg-blue-700' : 'bg-neutral-600',
+                                                    'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-all duration-300',
+                                                    portfolioExposureLimitEnabled
+                                                        ? 'translate-x-4'
+                                                        : 'translate-x-0',
                                                 )}
-                                            >
-                                                <div
-                                                    className={cn(
-                                                        'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-all duration-300',
-                                                        portfolioExposureLimitEnabled
-                                                            ? 'translate-x-4'
-                                                            : 'translate-x-0',
-                                                    )}
-                                                />
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    {portfolioExposureLimitEnabled && (
-                                        <>
-                                            <div className="space-y-2 rounded-lg bg-neutral-900 p-4">
-                                                <Controller
-                                                    name="maxPortfolioExposurePercentage"
-                                                    control={control}
-                                                    rules={{
-                                                        required: 'Max portfolio exposure is required',
-                                                        min: { value: 0.01, message: 'Must be greater than 0' },
-                                                        max: { value: 300, message: 'Maximum is 300%' },
-                                                    }}
-                                                    render={({ field, fieldState }) => (
-                                                        <div className="space-y-2">
-                                                            <label className="text-base leading-[21px] font-normal text-neutral-50">
-                                                                Max Exposure *
-                                                            </label>
-                                                            <div className="flex h-12 items-center justify-between rounded-lg bg-white/10 px-3 py-2">
-                                                                <div className="flex items-center gap-3">
-                                                                    <CirclePercent
-                                                                        size={20}
-                                                                        className="text-neutral-300"
-                                                                    />
-                                                                    <input
-                                                                        type="number"
-                                                                        min={0.01}
-                                                                        max={300}
-                                                                        step={0.01}
-                                                                        autoComplete="off"
-                                                                        value={field.value ?? ''}
-                                                                        onKeyDown={(e) => {
-                                                                            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                                                                                e.preventDefault()
-                                                                            }
-                                                                        }}
-                                                                        onBlur={(e) => {
-                                                                            field.onBlur()
-                                                                            // On blur, if empty, reset to minimum valid value
-                                                                            if (e.target.value === '') {
-                                                                                field.onChange(0.01)
-                                                                            }
-                                                                        }}
-                                                                        onChange={(e) => {
-                                                                            const rawValue = e.target.value
-                                                                            // Allow empty string for typing
-                                                                            if (rawValue === '') {
-                                                                                field.onChange('')
-                                                                                return
-                                                                            }
-                                                                            const nextValue = Number(rawValue)
-                                                                            field.onChange(
-                                                                                Number.isNaN(nextValue) ? '' : nextValue,
-                                                                            )
-                                                                        }}
-                                                                        placeholder="e.g., 10"
-                                                                        className="w-full border-none bg-transparent text-base leading-[21px] font-normal text-neutral-300 outline-none"
-                                                                    />
-                                                                </div>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => field.onChange(300)}
-                                                                    className="text-base leading-[21px] font-semibold text-blue-500"
-                                                                >
-                                                                    Max
-                                                                </button>
-                                                            </div>
-                                                            {fieldState.error && (
-                                                                <p className="text-xs leading-tight text-red-500">
-                                                                    {fieldState?.error?.message}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                />
-                                                {/* <p className="text-sm font-medium text-neutral-300">
-                                                    Stepper Input: 0 - 300%
-                                                </p> */}
-                                            </div>
-
-                                            {/* Calculated Exposure Display */}
-                                            {exposureData && (
-                                                <div className="space-y-3 rounded-lg bg-white/8 px-3 py-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <InfoCircle size="16" className="shrink-0 text-blue-700" />
-                                                        <p className="text-sm leading-[18px] text-neutral-200">
-                                                            Total exposure includes all active trades across all
-                                                            selected assets and leverage
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="space-y-2 text-base leading-[21px]">
-                                                        <p className="font-semibold text-neutral-50">
-                                                            Portfolio Balance: ${' '}
-                                                            {portfolioBalance?.toLocaleString('en-US', {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })}
-                                                        </p>
-                                                        <p className="text-neutral-400">
-                                                            Max Exposure: {exposureLimitPercentage}%
-                                                            <br />
-                                                            Maximum Allowed Exposure: ${' '}
-                                                            {maximumAllowedExposure?.toLocaleString('en-US', {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-
-                                    <Separator />
+                                            />
+                                        </div>
+                                    </label>
                                 </div>
-                            )}
+
+                                {portfolioExposureLimitEnabled && (
+                                    <>
+                                        <div className="space-y-2 rounded-lg bg-neutral-900 p-4">
+                                            <Controller
+                                                name="maxPortfolioExposurePercentage"
+                                                control={control}
+                                                rules={{
+                                                    required: 'Max portfolio exposure is required',
+                                                    min: { value: 0.01, message: 'Must be greater than 0' },
+                                                    max: { value: 300, message: 'Maximum is 300%' },
+                                                }}
+                                                render={({ field, fieldState }) => (
+                                                    <div className="space-y-2">
+                                                        <label className="text-base leading-[21px] font-normal text-neutral-50">
+                                                            Max Exposure *
+                                                        </label>
+                                                        <div className="flex h-12 items-center justify-between rounded-lg bg-white/10 px-3 py-2">
+                                                            <div className="flex items-center gap-3">
+                                                                <CirclePercent
+                                                                    size={20}
+                                                                    className="text-neutral-300"
+                                                                />
+                                                                <input
+                                                                    type="number"
+                                                                    min={0.01}
+                                                                    max={300}
+                                                                    step={0.01}
+                                                                    autoComplete="off"
+                                                                    value={field.value ?? ''}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                                                            e.preventDefault()
+                                                                        }
+                                                                    }}
+                                                                    onBlur={(e) => {
+                                                                        field.onBlur()
+                                                                        // On blur, if empty, reset to minimum valid value
+                                                                        if (e.target.value === '') {
+                                                                            field.onChange(0.01)
+                                                                        }
+                                                                    }}
+                                                                    onChange={(e) => {
+                                                                        const rawValue = e.target.value
+                                                                        // Allow empty string for typing
+                                                                        if (rawValue === '') {
+                                                                            field.onChange('')
+                                                                            return
+                                                                        }
+                                                                        const nextValue = Number(rawValue)
+                                                                        field.onChange(
+                                                                            Number.isNaN(nextValue) ? '' : nextValue,
+                                                                        )
+                                                                    }}
+                                                                    placeholder="e.g., 10"
+                                                                    className="w-full border-none bg-transparent text-base leading-[21px] font-normal text-neutral-300 outline-none"
+                                                                />
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => field.onChange(300)}
+                                                                className="text-base leading-[21px] font-semibold text-blue-500"
+                                                            >
+                                                                Max
+                                                            </button>
+                                                        </div>
+                                                        {fieldState.error && (
+                                                            <p className="text-xs leading-tight text-red-500">
+                                                                {fieldState?.error?.message}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            />
+                                            {/* <p className="text-sm font-medium text-neutral-300">
+                                                Stepper Input: 0 - 300%
+                                            </p> */}
+                                        </div>
+
+                                        {/* Calculated Exposure Display */}
+                                        {exposureData && (
+                                            <div className="space-y-3 rounded-lg bg-white/8 px-3 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    <InfoCircle size="16" className="shrink-0 text-blue-700" />
+                                                    <p className="text-sm leading-[18px] text-neutral-200">
+                                                        Total exposure includes all active trades across all
+                                                        selected assets and leverage
+                                                    </p>
+                                                </div>
+
+                                                <div className="space-y-2 text-base leading-[21px]">
+                                                    <p className="font-semibold text-neutral-50">
+                                                        Portfolio Balance: ${' '}
+                                                        {portfolioBalance?.toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </p>
+                                                    <p className="text-neutral-400">
+                                                        Max Exposure: {exposureLimitPercentage}%
+                                                        <br />
+                                                        Maximum Allowed Exposure: ${' '}
+                                                        {maximumAllowedExposure?.toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                <Separator />
+                            </div>
 
                             {/* Position Sizing Method - Radio Buttons */}
                             <div className="space-y-4">
