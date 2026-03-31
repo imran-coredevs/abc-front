@@ -32,6 +32,12 @@ export interface BacktestMetrics {
     skippedDueToCapital: number
 }
 
+export interface BacktestBreakdown extends BacktestMetrics {
+    key: string
+    equityCurve?: EquityCurvePoint[]
+    contributionPct?: number
+}
+
 export interface BacktestData {
     _id: string
     investorId: string
@@ -39,40 +45,29 @@ export interface BacktestData {
     status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED'
     startDate: string
     endDate: string
-    equityCurve: EquityCurvePoint[]
     createdAt: string
     updatedAt: string
     __v: number
     completedAt?: string
-    metrics?: BacktestMetrics
+    breakdown: BacktestBreakdown[]
+    initialCapital: number
+    finalEquity: number
     errorMessage?: string
     indicators: any[]
 }
 
 export interface StartBacktestResponse {
-    data: {
-        message: string
-        instanceId: string
-        status: string
-        checkStatusUrl: string
-    }
+    message: string
+    instanceId: string
+    symbols: string[]
     status: string
-    meta: {
-        timestamp: string
-        requestId: string
-    }
+    checkStatusUrl: string
+    notificationStreamUrl: string
 }
 
 export interface BacktestStatusResponse {
-    data: {
-        backtest: BacktestData
-        message: string
-    }
-    status: string
-    meta: {
-        timestamp: string
-        requestId: string
-    }
+    backtest: BacktestData
+    message?: string
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -90,12 +85,14 @@ export const startBacktest = async (
     startDate: string,
     endDate: string,
 ): Promise<StartBacktestResponse> => {
-    const response = await api.post<StartBacktestResponse>('/backtest', {
+    const response = await api.post<
+        { data: StartBacktestResponse }
+    >('/backtest', {
         instanceId,
         startDate,
         endDate,
     })
-    return response.data
+    return response.data.data
 }
 
 /**
@@ -103,8 +100,10 @@ export const startBacktest = async (
  * @param instanceId - The trading instance ID
  */
 export const getBacktestStatus = async (instanceId: string): Promise<BacktestStatusResponse> => {
-    const response = await api.get<BacktestStatusResponse>(`/backtest/instance/${instanceId}`)
-    return response.data
+    const response = await api.get<
+        { data: BacktestStatusResponse }
+    >(`/backtest/instance/${instanceId}`)
+    return response.data.data
 }
 
 /**
@@ -122,7 +121,7 @@ export const pollBacktestStatus = async (
         const poll = async () => {
             try {
                 const response = await getBacktestStatus(instanceId)
-                const backtest = response.data.backtest
+                const backtest = response.backtest
 
                 if (onProgress) {
                     onProgress(backtest.status)
@@ -131,7 +130,7 @@ export const pollBacktestStatus = async (
                 if (backtest.status === 'COMPLETED') {
                     resolve(backtest)
                 } else if (backtest.status === 'FAILED') {
-                    reject(new Error(backtest.errorMessage || response.data.message || 'Backtest failed'))
+                    reject(new Error(backtest.errorMessage || response.message || 'Backtest failed'))
                 } else {
                     // Continue polling
                     setTimeout(poll, pollInterval)

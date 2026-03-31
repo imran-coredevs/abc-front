@@ -3,12 +3,12 @@ import { InputField } from '@/components/ui/InputField'
 import Separator from '@/components/ui/Separator'
 import SymbolSearchSelect from '@/components/ui/SymbolSearchSelect'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useDebounced } from '@/hooks/useDebounced'
 import { cn } from '@/lib/utils'
-import investorService, { type BinanceBalance } from '@/services/investorService'
-import { useQuery } from '@tanstack/react-query'
+import investorService, { type AllocationPreviewResponse } from '@/services/investorService'
 import { InfoCircle } from 'iconsax-reactjs'
 import { CirclePercent } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Controller } from 'react-hook-form'
 import { CAPITAL_ALLOCATION_TYPES, TIMEFRAMES } from '../../constants/strategy-form.defaults'
 import type { StrategyControl, StrategySetValue, StrategyWatch } from '../../types/strategy-form.types'
@@ -29,6 +29,10 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
     const leverage = watch('leverage')
     const maxTradeDuration = watch('maxTradeDuration')
     const maxPortfolioExposurePercentage = watch('maxPortfolioExposurePercentage')
+    const fixedTradeAmount = watch('fixedTradeAmount')
+    const capitalPercentagePerTrade = watch('capitalPercentagePerTrade')
+    const maxOpenPositions = watch('maxOpenPositions')
+    const symbols = watch('symbols')
 
     const isPercentageAlloc = capitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO'
     const [durationUnit, setDurationUnit] = useState<'SECOND' | 'MINUTE' | 'HOUR'>('SECOND')
@@ -40,29 +44,20 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
         totalExposure: number
         effectiveLeverage: number
     } | null>(null)
+    const [allocationPreview, setAllocationPreview] = useState<AllocationPreviewResponse | null>(null)
+    const lastPreviewRef = useRef<{ key: string; at: number }>({ key: '', at: 0 })
     const figmaRadioClass =
         'relative size-5 appearance-none rounded-full border border-blue-800 bg-transparent outline-none transition checked:border-blue-800 checked:bg-[radial-gradient(circle,_#6545ee_0_35%,_transparent_36%)] focus-visible:ring-2 focus-visible:ring-blue-800/50 cursor-pointer'
 
-    // Fetch Binance balance
-    const { data: balanceData } = useQuery<BinanceBalance>({
-        queryKey: ['binance-balance'],
-        queryFn: investorService.getBinanceBalance,
-        retry: false,
-    })
-
     // Calculate portfolio allocation
-    const calculatePortfolioAllocation = () => {
-        if (isPercentageAlloc && balanceData?.availableBalance) {
-            const percentage = Number(allocationValue) || 0
-            return (balanceData.availableBalance * percentage) / 100
-        }
-        return Number(allocationValue) || 0
-    }
-
-    const portfolioAllocation = calculatePortfolioAllocation()
-    const portfolioBalance = Number(balanceData?.availableBalance) || 0
+    const allocationBaseBalance = Number(allocationPreview?.availableBalance) || 0
+    const portfolioAllocation = isPercentageAlloc
+        ? (allocationBaseBalance * (Number(allocationValue) || 0)) / 100
+        : Number(allocationValue) || 0
+    const portfolioBalance = allocationBaseBalance
     const exposureLimitPercentage = Number(maxPortfolioExposurePercentage) || 0
-    const maximumAllowedExposure = portfolioBalance * (1 + exposureLimitPercentage / 100)
+    const maximumAllowedExposure =
+        allocationPreview?.maxAllowedExposureAmount ?? portfolioBalance * (1 + exposureLimitPercentage / 100)
 
     // Cap allocation value at 100 when switching to percentage
     useEffect(() => {
@@ -71,47 +66,175 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
         }
     }, [isPercentageAlloc, allocationValue, setValue])
 
+    const previewInput = useMemo(
+        () => ({
+            capitalAllocationType,
+            allocationValue: Number(allocationValue) || 0,
+            leverage: Number(leverage) || 0,
+            maxPortfolioExposurePercentage: portfolioExposureLimitEnabled
+                ? Number(maxPortfolioExposurePercentage) || 0
+                : 0,
+            positionSizingMethod,
+            fixedTradeAmount: Number(fixedTradeAmount) || 0,
+            capitalPercentagePerTrade: Number(capitalPercentagePerTrade) || 0,
+            maxOpenPositions: Number(maxOpenPositions) || 0,
+            symbols: Array.isArray(symbols) ? symbols : [],
+        }),
+        [
+            capitalAllocationType,
+            allocationValue,
+            leverage,
+            portfolioExposureLimitEnabled,
+            maxPortfolioExposurePercentage,
+            positionSizingMethod,
+            fixedTradeAmount,
+            capitalPercentagePerTrade,
+            maxOpenPositions,
+            symbols,
+        ],
+    )
+
+    const debouncedPreviewInput = useDebounced(previewInput, 1000)
+
     // Fetch exposure data when allocation parameters change
     useEffect(() => {
-        const shouldFetchExposure = allocationValue > 0 && leverage > 0
+        const {
+            capitalAllocationType: debouncedCapitalAllocationType,
+            allocationValue: debouncedAllocationValue,
+            leverage: debouncedLeverage,
+            maxPortfolioExposurePercentage: debouncedMaxExposure,
+            positionSizingMethod: debouncedPositionSizingMethod,
+            fixedTradeAmount: debouncedFixedTradeAmount,
+            capitalPercentagePerTrade: debouncedCapitalPercentagePerTrade,
+            maxOpenPositions: debouncedMaxOpenPositions,
+        } = debouncedPreviewInput
 
-        if (shouldFetchExposure) {
-            const fetchExposureData = async () => {
-                try {
-                    const response = await investorService.getAllocationPreview({
-                        capitalAllocationType,
-                        allocationValue: Number(allocationValue),
-                        leverage: Number(leverage),
-                        maxPortfolioExposurePercentage: portfolioExposureLimitEnabled
-                            ? Number(maxPortfolioExposurePercentage)
-                            : 0,
-                    })
-                    setExposureData({
-                        totalExposure: response.projectedEntryNotional,
-                        effectiveLeverage: leverage,
-                    })
-                } catch (error) {
-                    console.error('Failed to fetch allocation data:', error)
-                    // Fallback to mock calculation if API fails
-                    const baseAmount = portfolioAllocation
-                    const totalExposure = baseAmount * leverage
-                    setExposureData({
-                        totalExposure,
-                        effectiveLeverage: leverage,
-                    })
-                }
-            }
-            fetchExposureData()
-        } else {
+        const hasRequiredInput =
+            debouncedCapitalAllocationType && Number.isFinite(debouncedAllocationValue) && debouncedAllocationValue > 0
+
+        if (!hasRequiredInput) {
+            setAllocationPreview(null)
             setExposureData(null)
+            return
+        }
+
+        if (
+            debouncedPositionSizingMethod === 'FIXED' &&
+            (!Number.isFinite(debouncedFixedTradeAmount) || debouncedFixedTradeAmount <= 0)
+        ) {
+            setAllocationPreview(null)
+            setExposureData(null)
+            return
+        }
+
+        if (
+            debouncedPositionSizingMethod === 'PERCENTAGE' &&
+            (!Number.isFinite(debouncedCapitalPercentagePerTrade) ||
+                debouncedCapitalPercentagePerTrade <= 0 ||
+                debouncedCapitalPercentagePerTrade > 100)
+        ) {
+            setAllocationPreview(null)
+            setExposureData(null)
+            return
+        }
+
+        let isActive = true
+
+        const fetchExposureData = async () => {
+            try {
+                const requestKey = JSON.stringify(debouncedPreviewInput)
+                const now = Date.now()
+                if (requestKey === lastPreviewRef.current.key && now - lastPreviewRef.current.at < 1500) {
+                    return
+                }
+                lastPreviewRef.current = { key: requestKey, at: now }
+
+                const response = await investorService.getAllocationPreview({
+                    capitalAllocationType: debouncedCapitalAllocationType,
+                    allocationValue: debouncedAllocationValue,
+                    leverage: debouncedLeverage > 0 ? debouncedLeverage : undefined,
+                    maxPortfolioExposurePercentage: debouncedMaxExposure,
+                    positionSizingMethod: debouncedPositionSizingMethod,
+                    fixedTradeAmount:
+                        debouncedPositionSizingMethod === 'FIXED'
+                            ? debouncedFixedTradeAmount
+                            : undefined,
+                    capitalPercentagePerTrade:
+                        debouncedPositionSizingMethod === 'PERCENTAGE'
+                            ? debouncedCapitalPercentagePerTrade
+                            : undefined,
+                    maxOpenPositions: debouncedMaxOpenPositions > 0 ? debouncedMaxOpenPositions : undefined,
+                    symbols: debouncedPreviewInput.symbols,
+                }, 'live')
+
+                if (!isActive) return
+
+                setAllocationPreview(response)
+                setExposureData({
+                    totalExposure: response.projectedEntryNotional,
+                    effectiveLeverage: response.leverage,
+                })
+            } catch (error) {
+                console.error('Failed to fetch allocation data:', error)
+                if (!isActive) return
+                setAllocationPreview(null)
+                // Fallback to mock calculation if API fails
+                const baseAmount = portfolioAllocation
+                const totalExposure = baseAmount * (Number(leverage) || 0)
+                setExposureData({
+                    totalExposure,
+                    effectiveLeverage: Number(leverage) || 0,
+                })
+            }
+        }
+
+        fetchExposureData()
+
+        return () => {
+            isActive = false
+        }
+    }, [debouncedPreviewInput, leverage, portfolioAllocation])
+
+    const dynamicLimits = useMemo(() => {
+        const defaults = {
+            maxLeverage: 125,
+            maxOpenPositions: 100,
+            maxFixedTradeAmount: undefined as number | undefined,
+            maxCapitalPercentagePerTrade: 100,
+        }
+
+        const limits = allocationPreview?.positionSizingLimits
+        if (!limits) return defaults
+
+        return {
+            maxLeverage: limits.maxLeverageAllowed ?? defaults.maxLeverage,
+            maxOpenPositions: limits.maxOpenPositionsAllowed ?? defaults.maxOpenPositions,
+            maxFixedTradeAmount:
+                limits.maxFixedTradeAmountAllowed === null
+                    ? undefined
+                    : limits.maxFixedTradeAmountAllowed,
+            maxCapitalPercentagePerTrade:
+                limits.maxCapitalPercentagePerTradeAllowed ?? defaults.maxCapitalPercentagePerTrade,
+        }
+    }, [allocationPreview])
+
+    useEffect(() => {
+        setValue('leverage', Number(leverage) || 0, { shouldValidate: true })
+        setValue('maxOpenPositions', Number(maxOpenPositions) || 0, { shouldValidate: true })
+        if (positionSizingMethod === 'FIXED') {
+            setValue('fixedTradeAmount', Number(fixedTradeAmount) || 0, { shouldValidate: true })
+        }
+        if (positionSizingMethod === 'PERCENTAGE') {
+            setValue('capitalPercentagePerTrade', Number(capitalPercentagePerTrade) || 0, { shouldValidate: true })
         }
     }, [
-        capitalAllocationType,
-        allocationValue,
+        dynamicLimits,
         leverage,
-        portfolioAllocation,
-        portfolioExposureLimitEnabled,
-        maxPortfolioExposurePercentage,
+        maxOpenPositions,
+        fixedTradeAmount,
+        capitalPercentagePerTrade,
+        positionSizingMethod,
+        setValue,
     ])
 
     const getDurationMultiplier = (unit: 'SECOND' | 'MINUTE' | 'HOUR') => {
@@ -122,7 +245,8 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
 
     const handleLeverageChange = (delta: number) => {
         const current = Number(leverage) || 0
-        const next = Math.min(125, Math.max(1, current + delta))
+        const maxLeverageLimit = dynamicLimits.maxLeverage || 125
+        const next = Math.min(maxLeverageLimit, Math.max(1, current + delta))
         setValue('leverage', next, { shouldDirty: true, shouldValidate: true })
     }
 
@@ -217,10 +341,12 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                 <p className="text-sm font-medium text-neutral-300">
                                     Portfolio Allocation:
                                     <span className="ml-2">
-                                        {isPercentageAlloc && !balanceData ? (
-                                            <span className="text-neutral-400">Percentage of total balance</span>
+                                        {isPercentageAlloc && allocationBaseBalance === 0 ? (
+                                            <span className="text-neutral-400">
+                                                Waiting for allocation preview
+                                            </span>
                                         ) : isPercentageAlloc ? (
-                                            `${allocationValue}% of total portfolio ($${portfolioAllocation.toFixed(2)})`
+                                            `${allocationValue}% of available balance ($${portfolioAllocation.toFixed(2)})`
                                         ) : (
                                             `$${portfolioAllocation.toFixed(2)}`
                                         )}
@@ -365,7 +491,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
 
                                                 <div className="space-y-2 text-base leading-[21px]">
                                                     <p className="font-semibold text-neutral-50">
-                                                        Portfolio Balance: ${' '}
+                                                        Available Balance: ${' '}
                                                         {portfolioBalance?.toLocaleString('en-US', {
                                                             minimumFractionDigits: 2,
                                                             maximumFractionDigits: 2,
@@ -423,7 +549,19 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                         label="Trade Amount (USD)"
                                         type="number"
                                         placeholder="e.g., 500"
-                                        rules={{ required: 'Required', min: { value: 0.01, message: 'Min 0.01' } }}
+                                        max={dynamicLimits.maxFixedTradeAmount}
+                                        rules={{
+                                            required: 'Required',
+                                            min: { value: 0.01, message: 'Min 0.01' },
+                                            ...(dynamicLimits.maxFixedTradeAmount
+                                                ? {
+                                                      max: {
+                                                          value: dynamicLimits.maxFixedTradeAmount,
+                                                          message: `Max ${dynamicLimits.maxFixedTradeAmount.toFixed(2)}`,
+                                                      },
+                                                  }
+                                                : {}),
+                                        }}
                                     />
                                 )}
 
@@ -434,10 +572,14 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                         label="Capital % Per Trade"
                                         type="number"
                                         placeholder="e.g., 10"
+                                        max={dynamicLimits.maxCapitalPercentagePerTrade}
                                         rules={{
                                             required: 'Required',
                                             min: { value: 0.01, message: 'Min 0.01' },
-                                            max: { value: 100, message: 'Max 100' },
+                                            max: {
+                                                value: dynamicLimits.maxCapitalPercentagePerTrade,
+                                                message: `Max ${dynamicLimits.maxCapitalPercentagePerTrade.toFixed(2)}`,
+                                            },
                                         }}
                                     />
                                 )}
@@ -448,10 +590,14 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                     label="Max Open Positions"
                                     type="number"
                                     placeholder="e.g., 1"
+                                    max={dynamicLimits.maxOpenPositions}
                                     rules={{
                                         required: 'Required',
                                         min: { value: 1, message: 'Min 1' },
-                                        max: { value: 100, message: 'Max 100' },
+                                        max: {
+                                            value: dynamicLimits.maxOpenPositions,
+                                            message: `Max ${dynamicLimits.maxOpenPositions}`,
+                                        },
                                     }}
                                 />
                             </div>
@@ -488,14 +634,61 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                         rules={{
                                             required: 'Leverage is required',
                                             min: { value: 1, message: 'Min 1' },
-                                            max: { value: 125, message: 'Max 125' },
+                                            max: {
+                                                value: dynamicLimits.maxLeverage || 125,
+                                                message: `Max ${dynamicLimits.maxLeverage.toFixed(2)}X`,
+                                            },
                                         }}
                                     />
                                 </div>
                                 <p className="text-sm font-medium text-neutral-300">
-                                    Stepper Input: <span className="ml-2">0 - 125X</span>
+                                    Stepper Input:{' '}
+                                    <span className="ml-2">0 - {dynamicLimits.maxLeverage.toFixed(2)}X</span>
                                 </p>
                             </div>
+
+                            {allocationPreview?.positionSizing && (
+                                <div className="space-y-3 rounded-lg bg-white/8 px-3 py-2">
+                                    <div className="flex items-center gap-2">
+                                        <InfoCircle size="16" className="shrink-0 text-blue-700" />
+                                        <p className="text-sm leading-[18px] text-neutral-200">
+                                            Limits are based on allocation size, fees, leverage, and selected symbols.
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2 text-sm leading-[18px] text-neutral-300">
+                                        <p>
+                                            Per trade amount:{' '}
+                                            <span className="font-semibold text-neutral-50">
+                                                ${allocationPreview.positionSizing.tradeAmountPerPosition.toFixed(2)}
+                                            </span>
+                                            {' '}| Usable after fee:{' '}
+                                            <span className="font-semibold text-neutral-50">
+                                                ${allocationPreview.positionSizing.usableAmountPerPosition.toFixed(2)}
+                                            </span>
+                                        </p>
+                                        <p>
+                                            Total capital required ({allocationPreview.positionSizing.maxOpenPositions} positions):{' '}
+                                            <span className="font-semibold text-neutral-50">
+                                                ${allocationPreview.positionSizing.totalCapitalRequired.toFixed(2)}
+                                            </span>
+                                        </p>
+                                        <p>
+                                            Total exposure ({allocationPreview.positionSizing.maxOpenPositions} positions):{' '}
+                                            <span className="font-semibold text-neutral-50">
+                                                ${allocationPreview.positionSizing.totalExposureAllPositions.toFixed(2)}
+                                            </span>
+                                        </p>
+                                        <p>
+                                            Max leverage allowed: <span className="font-semibold text-neutral-50">
+                                                {dynamicLimits.maxLeverage.toFixed(2)}X
+                                            </span>
+                                            {' '}| Max open positions: <span className="font-semibold text-neutral-50">
+                                                {dynamicLimits.maxOpenPositions}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Maximum Trade Duration */}
                             <Controller

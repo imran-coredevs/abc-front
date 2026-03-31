@@ -19,6 +19,16 @@ function mapStatus(status: InstanceOverview['status']): 'Running' | 'Stopped' | 
     return 'Draft'
 }
 
+function parseAllocationValue(strategy: InstanceOverview): number {
+    if (Number.isFinite(strategy.allocationValue)) return Number(strategy.allocationValue)
+    if (Number.isFinite(strategy.allocatedCapital)) return Number(strategy.allocatedCapital)
+    if (typeof strategy.allocation === 'string') {
+        const normalized = Number(strategy.allocation.replace(/[^0-9.-]+/g, ''))
+        return Number.isFinite(normalized) ? normalized : 0
+    }
+    return 0
+}
+
 export default function StrategyGrid() {
     const [strategies, setStrategies] = useState<InstanceOverview[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -195,9 +205,9 @@ export default function StrategyGrid() {
                     apiKey="binance-api-key"
                     strategyName={strategy?.strategyName ?? ''}
                     status={mapStatus(strategy?.status ?? 'DRAFT')}
-                    pair={strategy?.symbols?.length > 0 ? strategy.symbols : []}
+                    pair={strategy?.symbols?.length ? strategy.symbols : strategy.tradingPair ? [strategy.tradingPair] : []}
                     direction={mapDirection(strategy?.direction ?? 'BOTH')}
-                    allocation={strategy?.allocatedCapital ?? 0}
+                    allocation={parseAllocationValue(strategy)}
                     onToggleStatus={() => handleToggleStatus(strategy.id, strategy.status)}
                     onViewDetails={() => navigate(`/strategy-management/${strategy.id}`)}
                     isToggling={togglingIds.has(strategy.id) || strategy?.status === 'STARTING' || strategy?.status === 'STOPPING'}

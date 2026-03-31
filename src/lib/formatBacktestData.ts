@@ -9,39 +9,15 @@ import type { EquityCurvePoint as APIEquityCurvePoint } from '../services/backte
  */
 export function formatEquityCurve(
     equityCurve: APIEquityCurvePoint[],
-    format: 'month' | 'date' | 'datetime' = 'date',
 ): UIEquityCurvePoint[] {
     if (!equityCurve || equityCurve.length === 0) {
         return []
     }
 
-    return equityCurve.map((point) => {
-        const date = new Date(point.timestamp)
-        let label: string
-
-        switch (format) {
-            case 'month':
-                label = date.toLocaleDateString('en-US', { month: 'short' })
-                break
-            case 'datetime':
-                label = date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                })
-                break
-            case 'date':
-            default:
-                label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                break
-        }
-
-        return {
-            month: label,
-            equity: point.equity,
-        }
-    })
+    return equityCurve.map((point) => ({
+        timestamp: Number(point.timestamp),
+        equity: point.equity,
+    }))
 }
 
 /**

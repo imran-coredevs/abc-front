@@ -28,11 +28,15 @@ export interface DashboardResponse {
 export interface InstanceOverview {
     id: string
     strategyName: string
-    tradingPair: string
+    tradingPair?: string
+    symbols?: string[]
     timeframe: string
     direction: 'LONG' | 'SHORT' | 'BOTH'
     openPositions: number
-    allocatedCapital: number
+    allocatedCapital?: number
+    allocationValue?: number
+    allocationType?: 'PERCENTAGE_OF_PORTFOLIO' | 'FIXED_AMOUNT'
+    allocation?: string
     leverage: number
     todayPnL: number
     lastTrade: string | null

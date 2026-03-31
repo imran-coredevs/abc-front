@@ -65,6 +65,11 @@ export interface AllocationPreviewRequest {
   allocationValue: number;
   leverage?: number;
   maxPortfolioExposurePercentage?: number;
+  positionSizingMethod?: 'FIXED' | 'PERCENTAGE';
+  fixedTradeAmount?: number;
+  capitalPercentagePerTrade?: number;
+  maxOpenPositions?: number;
+  symbols?: string[];
 }
 
 export interface AllocationPreviewResponse {
@@ -83,6 +88,27 @@ export interface AllocationPreviewResponse {
   projectedEntryNotional: number;
   maxAllowedExposureAmount: number | null;
   remainingExposureCapacity: number | null;
+  positionSizing: {
+    method: 'FIXED' | 'PERCENTAGE';
+    fixedTradeAmount: number | null;
+    capitalPercentagePerTrade: number | null;
+    tradeAmountPerPosition: number;
+    usableAmountPerPosition: number;
+    notionalPerPosition: number;
+    maxOpenPositions: number;
+    totalCapitalRequired: number;
+    totalExposureAllPositions: number;
+    totalFeesAllPositions: number;
+    fitsWithinAllocation: boolean;
+    fitsWithinExposureLimit: boolean;
+  };
+  positionSizingLimits: {
+    maxLeverageAllowed: number;
+    maxOpenPositionsAllowed: number;
+    maxFixedTradeAmountAllowed: number | null;
+    maxLeverageBySymbols: number | null;
+    maxCapitalPercentagePerTradeAllowed: number;
+  };
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -167,13 +193,24 @@ export const deleteAccount = async (): Promise<{ message: string }> => {
  * Shows total exposure across all selected symbols
  */
 export const getAllocationPreview = async (
-  data: AllocationPreviewRequest
+  data: AllocationPreviewRequest,
+  source: 'cache' | 'live' = 'cache',
 ): Promise<AllocationPreviewResponse> => {
-  const response = await api.post<AllocationPreviewResponse>(
+  const response = await api.post<{
+    data: AllocationPreviewResponse | null;
+    status: string;
+    message?: string;
+    meta?: { timestamp: string; requestId: string };
+  }>(
     '/investor/allocation-preview',
-    data
+    data,
+    { params: { source } },
   );
-  return response.data;
+  if (response.data.status !== 'success' || !response.data.data) {
+    const errorMessage = response.data.message || 'Failed to fetch allocation preview';
+    throw new Error(errorMessage);
+  }
+  return response.data.data;
 };
 
 export default {

@@ -54,6 +54,19 @@ const DirectionBadge = ({ direction }: { direction: InstanceOverview['direction'
 
     return <span className={cn('text-sm font-medium', directionStyles[direction])}>{directionLabels[direction]}</span>
 }
+const formatAllocation = (row: InstanceOverview) => {
+    if (Number.isFinite(row.allocationValue)) {
+        return Number(row.allocationValue).toLocaleString()
+    }
+    if (Number.isFinite(row.allocatedCapital)) {
+        return Number(row.allocatedCapital).toLocaleString()
+    }
+    if (typeof row.allocation === 'string') {
+        const normalized = Number(row.allocation.replace(/[^0-9.-]+/g, ''))
+        return Number.isFinite(normalized) ? normalized.toLocaleString() : '0'
+    }
+    return '0'
+}
 const columns: TableColumn<InstanceOverview>[] = [
     {
         title: 'Strategy Name',
@@ -65,7 +78,11 @@ const columns: TableColumn<InstanceOverview>[] = [
         title: 'Trading Pair',
         key: 'tradingPair',
         type: 'dynamic',
-        render: (row) => <span className="text-sm font-normal text-neutral-50">{row.tradingPair}</span>,
+        render: (row) => (
+            <span className="text-sm font-normal text-neutral-50">
+                {row.symbols?.length ? row.symbols.join(', ') : row.tradingPair ?? '—'}
+            </span>
+        ),
     },
     {
         title: 'Timeframe',
@@ -90,7 +107,7 @@ const columns: TableColumn<InstanceOverview>[] = [
         key: 'allocatedCapital',
         type: 'dynamic',
         render: (row) => (
-            <span className="text-sm font-normal text-neutral-50">${row.allocatedCapital?.toLocaleString()}</span>
+            <span className="text-sm font-normal text-neutral-50">${formatAllocation(row)}</span>
         ),
     },
     {

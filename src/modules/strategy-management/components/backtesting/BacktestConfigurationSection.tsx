@@ -16,6 +16,8 @@ type BacktestConfigurationSectionProps = {
     takeProfitText: string
     hasResults: boolean
     showSymbolTabs?: boolean // Optional: Controls whether to show symbol tabs
+    activeSymbol: string
+    onActiveSymbolChange: (symbol: string) => void
     onDateRangeChange: (range: DateRange) => void
     onRunBacktest: () => void
     onReset: () => void
@@ -31,11 +33,12 @@ export default function BacktestConfigurationSection({
     takeProfitText,
     hasResults,
     showSymbolTabs = true, // Default to true for backward compatibility
+    activeSymbol,
+    onActiveSymbolChange,
     onDateRangeChange,
     onRunBacktest,
     onReset,
 }: BacktestConfigurationSectionProps) {
-    const [activeTab, setActiveTab] = useState<string>('all')
     const tabSymbols = (() => {
         const symbolsValue = strategyData?.symbols
         if (Array.isArray(symbolsValue)) {
@@ -187,7 +190,7 @@ export default function BacktestConfigurationSection({
 
             {showSymbolTabs && (
                 <>
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="my-8 w-full">
+                    <Tabs value={activeSymbol} onValueChange={onActiveSymbolChange} className="my-8 w-full">
                         <TabsList
                             className="grid w-full gap-5"
                             style={{
@@ -198,7 +201,7 @@ export default function BacktestConfigurationSection({
                                 value="all"
                                 className="h-auto border-0 bg-transparent p-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                             >
-                                <Button variant={activeTab === 'all' ? 'default' : 'secondary'} className="w-full">
+                                <Button variant={activeSymbol === 'all' ? 'default' : 'secondary'} className="w-full">
                                     All
                                 </Button>
                             </TabsTrigger>
@@ -208,7 +211,7 @@ export default function BacktestConfigurationSection({
                                     value={symbol}
                                     className="h-auto border-0 bg-transparent p-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                                 >
-                                    <Button variant={activeTab === symbol ? 'default' : 'secondary'} className="w-full">
+                                    <Button variant={activeSymbol === symbol ? 'default' : 'secondary'} className="w-full">
                                         {symbol.toUpperCase()}
                                     </Button>
                                 </TabsTrigger>

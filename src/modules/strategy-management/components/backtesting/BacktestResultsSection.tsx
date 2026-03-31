@@ -42,6 +42,35 @@ export default function BacktestResultsSection({
         return `$${value.toFixed(0)}`
     }
 
+    const safeDate = (value: number) => {
+        const numeric = Number(value)
+        if (!Number.isFinite(numeric)) return null
+        const millis = numeric < 1_000_000_000_000 ? numeric * 1000 : numeric
+        const date = new Date(millis)
+        return Number.isNaN(date.getTime()) ? null : date
+    }
+
+    const equityStart = safeDate(equityCurve[0]?.timestamp ?? 0)
+    const equityEnd = safeDate(equityCurve[equityCurve.length - 1]?.timestamp ?? 0)
+    const rangeHours =
+        equityStart && equityEnd
+            ? Math.max(0, (equityEnd.getTime() - equityStart.getTime()) / (1000 * 60 * 60))
+            : 0
+
+    const formatXAxisLabel = (value: number) => {
+        const date = safeDate(value)
+        if (!date) return ''
+        const hours = date.getHours()
+        const minutes = date.getMinutes()
+        if (hours === 0 && minutes === 0) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        }
+        if (rangeHours <= 48) {
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        }
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+
     return (
         <div className="relative space-y-6 overflow-hidden rounded-xl bg-white/5 p-4 sm:p-5">
             <div className="pointer-events-none absolute -bottom-[25%] left-1/2 -z-1 h-200 w-200 -translate-x-1/2 rounded-full bg-linear-to-b from-blue-700 to-blue-900 blur-[500px]" />
@@ -141,7 +170,7 @@ export default function BacktestResultsSection({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-stretch">
                 <div className="space-y-4 rounded-xl bg-neutral-950 p-4 sm:p-5">
                     <div>
                         <h4 className="text-lg sm:text-xl font-semibold text-neutral-200">Equity Curve</h4>
@@ -166,12 +195,13 @@ export default function BacktestResultsSection({
                                     </linearGradient>
                                 </defs>
                                 <XAxis
-                                    dataKey="month"
+                                    dataKey="timestamp"
                                     tick={{ fill: '#f6f7f9', fontSize: 10 }}
                                     axisLine={false}
                                     tickLine={false}
                                     interval={tickInterval}
                                     minTickGap={30}
+                                    tickFormatter={formatXAxisLabel}
                                 />
                                 <YAxis
                                     tick={{ fill: '#f6f7f9', fontSize: 10 }}
@@ -183,7 +213,18 @@ export default function BacktestResultsSection({
                                 />
                                 <ChartTooltip
                                     content={<ChartTooltipContent />}
-                                    formatter={(value) => [`$${Number(value)?.toLocaleString()}`, 'Equity']}
+                                    labelFormatter={(_, payload) => {
+                                        const ts = payload?.[0]?.payload?.timestamp
+                                        const date = safeDate(Number(ts))
+                                        if (!date) return '—'
+                                        return date.toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        })
+                                    }}
+                                    formatter={(value) => [`$${Number(value)?.toFixed(2)}`, 'Equity']}
                                     animationDuration={0}
                                     isAnimationActive={false}
                                     cursor={{ stroke: '#6545ee', strokeWidth: 1, strokeDasharray: '5 5' }}

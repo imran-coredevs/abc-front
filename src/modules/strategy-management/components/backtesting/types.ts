@@ -35,6 +35,6 @@ export type BacktestResult = {
 }
 
 export type EquityCurvePoint = {
-    month: string
+    timestamp: number
     equity: number
 }

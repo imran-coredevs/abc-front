@@ -181,9 +181,13 @@ export const InputField = <TFieldValues extends FieldValues = FieldValues>({
                                             field.onChange('')
                                             return
                                         }
+                                        const normalized =
+                                            rawValue.length > 1 && rawValue.startsWith('0') && rawValue[1] !== '.'
+                                                ? rawValue.replace(/^0+/, '') || ''
+                                                : rawValue
                                         // Parse and pass the exact value typed
-                                        const numValue = parseFloat(rawValue)
-                                        field.onChange(Number.isNaN(numValue) ? rawValue : numValue)
+                                        const numValue = parseFloat(normalized)
+                                        field.onChange(Number.isNaN(numValue) ? normalized : numValue)
                                     } else {
                                         field.onChange(e.target.value)
                                     }

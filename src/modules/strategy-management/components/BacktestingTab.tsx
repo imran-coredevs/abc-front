@@ -22,6 +22,8 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
     const [backtestResults, setBacktestResults] = useState<BacktestResult | null>(null)
     const [equityCurve, setEquityCurve] = useState<EquityCurvePoint[]>([])
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [activeSymbol, setActiveSymbol] = useState('all')
+    const [backtestData, setBacktestData] = useState<BacktestData | null>(null)
 
     const activeIndicators = strategyData?.indicators
         ? Object.entries(strategyData.indicators)
@@ -49,31 +51,37 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
               : 'Multi-level'
         : '—'
 
-    const transformBacktestData = (data: BacktestData): BacktestResult => {
-        const metrics = data.metrics!
-        const initialCapital = data?.equityCurve?.[0]?.equity ?? 1000
-        const netProfitPct = (metrics.netProfit / initialCapital) * 100
+    const getBreakdownByKey = (data: BacktestData, key: string) =>
+        data.breakdown.find((item) => item.key === key) ?? null
+
+    const transformBacktestData = (data: BacktestData, breakdownKey: string): BacktestResult => {
+        const breakdown = getBreakdownByKey(data, breakdownKey)
+        if (!breakdown) {
+            throw new Error(`Backtest breakdown is missing for ${breakdownKey}`)
+        }
+        const initialCapital = data.initialCapital || breakdown.equityCurve?.[0]?.equity || 1000
+        const netProfitPct = (breakdown.netProfit / initialCapital) * 100
 
         return {
-            netProfit: metrics.netProfit,
+            netProfit: breakdown.netProfit,
             netProfitPct,
-            winRate: metrics.winRate,
-            sharpeRatio: metrics.sharpeRatio,
-            totalTrades: metrics.totalTrades,
-            averageWin: metrics.averageWin,
-            averageLoss: metrics.averageLoss,
-            expectancy: metrics.expectancy,
-            maxDrawdown: metrics.maxDrawdown,
-            timeInMarket: metrics.timeInMarket,
-            avgTradeDuration: formatTradeDuration(metrics.averageTradeDurationMinutes),
-            longTrades: metrics.longTrades,
-            shortTrades: metrics.shortTrades,
-            exposureRatio: metrics.timeInMarket, // Using timeInMarket as exposureRatio
-            winningTrades: metrics.winningTrades,
-            losingTrades: metrics.losingTrades,
-            profitFactor: metrics.profitFactor,
-            maxConsecutiveWins: metrics.maxConsecutiveWins,
-            maxConsecutiveLosses: metrics.maxConsecutiveLosses,
+            winRate: breakdown.winRate,
+            sharpeRatio: breakdown.sharpeRatio,
+            totalTrades: breakdown.totalTrades,
+            averageWin: breakdown.averageWin,
+            averageLoss: breakdown.averageLoss,
+            expectancy: breakdown.expectancy,
+            maxDrawdown: breakdown.maxDrawdown,
+            timeInMarket: breakdown.timeInMarket,
+            avgTradeDuration: formatTradeDuration(breakdown.averageTradeDurationMinutes),
+            longTrades: breakdown.longTrades,
+            shortTrades: breakdown.shortTrades,
+            exposureRatio: breakdown.timeInMarket,
+            winningTrades: breakdown.winningTrades,
+            losingTrades: breakdown.losingTrades,
+            profitFactor: breakdown.profitFactor,
+            maxConsecutiveWins: breakdown.maxConsecutiveWins,
+            maxConsecutiveLosses: breakdown.maxConsecutiveLosses,
         }
     }
 
@@ -110,18 +118,11 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
             setBacktestStatus('running')
 
             // Poll for completion in the background
-            const backtestData = await pollBacktestStatus(startResponse?.data?.instanceId, (status) => {
+            const backtestData = await pollBacktestStatus(startResponse?.instanceId, (status) => {
                 console.log('Backtest status:', status)
             })
-
-            // Transform and set results
-            const transformedResults = transformBacktestData(backtestData)
-            const formattedEquityCurve = formatEquityCurve(backtestData.equityCurve, 'date')
-
-            setBacktestResults(transformedResults)
-            setEquityCurve(formattedEquityCurve)
+            setBacktestData(backtestData)
             setBacktestStatus('completed')
-            setHasResults(true)
         } catch (error) {
             console.error('Backtest error:', error)
             setBacktestStatus('failed')
@@ -146,21 +147,12 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
 
             try {
                 const response = await getBacktestStatus(strategyData._id)
-                const backtestData = response?.data?.backtest
+                const backtestData = response?.backtest
 
                 // Only show results if backtest is completed
-                if (
-                    backtestData?.status === 'COMPLETED' &&
-                    backtestData?.metrics &&
-                    backtestData?.equityCurve?.length > 0
-                ) {
-                    const transformedResults = transformBacktestData(backtestData)
-                    const formattedEquityCurve = formatEquityCurve(backtestData.equityCurve, 'date')
-
-                    setBacktestResults(transformedResults)
-                    setEquityCurve(formattedEquityCurve)
+                if (backtestData?.status === 'COMPLETED') {
+                    setBacktestData(backtestData)
                     setBacktestStatus('completed')
-                    setHasResults(true)
 
                     // Optionally set the date range from the existing backtest
                     if (backtestData?.startDate && backtestData?.endDate) {
@@ -173,19 +165,14 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
                     // If backtest is still running, poll for completion
                     setBacktestStatus('running')
                     const completedData = await pollBacktestStatus(strategyData._id)
-                    const transformedResults = transformBacktestData(completedData)
-                    const formattedEquityCurve = formatEquityCurve(completedData.equityCurve, 'date')
-
-                    setBacktestResults(transformedResults)
-                    setEquityCurve(formattedEquityCurve)
+                    setBacktestData(completedData)
                     setBacktestStatus('completed')
-                    setHasResults(true)
                 } else if (backtestData?.status === 'FAILED') {
                     setBacktestStatus('failed')
                     setHasResults(false)
                     setBacktestResults(null)
                     setEquityCurve([])
-                    setErrorMessage(backtestData.errorMessage || response?.data?.message || 'Backtest failed')
+                    setErrorMessage(backtestData.errorMessage || response?.message || 'Backtest failed')
                 }
             } catch (error) {
                 // No existing backtest found or error fetching - this is okay, user can run a new one
@@ -195,6 +182,30 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
 
         fetchExistingBacktest()
     }, [strategyData?._id])
+
+    useEffect(() => {
+        if (!backtestData || backtestStatus !== 'completed') {
+            return
+        }
+
+        const breakdownKey = activeSymbol === 'all' ? 'ALL' : activeSymbol
+        try {
+            const transformedResults = transformBacktestData(backtestData, breakdownKey)
+            const breakdown = getBreakdownByKey(backtestData, breakdownKey)
+            if (!breakdown?.equityCurve?.length) {
+                throw new Error('Backtest breakdown is missing')
+            }
+            const formattedEquityCurve = formatEquityCurve(breakdown.equityCurve)
+            setBacktestResults(transformedResults)
+            setEquityCurve(formattedEquityCurve)
+            setHasResults(true)
+        } catch (error) {
+            setHasResults(false)
+            setBacktestResults(null)
+            setEquityCurve([])
+            setErrorMessage(extractBacktestErrorMessage(error))
+        }
+    }, [activeSymbol, backtestData, backtestStatus])
 
     return (
         <div className="space-y-6">
@@ -208,6 +219,8 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
                 takeProfitText={takeProfitText}
                 hasResults={hasResults}
                 showSymbolTabs={true}
+                activeSymbol={activeSymbol}
+                onActiveSymbolChange={setActiveSymbol}
                 onDateRangeChange={setDateRange}
                 onRunBacktest={handleRunBacktest}
                 onReset={handleReset}
