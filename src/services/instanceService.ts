@@ -137,7 +137,7 @@ export interface InstanceDetailResponse {
         maxPortfolioExposurePercentage: number
         _id: string
         name: string
-        symbol: string
+        symbols: string[]
         timeframe: string
         tradeDirection: 'LONG' | 'SHORT' | 'BOTH'
         capitalAllocationType: 'PERCENTAGE_OF_PORTFOLIO' | 'FIXED_AMOUNT'

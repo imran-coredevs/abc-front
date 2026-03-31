@@ -83,7 +83,7 @@ export default function CreateEditStrategyPage() {
                 // Map API response to form data
                 const formData: StrategyFormData = {
                     name: instance.name,
-                    symbols: [instance.symbol],
+                    symbols: instance.symbols,
                     timeframe: instance.timeframe,
                     tradeDirection: instance.tradeDirection,
                     candleType: instance.candleType,
