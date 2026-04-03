@@ -152,7 +152,6 @@ export interface InstanceDetailResponse {
         fixedTradeAmount?: number
         capitalPercentagePerTrade?: number
         candleType: 'STANDARD' | 'HEIKIN_ASHI'
-        marginType: 'CROSSED' | 'ISOLATED'
         minSignalAgreement: number
         status: 'DRAFT' | 'STARTING' | 'LIVE' | 'STOPPING' | 'STOPPED'
         indicators?: any

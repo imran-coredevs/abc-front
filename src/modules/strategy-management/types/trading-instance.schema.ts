@@ -9,7 +9,6 @@ export const CAPITAL_ALLOCATION_TYPES = ['PERCENTAGE_OF_PORTFOLIO', 'FIXED_AMOUN
 export const POSITION_SIZING_METHODS  = ['FIXED', 'PERCENTAGE'] as const;
 export const TRADE_DIRECTIONS         = ['LONG', 'SHORT', 'BOTH'] as const;
 export const CANDLE_TYPES             = ['STANDARD', 'HEIKIN_ASHI'] as const;
-export const MARGIN_TYPES             = ['CROSSED', 'ISOLATED'] as const;
 
 // ── Indicators ────────────────────────────────────────────────────────────────
 
@@ -37,7 +36,6 @@ export type CapitalAllocationType = typeof CAPITAL_ALLOCATION_TYPES[number];
 export type PositionSizingMethod  = typeof POSITION_SIZING_METHODS[number];
 export type TradeDirection        = typeof TRADE_DIRECTIONS[number];
 export type CandleType            = typeof CANDLE_TYPES[number];
-export type MarginType            = typeof MARGIN_TYPES[number];
 
 // ── Indicators ────────────────────────────────────────────────────────────────
 
@@ -126,6 +124,8 @@ export interface StopLossConfig {
   type: StopLossType;
   fixedPercentage?: number;    // required when type is FIXED_PERCENTAGE
   structuralLookback?: number; // required when type is STRUCTURAL
+  structuralBufferPercent?: number; // optional when type is STRUCTURAL
+  structuralMaxDistancePercent?: number; // optional when type is STRUCTURAL
 }
 
 export interface BreakEvenConfig {

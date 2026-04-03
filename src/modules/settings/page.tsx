@@ -2,12 +2,14 @@ import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import ConfigurationSettingsPage from './components/ConfigurationSettingsPage'
 import ManagePassword from './components/ManagePassword'
+import MyProfileSettings from './components/MyProfileSettings'
 
 export default function SettingsPage() {
     const [selectedPage, setSelectedPage] = useState('configuration')
 
     const pages = [
         { name: 'configuration', label: 'Configuration' },
+        { name: 'profile', label: 'My Profile' },
         { name: 'password', label: 'Manage Password' },
     ]
 
@@ -17,6 +19,8 @@ export default function SettingsPage() {
                 return <ConfigurationSettingsPage />
             case 'password':
                 return <ManagePassword />
+            case 'profile':
+                return <MyProfileSettings />
             default:
                 return <ConfigurationSettingsPage />
         }

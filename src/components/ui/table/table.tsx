@@ -3,9 +3,9 @@ import { Edit2, Eye, ReceiveSquare, Trash } from 'iconsax-reactjs'
 import { Badge } from '../badge'
 import NoDataFound from '../no-data'
 
-type Props<T> = { columns: TableColumn<T>[]; tableData: T[]; actions?: TableActions<T>[] }
+type Props<T> = { columns: TableColumn<T>[]; tableData: T[]; actions?: TableActions<T>[]; noDataText?: string }
 
-export default function Table<T extends Record<string, unknown>>({ columns, tableData, actions }: Props<T>) {
+export default function Table<T extends Record<string, unknown>>({ columns, tableData, actions, noDataText }: Props<T>) {
     const renderRows = (col: TableColumn<T>, row: T) => {
         const value = row[col.key as keyof typeof row]
 
@@ -78,7 +78,7 @@ export default function Table<T extends Record<string, unknown>>({ columns, tabl
                     {tableData.length === 0 ? (
                         <tr>
                             <td colSpan={columns.length + (actions ? 1 : 0)} className="py-10">
-                                <NoDataFound text="No records found" />
+                                <NoDataFound text={noDataText || 'No records found'} />
                             </td>
                         </tr>
                     ) : (

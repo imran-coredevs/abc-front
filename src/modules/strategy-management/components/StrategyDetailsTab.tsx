@@ -23,10 +23,9 @@ type StrategyData = {
     fixedTradeAmount?: number
     capitalPercentagePerTrade?: number
     candleType: 'STANDARD' | 'HEIKIN_ASHI'
-    marginType: 'CROSSED' | 'ISOLATED'
     minSignalAgreement: number
     risk?: {
-        stopLoss?: { type: string; fixedPercentage?: number; structuralLookback?: number }
+        stopLoss?: { type: string; fixedPercentage?: number; structuralLookback?: number; structuralBufferPercent?: number; structuralMaxDistancePercent?: number }
         breakEven?: { enabled: boolean; triggerPercentage?: number; offsetPercentage?: number }
         trailingStop?: { enabled: boolean; trailingPercentage?: number }
         takeProfit?: { type: string; fixedPercentage?: number; riskRewardRatio?: number; partialLevels?: { triggerPercentage: number; closePercentage: number }[] }
@@ -170,7 +169,6 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                             { label: 'Trading Pairs', value: Array.isArray(strategyData?.symbols) ? strategyData.symbols.join(', ') : (strategyData?.symbols ?? 'N/A'), color: 'text-blue-400' },
                             { label: 'Timeframe', value: strategyData?.timeframe ?? 'N/A' },
                             { label: 'Trade Direction', value: strategyData?.tradeDirection ?? 'N/A', color: directionColor },
-                            { label: 'Margin Type', value: strategyData?.marginType ?? 'N/A' },
                             { label: 'Capital Allocation', value: `${strategyData?.capitalAllocationType ?? 'N/A'} — ${allocationLabel}` },
                             { label: 'Leverage', value: `${strategyData?.leverage ?? 1}x` },
                             { label: 'Max Open Positions', value: String(strategyData?.maxOpenPositions ?? 0) },
@@ -211,7 +209,15 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                                             <div className="flex gap-2"><span className="text-neutral-400">Fixed %:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.fixedPercentage}%</span></div>
                                         )}
                                         {strategyData.risk?.stopLoss?.type === 'STRUCTURAL' && strategyData.risk.stopLoss.structuralLookback != null && (
-                                            <div className="flex gap-2"><span className="text-neutral-400">Lookback:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.structuralLookback} candles</span></div>
+                                            <>
+                                                <div className="flex gap-2"><span className="text-neutral-400">Lookback:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.structuralLookback} candles</span></div>
+                                                {strategyData.risk.stopLoss.structuralBufferPercent != null && (
+                                                    <div className="flex gap-2"><span className="text-neutral-400">Buffer:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.structuralBufferPercent}%</span></div>
+                                                )}
+                                                {strategyData.risk.stopLoss.structuralMaxDistancePercent != null && (
+                                                    <div className="flex gap-2"><span className="text-neutral-400">Max Distance:</span><span className="font-semibold text-neutral-50">{strategyData.risk.stopLoss.structuralMaxDistancePercent}%</span></div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>

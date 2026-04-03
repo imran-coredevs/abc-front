@@ -6,7 +6,6 @@ import type {
     CapitalAllocationType,
     HullMode,
     IndicatorRole,
-    MarginType,
     PositionSizingMethod,
     PriceSource,
     RsiSmoothing,
@@ -24,7 +23,6 @@ export type StrategyFormData = {
     timeframe: string
     tradeDirection: TradeDirection
     candleType: CandleType
-    marginType: MarginType
     capitalAllocationType: CapitalAllocationType
     allocationValue: number
     leverage: number
@@ -77,7 +75,13 @@ export type StrategyFormData = {
         }
     }
     risk: {
-        stopLoss: { type: StopLossType; fixedPercentage: number; structuralLookback: number }
+        stopLoss: {
+            type: StopLossType
+            fixedPercentage: number
+            structuralLookback: number
+            structuralBufferPercent?: number
+            structuralMaxDistancePercent?: number
+        }
         breakEven: { enabled: boolean; triggerPercentage: number; offsetPercentage: number }
         trailingStop: { enabled: boolean; trailingPercentage: number }
         takeProfit: {

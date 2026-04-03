@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { useNavigate, useParams } from 'react-router'
+import { useBinanceConnectionStore } from '@/store/useBinanceConnectionStore'
 import BasicConfigSection from '../components/strategy-form/BasicConfigSection'
 import FormActions from '../components/strategy-form/FormActions'
 import StrategyFormHeader from '../components/strategy-form/StrategyFormHeader'
@@ -24,6 +25,7 @@ export default function CreateEditStrategyPage() {
     const { id } = useParams<{ id?: string }>()
     const isEditMode = Boolean(id)
     const [isLoading, setIsLoading] = useState(isEditMode)
+    const { isConnected, fetchConnectionStatus } = useBinanceConnectionStore()
 
     const {
         control,
@@ -74,6 +76,15 @@ export default function CreateEditStrategyPage() {
     useEffect(() => {
         const fetchStrategy = async () => {
             if (!id) return
+            if (isConnected === null) {
+                void fetchConnectionStatus()
+                return
+            }
+            if (isConnected !== true) {
+                toast.error('Please connect to Binance API key to load strategies')
+                navigate('/strategy-management')
+                return
+            }
 
             try {
                 setIsLoading(true)
@@ -87,7 +98,6 @@ export default function CreateEditStrategyPage() {
                     timeframe: instance.timeframe,
                     tradeDirection: instance.tradeDirection,
                     candleType: instance.candleType,
-                    marginType: instance.marginType,
                     capitalAllocationType: instance.capitalAllocationType,
                     allocationValue: instance.allocationValue,
                     leverage: instance.leverage,
@@ -115,9 +125,14 @@ export default function CreateEditStrategyPage() {
         }
 
         fetchStrategy()
-    }, [id, reset, navigate])
+    }, [id, reset, navigate, isConnected, fetchConnectionStatus])
 
     const onSubmit = async (data: StrategyFormData) => {
+        if (isConnected !== true) {
+            toast.error('Please connect to Binance API key to create strategies')
+            return
+        }
+
         try {
             clearErrors()
 

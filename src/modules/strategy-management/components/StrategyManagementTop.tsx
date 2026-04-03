@@ -1,8 +1,11 @@
 import { Button } from '@/components/ui/button'
+import { useBinanceConnectionStore } from '@/store/useBinanceConnectionStore'
 import { useNavigate } from 'react-router'
 
 export default function StrategyManagementTop() {
     const navigate = useNavigate()
+    const { isConnected } = useBinanceConnectionStore()
+    const isCreateDisabled = isConnected === false
 
     return (
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -14,7 +17,13 @@ export default function StrategyManagementTop() {
             </div>
 
             <div className="flex items-center gap-4">
-                <Button onClick={() => navigate('/strategy-management/create')}>Create Strategy</Button>
+                <Button
+                    onClick={() => navigate('/strategy-management/create')}
+                    disabled={isCreateDisabled}
+                    title={isCreateDisabled ? 'Connect Binance API key to create strategies' : undefined}
+                >
+                    Create Strategy
+                </Button>
             </div>
         </div>
     )

@@ -18,6 +18,7 @@ type BinanceExchangeInfo = {
 type SymbolEntry = {
     symbol: string  // e.g. BTCUSDT
     base: string    // e.g. BTC
+    quoteAsset: string
 }
 
 function useBinanceSymbols() {
@@ -38,9 +39,13 @@ function useBinanceSymbols() {
                         (s) =>
                             s?.contractType === 'PERPETUAL' &&
                             s?.status === 'TRADING' &&
-                            s?.quoteAsset === 'USDT',   // USDT-margined perps only
+                            ['USDT', 'USDC'].includes(s?.quoteAsset ?? ''),
                     )
-                    .map((s) => ({ symbol: s?.symbol ?? '', base: s?.baseAsset ?? '' }))
+                    .map((s) => ({
+                        symbol: s?.symbol ?? '',
+                        base: s?.baseAsset ?? '',
+                        quoteAsset: s?.quoteAsset ?? '',
+                    }))
                     .sort((a, b) => a.symbol.localeCompare(b.symbol))
                 setSymbols(filtered)
             })
@@ -210,7 +215,7 @@ export default function SymbolSearchSelect<T extends FieldValues>({ label, name,
                                             No matching futures symbol.
                                         </li>
                                     )}
-                                    {filtered.map(({ symbol, base }) => (
+                                    {filtered.map(({ symbol, base, quoteAsset }) => (
                                         <li
                                             key={symbol}
                                             onClick={() => handleSelectSymbol(symbol)}
@@ -222,7 +227,7 @@ export default function SymbolSearchSelect<T extends FieldValues>({ label, name,
                                             )}
                                         >
                                             <span className="font-medium">{symbol}</span>
-                                            <span className="text-xs text-neutral-500">{base} · USDT Perp</span>
+                                            <span className="text-xs text-neutral-500">{base} · {quoteAsset} Perp</span>
                                         </li>
                                     ))}
                                 </ul>

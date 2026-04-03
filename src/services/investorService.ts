@@ -20,6 +20,9 @@ export interface InvestorProfile {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
   lastLoginAt: string;
   feeTier: FeeTier;
   hasCredentials: boolean;
@@ -29,7 +32,10 @@ export interface InvestorProfile {
 
 export interface UpdateProfileDto {
   name?: string;
-  email?: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  avatar?: File;
 }
 
 export interface BinanceCredentialsDto {
@@ -59,6 +65,16 @@ export interface FeeTierResponse {
   message: string;
   feeTier: FeeTier;
 }
+
+type ApiResponse<T> = {
+  data: T;
+  status: string;
+  message?: string;
+  meta?: {
+    timestamp?: string;
+    requestId?: string;
+  };
+};
 
 export interface AllocationPreviewRequest {
   capitalAllocationType: 'PERCENTAGE_OF_PORTFOLIO' | 'FIXED_AMOUNT';
@@ -120,16 +136,26 @@ export interface AllocationPreviewResponse {
  * @returns Investor profile with hasCredentials flag
  */
 export const getProfile = async (): Promise<InvestorProfile> => {
-  const response = await api.get<InvestorProfile>('/investor/profile');
-  return response.data;
+  const response = await api.get<ApiResponse<InvestorProfile>>('/investor/profile');
+  return response.data.data;
 };
 
 /**
  * Update investor profile (name, email)
  */
 export const updateProfile = async (data: UpdateProfileDto): Promise<InvestorProfile> => {
-  const response = await api.put<InvestorProfile>('/investor/profile', data);
-  return response.data;
+  const formData = new FormData();
+
+  if (data.name != null) formData.append('name', data.name);
+  if (data.firstName != null) formData.append('firstName', data.firstName);
+  if (data.lastName != null) formData.append('lastName', data.lastName);
+  if (data.avatarUrl != null) formData.append('avatarUrl', data.avatarUrl);
+  if (data.avatar) formData.append('avatar', data.avatar);
+
+  const response = await api.put<ApiResponse<InvestorProfile>>('/investor/profile', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data.data;
 };
 
 /**

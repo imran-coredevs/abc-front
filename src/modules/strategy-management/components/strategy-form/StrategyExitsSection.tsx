@@ -44,36 +44,53 @@ export default function StrategyExitsSection({ control, watch }: Props) {
     const allowReEntry = watch('strategyExits.allowReEntryOnActiveSignal')
 
     return (
-        <div className="space-y-4 rounded-lg bg-white/5 p-4 sm:p-6">
+        <div className="space-y-5 rounded-lg bg-white/5 p-4 sm:p-6">
             <h2 className="text-xl font-semibold text-neutral-50">Strategy Exits</h2>
             <Separator />
 
-            <div className="grid grid-cols-1 gap-4">
-                <ToggleRow
-                    name="strategyExits.onOppositeSignal"
-                    label="Exit on Opposite Signal"
-                    control={control}
-                />
-                <ToggleRow
-                    name="strategyExits.onTrendChange"
-                    label="Exit on Trend Change"
-                    control={control}
-                />
-                <ToggleRow
-                    name="strategyExits.allowReEntryOnActiveSignal"
-                    label="Allow Re-Entry on Active Signal"
-                    control={control}
-                />
-                {allowReEntry && (
-                    <InputField
-                        name="strategyExits.reEntryCooldownBars"
+            <div className="space-y-4 rounded-lg bg-neutral-950 p-4">
+                <div className="space-y-1">
+                    <h3 className="text-lg font-medium text-neutral-50">Exit Condition</h3>
+                    <p className="text-sm text-neutral-400">Choose when the strategy should close an active trade.</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                    <ToggleRow
+                        name="strategyExits.onOppositeSignal"
+                        label="Exit on Opposite Signal"
                         control={control}
-                        label="Re-Entry Cooldown (Bars)"
-                        type="number"
-                        placeholder="0"
-                        rules={{ required: 'Required', min: { value: 0, message: 'Min 0' } }}
                     />
-                )}
+                    <ToggleRow
+                        name="strategyExits.onTrendChange"
+                        label="Exit on Trend Change"
+                        control={control}
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-4 rounded-lg bg-neutral-950 p-4">
+                <div className="space-y-1">
+                    <h3 className="text-lg font-medium text-neutral-50">Exit & Re-Entry Logic</h3>
+                    <p className="text-sm text-neutral-400">Control whether the strategy can re-enter after an exit.</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                    <ToggleRow
+                        name="strategyExits.allowReEntryOnActiveSignal"
+                        label="Allow Re-Entry on Active Signal"
+                        control={control}
+                    />
+                    {allowReEntry && (
+                        <InputField
+                            name="strategyExits.reEntryCooldownBars"
+                            control={control}
+                            label="Re-Entry Cooldown"
+                            type="number"
+                            placeholder="0 bars"
+                            rules={{ required: 'Required', min: { value: 0, message: 'Min 0' } }}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     )

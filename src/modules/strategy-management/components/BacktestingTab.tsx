@@ -40,7 +40,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
             ? `${stopLoss.fixedPercentage}%`
             : stopLoss.type === 'TRAILING'
               ? 'Trailing'
-              : `Structural (${stopLoss.structuralLookback} bars)`
+                            : `Structural (${stopLoss.structuralLookback} bars${stopLoss.structuralBufferPercent != null ? `, buffer ${stopLoss.structuralBufferPercent}%` : ''}${stopLoss.structuralMaxDistancePercent != null ? `, max ${stopLoss.structuralMaxDistancePercent}%` : ''})`
         : '—'
 
     const takeProfitText = takeProfit

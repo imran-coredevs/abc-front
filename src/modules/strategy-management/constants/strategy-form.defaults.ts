@@ -6,12 +6,11 @@ export const STRATEGY_FORM_DEFAULTS: StrategyFormData = {
     timeframe: '15m',
     tradeDirection: 'BOTH',
     candleType: 'STANDARD',
-    marginType: 'CROSSED',
     capitalAllocationType: 'FIXED_AMOUNT',
     allocationValue: 1000,
     leverage: 5,
     maxOpenPositions: 1,
-    maxPortfolioExposurePercentage: 100,
+    maxPortfolioExposurePercentage: 300,
     maxTradeDuration: 0,
     positionSizingMethod: 'PERCENTAGE',
     fixedTradeAmount: 100,
@@ -26,12 +25,18 @@ export const STRATEGY_FORM_DEFAULTS: StrategyFormData = {
         squeezeMomentum: { role: 'disabled', bollingerBandsPeriod: 20, bollingerBandsMultiplier: 2, keltnerChannelPeriod: 20, keltnerChannelMultiplier: 1.5, useTrueRange: true, signalLookbackBars: 1 },
     },
     risk: {
-        stopLoss: { type: 'FIXED_PERCENTAGE', fixedPercentage: 2, structuralLookback: 10 },
+        stopLoss: {
+            type: 'FIXED_PERCENTAGE',
+            fixedPercentage: 2,
+            structuralLookback: 10,
+            structuralBufferPercent: 0.1,
+            structuralMaxDistancePercent: 5,
+        },
         breakEven: { enabled: false, triggerPercentage: 1, offsetPercentage: 0.1 },
         trailingStop: { enabled: false, trailingPercentage: 1 },
         takeProfit: { type: 'FIXED_PERCENTAGE', fixedPercentage: 4, riskRewardRatio: 2, partialLevels: [{ triggerPercentage: 2, closePercentage: 50 }] },
     },
-    strategyExits: { onOppositeSignal: true, onTrendChange: false, allowReEntryOnActiveSignal: false, reEntryCooldownBars: 1 },
+    strategyExits: { onOppositeSignal: true, onTrendChange: false, allowReEntryOnActiveSignal: false, reEntryCooldownBars: 0 },
 }
 
 // Full DTO timeframe list. UI enforces min 5m — 1m/3m are excluded from the dropdown.
@@ -43,7 +48,6 @@ export const CAPITAL_ALLOCATION_TYPES = [
 ]
 export const POSITION_SIZING_METHODS = ['FIXED', 'PERCENTAGE']
 export const CANDLE_TYPES = ['STANDARD', 'HEIKIN_ASHI']
-export const MARGIN_TYPES = ['CROSSED', 'ISOLATED']
 export const PRICE_SOURCES = ['open', 'high', 'low', 'close', 'hl2', 'hlc3', 'ohlc4']
 export const SUPERTREND_SRC = ['close', 'hl2', 'hlc3', 'ohlc4']
 export const RSI_SMOOTHING = ['None', 'SMA', 'SMA + Bollinger Bands', 'EMA', 'RMA', 'WMA']

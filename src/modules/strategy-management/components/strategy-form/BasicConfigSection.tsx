@@ -14,7 +14,6 @@ import { CAPITAL_ALLOCATION_TYPES, TIMEFRAMES } from '../../constants/strategy-f
 import type { StrategyControl, StrategySetValue, StrategyWatch } from '../../types/strategy-form.types'
 import IndicatorsSection from './IndicatorsSection'
 import RiskManagementSection from './RiskManagementSection'
-import StrategyExitsSection from './StrategyExitsSection'
 
 type Props = {
     control: StrategyControl
@@ -252,10 +251,6 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
 
     return (
         <div className="grid grid-cols-1 gap-5 rounded-lg bg-white/5 p-4 sm:p-6 lg:grid-cols-2">
-            <div className="space-y-4 lg:col-span-2">
-                <h2 className="text-xl font-semibold text-neutral-50">Identity & scope</h2>
-                <Separator />
-            </div>
 
             {/* Row 1: Name, Symbol, Timeframe */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
@@ -287,31 +282,6 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                         <Separator />
 
                         <div className="space-y-5">
-                            {/* Margin Type - Radio Buttons */}
-                            <div className="space-y-4">
-                                <p className="text-base text-neutral-50">Margin Type *</p>
-                                <div className="flex flex-wrap gap-4">
-                                    <label className="flex cursor-pointer items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            value="CROSSED"
-                                            className={figmaRadioClass}
-                                            {...control.register('marginType')}
-                                        />
-                                        <span className="text-base text-neutral-50">Crossed</span>
-                                    </label>
-                                    <label className="flex cursor-pointer items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            value="ISOLATED"
-                                            className={figmaRadioClass}
-                                            {...control.register('marginType')}
-                                        />
-                                        <span className="text-base text-neutral-50">Isolated</span>
-                                    </label>
-                                </div>
-                            </div>
-
                             {/* Allocation Type */}
                             <FormSelect
                                 label="Allocation Type"
@@ -375,7 +345,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                         shouldValidate: false,
                                                     })
                                                 } else {
-                                                    setValue('maxPortfolioExposurePercentage', 10, {
+                                                    setValue('maxPortfolioExposurePercentage', 3000, {
                                                         shouldValidate: true,
                                                     })
                                                 }
@@ -408,8 +378,8 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                 control={control}
                                                 rules={{
                                                     required: 'Max portfolio exposure is required',
-                                                    min: { value: 0.01, message: 'Must be greater than 0' },
-                                                    max: { value: 300, message: 'Maximum is 300%' },
+                                                    min: { value: 1, message: 'Minimum is 1%' },
+                                                    max: { value: 10000, message: 'Maximum is 10000%' },
                                                 }}
                                                 render={({ field, fieldState }) => (
                                                     <div className="space-y-2">
@@ -424,9 +394,9 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                                 />
                                                                 <input
                                                                     type="number"
-                                                                    min={0.01}
-                                                                    max={300}
-                                                                    step={0.01}
+                                                                    min={1}
+                                                                    max={10000}
+                                                                    step={1}
                                                                     autoComplete="off"
                                                                     value={field.value ?? ''}
                                                                     onKeyDown={(e) => {
@@ -438,7 +408,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                                         field.onBlur()
                                                                         // On blur, if empty, reset to minimum valid value
                                                                         if (e.target.value === '') {
-                                                                            field.onChange(0.01)
+                                                                            field.onChange(1)
                                                                         }
                                                                     }}
                                                                     onChange={(e) => {
@@ -453,13 +423,13 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                                             Number.isNaN(nextValue) ? '' : nextValue,
                                                                         )
                                                                     }}
-                                                                    placeholder="e.g., 10"
+                                                                    placeholder="e.g., 3000"
                                                                     className="w-full border-none bg-transparent text-base leading-[21px] font-normal text-neutral-300 outline-none"
                                                                 />
                                                             </div>
                                                             <button
                                                                 type="button"
-                                                                onClick={() => field.onChange(300)}
+                                                                onClick={() => field.onChange(10000)}
                                                                 className="text-base leading-[21px] font-semibold text-blue-500"
                                                             >
                                                                 Max
@@ -802,7 +772,6 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                 </div>
 
                 <RiskManagementSection control={control} watch={watch} />
-                <StrategyExitsSection control={control} watch={watch} />
             </div>
 
             <IndicatorsSection control={control} watch={watch} />

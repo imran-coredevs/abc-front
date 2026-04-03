@@ -8,6 +8,8 @@ import SqueezeMomentumIndicator from './indicators/SqueezeMomentumIndicator'
 import SupertrendIndicator from './indicators/SupertrendIndicator'
 import UtBotIndicator from './indicators/UtBotIndicator'
 import { InfoCircle } from 'iconsax-reactjs'
+import { Controller } from 'react-hook-form'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const MARKET_DATA_OPTIONS = [
     { value: 'STANDARD', label: 'Classic (Standard OHLC)' },
@@ -21,26 +23,43 @@ type Props = {
 
 export default function IndicatorsSection({ control, watch }: Props) {
     return (
-        <div className="w-full space-y-4 rounded-lg bg-white/5 p-4 sm:p-6">
+        <div className="w-full space-y-6 rounded-xl bg-white/5 p-5">
             <h2 className="text-xl font-semibold text-neutral-50">Indicators</h2>
-            <Separator />
 
-            <div className="w-full bg-white/5 inline-flex items-center justify-start gap-3 self-stretch rounded-lg px-3 py-2">
-                <InfoCircle />
-                <div className="text-neutral-200 justify-start text-sm leading-4 font-normal">
+            <div className="inline-flex w-full items-center justify-start gap-3 self-stretch rounded-lg bg-white/5 px-3 py-2">
+                <InfoCircle size={18} className="text-neutral-300" />
+                <div className="justify-start text-sm leading-[18px] font-normal text-neutral-200">
                     At least one indicator must be enabled
                 </div>
             </div>
 
             <Separator />
 
-            <div className="space-y-3">
-                <FormSelect
-                    label="Market Data Source"
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="space-y-1">
+                    <p className="text-lg leading-6 font-medium text-neutral-50">Market Data Source</p>
+                    <p className="text-base leading-[21px] font-normal text-neutral-400">
+                        Select which candle type indicators should use for calculation
+                    </p>
+                </div>
+
+                <Controller
                     name="candleType"
                     control={control}
-                    options={MARKET_DATA_OPTIONS}
-                    description="Select which candle type indicators should use for calculation"
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value as string} defaultValue={field.value as string}>
+                            <SelectTrigger className="h-12 w-full rounded-lg border-neutral-700 bg-white/5 px-3 text-neutral-50 lg:w-[220px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {MARKET_DATA_OPTIONS.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
                 />
             </div>
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { instanceService, InstanceOverview } from '@/services/instanceService'
 import toast from 'react-hot-toast'
 import StrategyCard from './StrategyCard'
+import { useBinanceConnectionStore } from '@/store/useBinanceConnectionStore'
 
 
 function mapDirection(dir: 'LONG' | 'SHORT' | 'BOTH'): 'Long' | 'Short' | 'Both' {
@@ -36,8 +37,15 @@ export default function StrategyGrid() {
     const navigate = useNavigate()
     const pollingTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
     const pollingAttemptsRef = useRef<Map<string, number>>(new Map())
+    const { isConnected, isLoading: isCheckingConnection, fetchConnectionStatus } = useBinanceConnectionStore()
 
     const fetchStrategies = async () => {
+        if (isConnected !== true) {
+            setStrategies([])
+            setIsLoading(false)
+            return
+        }
+
         try {
             setIsLoading(true)
             const response = await instanceService.getOverview()
@@ -61,7 +69,18 @@ export default function StrategyGrid() {
     }
 
     useEffect(() => {
-        fetchStrategies()
+        if (isConnected === null) {
+            void fetchConnectionStatus()
+        }
+
+        if (isConnected === true) {
+            void fetchStrategies()
+        }
+
+        if (isConnected === false) {
+            setStrategies([])
+            setIsLoading(false)
+        }
 
         // Cleanup all polling timers on unmount
         return () => {
@@ -69,7 +88,7 @@ export default function StrategyGrid() {
             pollingTimersRef.current.clear()
             pollingAttemptsRef.current.clear()
         }
-    }, [])
+    }, [isConnected, fetchConnectionStatus])
 
     // Stop polling for a specific instance
     const stopPolling = (instanceId: string) => {
@@ -140,6 +159,11 @@ export default function StrategyGrid() {
     }
 
     const handleToggleStatus = async (id: string, currentStatus: InstanceOverview['status']) => {
+        if (isConnected !== true) {
+            toast.error('Please connect Binance API key to manage strategies')
+            return
+        }
+
         // Prevent double-clicks while already processing
         if (togglingIds.has(id)) {
             return
@@ -178,12 +202,20 @@ export default function StrategyGrid() {
         }
     }
 
-    if (isLoading) {
+    if (isLoading || (isConnected === null && isCheckingConnection)) {
         return (
             <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {[1, 2, 3, 4].map((i) => (
                     <div key={i} className="h-80 animate-pulse rounded-xl bg-neutral-800/50" />
                 ))}
+            </div>
+        )
+    }
+
+    if (isConnected === false) {
+        return (
+            <div className="mt-6 flex flex-col items-center justify-center rounded-xl border border-neutral-800 bg-neutral-900 py-20 text-center">
+                <p className="text-lg text-neutral-300">Please connect to Binance API key to load your strategies.</p>
             </div>
         )
     }

@@ -10,6 +10,7 @@ const Profile = () => {
     const { user } = useLoginUserStore()
     const { logout } = useAuth()
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+    const fallbackText = user?.firstName?.[0] || user?.name?.[0] || user?.email?.[0] || 'U'
 
     const handleLogout = () => {
         logout()
@@ -30,10 +31,11 @@ const Profile = () => {
                 <PopoverTrigger className="cursor-pointer">
                     <div className="flex items-center gap-3 rounded-[60px] bg-white/8 px-4 py-2">
                         <ImageWrapper
-                            src={user?.profileImage}
+                            src={user?.avatarUrl || undefined}
                             alt={`Avatar of ${user?.firstName}-${user?.lastName}`}
                             className="size-10 overflow-hidden rounded-full"
                             avatar
+                            fallbackText={fallbackText}
                         />
                         <ArrowDown2 size="24" variant="Bold" className="text-neutral-200" />
                     </div>

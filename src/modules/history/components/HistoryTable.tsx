@@ -6,9 +6,10 @@ import { DateRangePicker } from '@/components/ui/DateRangePicker'
 import { useState, useEffect } from 'react'
 import { subDays, format } from 'date-fns'
 import { cn } from '@/lib/utils'
-import { instanceService, type TradeHistoryItem } from '@/services/instanceService'
+import { instanceService } from '@/services/instanceService'
 import toast from 'react-hot-toast'
 import { DateRange } from 'react-day-picker'
+import { useBinanceConnectionStore } from '@/store/useBinanceConnectionStore'
 
 type TradeHistory = {
     tradeId: string
@@ -169,12 +170,25 @@ export default function HistoryTable() {
         total: 0,
         totalPages: 0,
     })
+    const { isConnected, isLoading: isCheckingConnection, fetchConnectionStatus } = useBinanceConnectionStore()
 
     const itemsPerPage = 10
 
     // Fetch trade history
     useEffect(() => {
         const fetchHistory = async () => {
+            if (isConnected === null) {
+                setLoading(true)
+                return
+            }
+
+            if (isConnected !== true) {
+                setTrades([])
+                setPagination({ page: 1, limit: 10, total: 0, totalPages: 0 })
+                setLoading(false)
+                return
+            }
+
             setLoading(true)
             try {
                 const filters: any = {
@@ -221,8 +235,12 @@ export default function HistoryTable() {
             }
         }
 
-        fetchHistory()
-    }, [currentPage, result, direction, dateRange])
+        if (isConnected === null) {
+            void fetchConnectionStatus()
+        }
+
+        void fetchHistory()
+    }, [currentPage, result, direction, dateRange, isConnected, fetchConnectionStatus])
 
     const handleFilterChange = (setter: (v: string) => void) => (value: string) => {
         setter(value)
@@ -244,6 +262,8 @@ export default function HistoryTable() {
         hasPrevPage: currentPage > 1,
         onPageChange: (page: number) => setCurrentPage(page),
     }
+
+    const shouldShowLoading = loading || (isConnected === null && isCheckingConnection)
 
     return (
         <div className="mt-5 rounded-2xl border border-neutral-800 bg-neutral-900 p-4 sm:p-6">
@@ -280,19 +300,27 @@ export default function HistoryTable() {
             </TableHeader>
 
             <div className="relative overflow-hidden mt-5">
-                {loading ? (
+                {shouldShowLoading ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-700 border-t-blue-500" />
                     </div>
                 ) : (
-                    <Table columns={columns} tableData={trades} />
+                    <Table
+                        columns={columns}
+                        tableData={trades}
+                        noDataText={
+                            isConnected === false
+                                ? 'Please connect to Binance API key'
+                                : 'No records found'
+                        }
+                    />
                 )}
                 <div className="absolute -bottom-[20%] left-[50%] z-1 -translate-x-1/2 pointer-events-none">
                     <div className="h-200 w-200 rounded-full bg-linear-to-b from-blue-900 to-blue-800 blur-[500px]" />
                 </div>
             </div>
 
-            {!loading && trades.length > 0 && <TablePagination paginationOptions={paginationOptions} tableName="trades" />}
+            {!shouldShowLoading && trades.length > 0 && <TablePagination paginationOptions={paginationOptions} tableName="trades" />}
         </div>
     )
 }

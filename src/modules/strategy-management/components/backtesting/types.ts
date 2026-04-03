@@ -6,7 +6,7 @@ export type StrategyInfo = {
     timeframe?: string
     indicators?: Record<string, { role: string } | undefined>
     risk?: {
-        stopLoss?: { type: string; fixedPercentage?: number; structuralLookback?: number }
+        stopLoss?: { type: string; fixedPercentage?: number; structuralLookback?: number; structuralBufferPercent?: number; structuralMaxDistancePercent?: number }
         takeProfit?: { type: string; fixedPercentage?: number; riskRewardRatio?: number }
     }
     symbols?: string[] | string

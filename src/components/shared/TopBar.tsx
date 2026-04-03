@@ -6,7 +6,6 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router'
 import AlertModal from '../ui/alert-modal'
-import ImageWrapper from '../ui/ImageWrapper'
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '../ui/sheet'
 import NavButton from './NavButton'
 import Profile from './Profile'
@@ -42,7 +41,7 @@ const settingsButton = {
 export default function TopBar() {
     const [isOpen, setIsOpen] = useState(false)
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-    const { user, clear } = useLoginUserStore()
+    const { clear } = useLoginUserStore()
     const navigate = useNavigate()
 
     const handleLogout = () => {
@@ -93,10 +92,11 @@ export default function TopBar() {
                             {/* Profile Section at Top */}
                             {/* <div className="flex items-center gap-3 pt-4 pb-6 border-b border-neutral-700">
                                 <ImageWrapper
-                                    src={user?.profileImage}
+                                    src={user?.avatarUrl || undefined}
                                     alt={`Avatar of ${user?.firstName}-${user?.lastName}`}
                                     className="size-12 overflow-hidden rounded-full"
                                     avatar
+                                    fallbackText={fallbackText}
                                 />
                                 <div className="flex flex-col">
                                     <h3 className="text-base font-semibold text-neutral-50">

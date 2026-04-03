@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import toast from 'react-hot-toast'
 import { useLoginUserStore } from '@/store/useLoginUserStore'
 import { authService } from '@/services/authService'
+import { useBinanceConnectionStore } from '@/store/useBinanceConnectionStore'
 
 function parseName(fullName: string | null | undefined): { firstName: string; lastName: string } {
     if (!fullName) return { firstName: 'Investor', lastName: '' }
@@ -16,28 +17,32 @@ function parseName(fullName: string | null | undefined): { firstName: string; la
 export function useAuth() {
     const navigate = useNavigate()
     const { setUser, setToken, saveToLocalStorage, saveToSessionStorage, clear } = useLoginUserStore()
+    const { fetchConnectionStatus, clearConnectionStatus } = useBinanceConnectionStore()
 
     const loginMutation = useMutation({
         mutationFn: ({ email, password }: { email: string; password: string; rememberMe?: boolean }) =>
             authService.login(email, password),
-        onSuccess: (data, variables) => {
-            const { firstName, lastName } = parseName(data?.data?.investor?.name)
+        onSuccess: async (data, variables) => {
+            const { firstName, lastName } = parseName(data?.investor?.name)
             const user = {
-                id: data?.data?.investor?.id ?? '',
-                email: data?.data?.investor?.email ?? '',
+                id: data?.investor?.id ?? '',
+                name: data?.investor?.name ?? '',
+                email: data?.investor?.email ?? '',
                 firstName,
                 lastName,
-                profileImage: '',
+                avatarUrl: '',
             }
 
             setUser(user)
-            setToken(data?.data?.token ?? '')
+            setToken(data?.token ?? '')
 
             if (variables.rememberMe) {
-                saveToLocalStorage(user, data?.data?.token ?? '', data?.data?.refreshToken ?? '')
+                saveToLocalStorage(user, data?.token ?? '', data?.refreshToken ?? '')
             } else {
-                saveToSessionStorage(user, data?.data?.token ?? '', data?.data?.refreshToken ?? '')
+                saveToSessionStorage(user, data?.token ?? '', data?.refreshToken ?? '')
             }
+
+            await fetchConnectionStatus()
 
             toast.success('Login successful!')
             navigate('/')
@@ -52,12 +57,14 @@ export function useAuth() {
         mutationFn: () => authService.logout(),
         onSuccess: () => {
             clear()
+            clearConnectionStatus()
             toast.success('Logged out successfully')
             navigate('/login')
         },
         onError: () => {
             // Clear local state regardless of server error
             clear()
+            clearConnectionStatus()
             navigate('/login')
         },
     })

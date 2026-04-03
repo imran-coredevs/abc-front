@@ -6,6 +6,7 @@ import { Add, Copy, Trash } from 'iconsax-reactjs'
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import * as investorService from '@/services/investorService'
+import { useBinanceConnectionStore } from '@/store/useBinanceConnectionStore'
 
 type StoredApiKey = {
     apiKey: string
@@ -19,12 +20,14 @@ export default function ConfigurationSettingsPage() {
     const [modalMode, setModalMode] = useState<'add' | 'replace'>('add')
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const { setConnectionStatus } = useBinanceConnectionStore()
 
     // Fetch credentials status on mount
     useEffect(() => {
         const fetchCredentials = async () => {
             try {
                 const credentials = await investorService.getBinanceCredentials()
+                setConnectionStatus(!!credentials.hasCredentials)
                 if (credentials.hasCredentials && credentials.apiKeyMasked) {
                     setStoredKey({
                         apiKey: credentials.apiKeyMasked,
@@ -54,6 +57,7 @@ export default function ConfigurationSettingsPage() {
 
             // Fetch updated credentials to get the masked key
             const credentials = await investorService.getBinanceCredentials()
+            setConnectionStatus(!!credentials.hasCredentials)
             if (credentials.hasCredentials && credentials.apiKeyMasked) {
                 setStoredKey({
                     apiKey: credentials.apiKeyMasked,
@@ -81,6 +85,7 @@ export default function ConfigurationSettingsPage() {
         try {
             await investorService.removeBinanceCredentials()
             setStoredKey(null)
+            setConnectionStatus(false)
             toast.success('API key removed')
         } catch (error: any) {
             console.error('Failed to remove credentials:', error)

@@ -36,14 +36,9 @@ export default function IndicatorSection<T extends FieldValues>({
     const nonDisabledRoles = availableRoles.filter(r => r !== 'disabled')
 
     return (
-        <div
-            className={cn(
-                'space-y-4 rounded-lg border p-4 sm:p-6 transition-colors',
-                isEnabled ? 'border-white/10 bg-white/5' : 'border-white/5 opacity-60',
-            )}
-        >
+        <div className={cn('space-y-3', !isEnabled && 'opacity-70')}>
             <div className="flex items-center justify-between gap-4">
-                <h3 className="text-base font-semibold text-neutral-50">{title}</h3>
+                <h3 className="text-lg leading-6 font-medium text-neutral-300">{title}</h3>
 
                 <div className="flex items-center gap-3">
                     {/* Role selector — only shown when enabled and more than one role is available */}
@@ -70,7 +65,7 @@ export default function IndicatorSection<T extends FieldValues>({
 
                     {/* When only one role available (e.g. ADX = filterOnly), show a static label */}
                     {isEnabled && nonDisabledRoles.length === 1 && (
-                        <span className="rounded-md bg-white/10 px-2 py-1 text-xs text-neutral-400">
+                        <span className="rounded-md bg-white/8 px-2 py-1 text-xs text-neutral-400">
                             {formatRole(nonDisabledRoles[0])}
                         </span>
                     )}
@@ -94,12 +89,13 @@ export default function IndicatorSection<T extends FieldValues>({
                                 <div
                                     className={cn(
                                         'relative h-5 w-9 rounded-full transition-all duration-300',
-                                        (field.value as string) !== 'disabled' ? 'bg-blue-700' : 'bg-neutral-600',
+                                        (field.value as string) !== 'disabled' ? 'bg-blue-600' : 'bg-neutral-700',
                                     )}
                                 >
                                     <div
                                         className={cn(
-                                            'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-all duration-300',
+                                            'absolute top-0.5 left-0.5 h-4 w-4 rounded-full transition-all duration-300',
+                                            (field.value as string) !== 'disabled' ? 'bg-neutral-50' : 'bg-neutral-400',
                                             (field.value as string) !== 'disabled' ? 'translate-x-4' : 'translate-x-0',
                                         )}
                                     />
@@ -111,11 +107,10 @@ export default function IndicatorSection<T extends FieldValues>({
             </div>
 
             {isEnabled && (
-                <>
-                    <Separator />
-                    <div className="grid grid-cols-1 gap-4 bg-neutral-900 p-4 rounded-lg">{children}</div>
-                </>
+                <div className="grid grid-cols-1 gap-3 rounded-lg bg-neutral-950 p-3">{children}</div>
             )}
+
+            <Separator className="bg-neutral-700" />
         </div>
     )
 }

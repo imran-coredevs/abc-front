@@ -1,48 +1,88 @@
 import { useLoginUserStore } from '@/store/useLoginUserStore'
+import investorService from '@/services/investorService'
+import { resolveAssetUrl } from '@/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
+
+type ProfileUpdateInput = {
+    firstName: string
+    lastName: string
+    avatar?: File | null
+    avatarUrl?: string | null
+}
+
+const getDisplayNameParts = (profile: { firstName?: string; lastName?: string; name?: string }) => {
+    if (profile.firstName || profile.lastName) {
+        return {
+            firstName: profile.firstName || '',
+            lastName: profile.lastName || '',
+        }
+    }
+
+    const fullName = profile.name?.trim() || ''
+    if (!fullName) {
+        return { firstName: '', lastName: '' }
+    }
+
+    const [firstName, ...rest] = fullName.split(/\s+/)
+    return {
+        firstName: firstName || '',
+        lastName: rest.join(' '),
+    }
+}
 
 export function useProfile() {
     const { user, setUser, saveToLocalStorage, saveToSessionStorage } = useLoginUserStore()
 
+    const persistUser = (updatedUser: User) => {
+        setUser(updatedUser)
+
+        // Update storage with fresh data
+        const token =
+            localStorage.getItem('cda-trading-bot-auth-storage-token') ||
+            sessionStorage.getItem('cda-trading-bot-auth-storage-token') ||
+            ''
+
+        const storedRefreshToken =
+            localStorage.getItem('cda-trading-bot-refresh-token') ||
+            sessionStorage.getItem('cda-trading-bot-refresh-token') ||
+            ''
+
+        if (localStorage.getItem('cda-trading-bot-auth-storage-token')) {
+            saveToLocalStorage(updatedUser, token, storedRefreshToken)
+        } else {
+            saveToSessionStorage(updatedUser, token, storedRefreshToken)
+        }
+    }
+
     const updateProfileMutation = useMutation({
-        mutationFn: async (data: { firstName: string; lastName: string }) => {
-            // Mock update profile - no API call
-            return Promise.resolve({
-                id: user?.id || '1',
-                email: user?.email || '',
+        mutationFn: async (data: ProfileUpdateInput) => {
+            const payload: Parameters<typeof investorService.updateProfile>[0] = {
+                name: `${data.firstName} ${data.lastName}`.trim(),
                 firstName: data.firstName,
                 lastName: data.lastName,
-                profileImageUrl: user?.profileImage || '',
-            })
+            }
+
+            if (data.avatarUrl !== undefined) payload.avatarUrl = data.avatarUrl ?? ''
+            if (data.avatar) payload.avatar = data.avatar
+
+            const response = await investorService.updateProfile(payload)
+
+            return response
         },
         onSuccess: (data) => {
+            const { firstName, lastName } = getDisplayNameParts(data)
             const updatedUser = {
                 id: data.id,
+                name: data.name || user?.name || `${firstName || user?.firstName || ''} ${lastName || user?.lastName || ''}`.trim(),
                 email: data.email,
-                firstName: data.firstName || '',
-                lastName: data.lastName || '',
-                profileImage: data.profileImageUrl || user?.profileImage || '',
+                firstName: firstName || user?.firstName || '',
+                lastName: lastName || user?.lastName || '',
+                avatarUrl: data.avatarUrl ?? user?.avatarUrl ?? '',
+                profileImage: resolveAssetUrl(data.avatarUrl ?? user?.profileImage ?? ''),
             }
 
-            setUser(updatedUser)
-
-            // Update storage with fresh data
-            const token =
-                localStorage.getItem('cda-trading-bot-auth-storage-token') ||
-                sessionStorage.getItem('cda-trading-bot-auth-storage-token') ||
-                ''
-
-            const storedRefreshToken =
-                localStorage.getItem('cda-trading-bot-refresh-token') ||
-                sessionStorage.getItem('cda-trading-bot-refresh-token') ||
-                ''
-
-            if (localStorage.getItem('cda-trading-bot-auth-storage-token')) {
-                saveToLocalStorage(updatedUser, token, storedRefreshToken)
-            } else {
-                saveToSessionStorage(updatedUser, token, storedRefreshToken)
-            }
+            persistUser(updatedUser)
 
             toast.success('Profile updated successfully!')
         },
@@ -52,57 +92,8 @@ export function useProfile() {
         },
     })
 
-    const updateImageMutation = useMutation({
-        mutationFn: async (file: File) => {
-            // Mock update image - no API call
-            return Promise.resolve({
-                id: user?.id || '1',
-                email: user?.email || '',
-                firstName: user?.firstName || '',
-                lastName: user?.lastName || '',
-                profileImageUrl: URL.createObjectURL(file),
-            })
-        },
-        onSuccess: (data) => {
-            const updatedUser = {
-                id: data.id,
-                email: data.email,
-                firstName: data.firstName || user?.firstName || '',
-                lastName: data.lastName || user?.lastName || '',
-                profileImage: data.profileImageUrl || '',
-            }
-
-            setUser(updatedUser)
-
-            // Update storage with fresh data
-            const token =
-                localStorage.getItem('cda-trading-bot-auth-storage-token') ||
-                sessionStorage.getItem('cda-trading-bot-auth-storage-token') ||
-                ''
-
-            const storedRefreshToken =
-                localStorage.getItem('cda-trading-bot-refresh-token') ||
-                sessionStorage.getItem('cda-trading-bot-refresh-token') ||
-                ''
-
-            if (localStorage.getItem('cda-trading-bot-auth-storage-token')) {
-                saveToLocalStorage(updatedUser, token, storedRefreshToken)
-            } else {
-                saveToSessionStorage(updatedUser, token, storedRefreshToken)
-            }
-
-            toast.success('Profile image updated successfully!')
-        },
-        onError: (error: any) => {
-            const message = error?.response?.data?.message || 'Failed to update profile image'
-            toast.error(message)
-        },
-    })
-
     return {
         updateProfile: updateProfileMutation.mutate,
         isUpdating: updateProfileMutation.isPending,
-        updateImage: updateImageMutation.mutate,
-        isUploadingImage: updateImageMutation.isPending,
     }
 }
