@@ -16,7 +16,7 @@ function parseName(fullName: string | null | undefined): { firstName: string; la
 
 export function useAuth() {
     const navigate = useNavigate()
-    const { setUser, setToken, saveToLocalStorage, saveToSessionStorage, clear } = useLoginUserStore()
+    const { setUser, setToken, setRefreshToken, saveToLocalStorage, saveToSessionStorage, clear } = useLoginUserStore()
     const { fetchConnectionStatus, clearConnectionStatus } = useBinanceConnectionStore()
 
     const loginMutation = useMutation({
@@ -35,6 +35,7 @@ export function useAuth() {
 
             setUser(user)
             setToken(data?.token ?? '')
+            setRefreshToken(data?.refreshToken ?? '')
 
             if (variables.rememberMe) {
                 saveToLocalStorage(user, data?.token ?? '', data?.refreshToken ?? '')

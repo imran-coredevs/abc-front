@@ -98,22 +98,40 @@ api.interceptors.response.use(
                     { headers: { 'Content-Type': 'application/json' } },
                 )
 
-                const { accessToken } = response.data
+                const refreshPayload = response.data?.data || response.data
+                const nextAccessToken = refreshPayload?.token || refreshPayload?.accessToken
+                const nextRefreshToken = refreshPayload?.refreshToken
+
+                if (!nextAccessToken) {
+                    throw new Error('Refresh endpoint did not return an access token')
+                }
 
                 // Update stored token
                 const isLocalStorage = !!localStorage.getItem('cda-trading-bot-auth-storage-token')
                 if (isLocalStorage) {
-                    localStorage.setItem('cda-trading-bot-auth-storage-token', accessToken)
+                    localStorage.setItem('cda-trading-bot-auth-storage-token', nextAccessToken)
+                    if (nextRefreshToken) {
+                        localStorage.setItem('cda-trading-bot-refresh-token', nextRefreshToken)
+                    }
                 } else {
-                    sessionStorage.setItem('cda-trading-bot-auth-storage-token', accessToken)
+                    sessionStorage.setItem('cda-trading-bot-auth-storage-token', nextAccessToken)
+                    if (nextRefreshToken) {
+                        sessionStorage.setItem('cda-trading-bot-refresh-token', nextRefreshToken)
+                    }
+                }
+
+                const store = useLoginUserStore.getState()
+                store.setToken(nextAccessToken)
+                if (nextRefreshToken) {
+                    store.setRefreshToken(nextRefreshToken)
                 }
 
                 // Update the failed request with new token
                 if (originalRequest.headers) {
-                    originalRequest.headers.Authorization = `Bearer ${accessToken}`
+                    originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`
                 }
 
-                processQueue(null, accessToken)
+                processQueue(null, nextAccessToken)
                 isRefreshing = false
 
                 // Retry the original request

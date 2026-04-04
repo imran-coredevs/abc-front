@@ -22,6 +22,7 @@ export default function MyProfileSettings() {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null)
     const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(resolveAssetUrl(user?.avatarUrl) || null)
+    const [avatarImageFailed, setAvatarImageFailed] = useState(false)
     const [avatarRemoved, setAvatarRemoved] = useState(false)
 
     const {
@@ -46,8 +47,13 @@ export default function MyProfileSettings() {
         })
         setPendingAvatarFile(null)
         setAvatarPreviewUrl(resolveAssetUrl(user?.avatarUrl) || null)
+        setAvatarImageFailed(false)
         setAvatarRemoved(false)
     }, [user?.firstName, user?.lastName, user?.email, user?.avatarUrl, reset])
+
+    useEffect(() => {
+        setAvatarImageFailed(false)
+    }, [avatarPreviewUrl])
 
     useEffect(() => {
         return () => {
@@ -109,12 +115,16 @@ export default function MyProfileSettings() {
                                     src={avatarPreviewUrl}
                                     alt={`${user?.firstName || 'User'} profile`}
                                     className="h-full w-full rounded-full object-cover"
+                                    onError={() => setAvatarImageFailed(true)}
+                                    style={{ display: avatarImageFailed ? 'none' : 'block' }}
                                 />
-                            ) : (
+                            ) : null}
+
+                            {!avatarPreviewUrl || avatarImageFailed ? (
                                 <div className="flex h-full w-full items-center justify-center rounded-full bg-blue-700 text-3xl font-semibold text-white">
                                     {fallbackText}
                                 </div>
-                            )}
+                            ) : null}
 
                             <button
                                 type="button"
