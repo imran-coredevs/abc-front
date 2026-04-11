@@ -519,6 +519,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                         label="Trade Amount (USD)"
                                         type="number"
                                         placeholder="e.g., 500"
+                                        step={0.01}
                                         max={dynamicLimits.maxFixedTradeAmount}
                                         rules={{
                                             required: 'Required',
@@ -542,6 +543,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                         label="Capital % Per Trade"
                                         type="number"
                                         placeholder="e.g., 10"
+                                        step={0.01}
                                         max={dynamicLimits.maxCapitalPercentagePerTrade}
                                         rules={{
                                             required: 'Required',

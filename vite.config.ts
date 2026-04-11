@@ -12,4 +12,12 @@ export default defineConfig({
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
+    server: {
+        middlewareMode: false,
+        hmr: {
+            host: 'localhost',
+            port: 5173,
+            protocol: 'ws',
+        },
+    },
 })

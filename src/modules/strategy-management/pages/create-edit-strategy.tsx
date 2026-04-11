@@ -20,6 +20,51 @@ type ApiErrorShape = {
     }
 }
 
+const buildRiskPayload = (data: StrategyFormData) => {
+    const stopLoss = data.risk.stopLoss.type === 'FIXED_PERCENTAGE'
+        ? {
+              type: 'FIXED_PERCENTAGE',
+              fixedPercentage: data.risk.stopLoss.fixedPercentage,
+          }
+        : {
+              type: 'STRUCTURAL',
+              structuralLookback: data.risk.stopLoss.structuralLookback,
+              ...(data.risk.stopLoss.structuralBufferPercent != null
+                  ? { structuralBufferPercent: data.risk.stopLoss.structuralBufferPercent }
+                  : {}),
+              ...(data.risk.stopLoss.structuralMaxDistancePercent != null
+                  ? { structuralMaxDistancePercent: data.risk.stopLoss.structuralMaxDistancePercent }
+                  : {}),
+          }
+
+    const takeProfit = data.risk.takeProfit.type === 'FIXED_PERCENTAGE'
+        ? {
+              type: 'FIXED_PERCENTAGE',
+              fixedPercentage: data.risk.takeProfit.fixedPercentage,
+          }
+        : data.risk.takeProfit.type === 'RISK_REWARD'
+          ? {
+                type: 'RISK_REWARD',
+                riskRewardRatio: data.risk.takeProfit.riskRewardRatio,
+            }
+          : {
+                type: 'MULTI_LEVEL',
+                partialLevels: data.risk.takeProfit.partialLevels,
+            }
+
+    return {
+        stopLoss,
+        breakEven: data.risk.breakEven,
+        trailingStop: data.risk.trailingStop,
+        takeProfit,
+    }
+}
+
+const buildStrategyPayload = (data: StrategyFormData) => ({
+    ...data,
+    risk: buildRiskPayload(data),
+})
+
 export default function CreateEditStrategyPage() {
     const navigate = useNavigate()
     const { id } = useParams<{ id?: string }>()
@@ -135,23 +180,26 @@ export default function CreateEditStrategyPage() {
 
         try {
             clearErrors()
+            const payload = buildStrategyPayload(data)
 
             if (isEditMode && id) {
-                await instanceService.updateInstance(id, data)
+                await instanceService.updateInstance(id, payload)
                 toast.success('Strategy updated successfully')
                 navigate(`/strategy-management/${id}`)
             } else {
-                const response = await instanceService.createInstance(data)
+                const response = await instanceService.createInstance(payload)
                 toast.success('Strategy created successfully')
                 navigate(`/strategy-management/${response.data._id}`)
             }
         } catch (error: unknown) {
             const apiError = error as ApiErrorShape
             console.error('Failed to save strategy:', error)
+            console.error('Error response:', apiError?.response?.data)
             const backendFieldErrors = getBackendFieldErrors(apiError?.response?.data?.errors)
 
             if (backendFieldErrors.length > 0) {
                 backendFieldErrors.forEach(({ path, message }) => {
+                    console.warn(`Field error: ${path} - ${message}`)
                     setError(path as FormFieldPath, { type: 'server', message })
                 })
                 toast.error('Please fix the highlighted form errors')
