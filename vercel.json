@@ -1,0 +1,6 @@
+{
+  "buildCommand": "tsc -b --noEmitOnError false && vite build",
+  "env": {
+    "NODE_OPTIONS": "--no-deprecation"
+  }
+}
