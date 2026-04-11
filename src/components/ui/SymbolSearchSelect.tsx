@@ -111,7 +111,7 @@ export default function SymbolSearchSelect<T extends FieldValues>({ label, name,
             control={control}
             rules={required ? { required: 'At least one symbol is required', ...rules } : rules}
             render={({ field, fieldState }) => {
-                const selectedSymbols = Array.isArray(field.value) ? field.value : []
+                const selectedSymbols: string[] = Array.isArray(field.value) ? field.value : []
 
                 const handleSelectSymbol = (symbol: string) => {
                     const updated = selectedSymbols.includes(symbol)
