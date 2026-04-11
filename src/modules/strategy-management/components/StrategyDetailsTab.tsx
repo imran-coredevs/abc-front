@@ -62,8 +62,11 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
         try {
             if (isLiveStatus(status)) {
                 await instanceService.stopInstance(id, 'User manual stop')
-                toast.success('Strategy stopped successfully')
-                setStatus('STOPPED')
+                toast.success('Strategy stopping...')
+                toast('Instance is STOPPING. Existing Binance positions may remain live until all close orders are confirmed.', {
+                    icon: '⚠️',
+                })
+                setStatus('STOPPING')
             } else {
                 await instanceService.startInstance(id)
                 toast.success('Strategy started successfully')
@@ -159,6 +162,12 @@ export default function StrategyDetailsTab({ strategyData }: StrategyDetailsTabP
                 </div>
 
                 <Separator />
+
+                {status === 'STOPPING' && (
+                    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                        Instance is stopping. Existing Binance positions and protective orders may still be live until closure is fully confirmed.
+                    </div>
+                )}
 
                 {/* Strategy Details */}
                 <div className="space-y-3 rounded-lg bg-white/5 p-4 sm:p-6">
