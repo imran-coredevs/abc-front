@@ -104,7 +104,7 @@ const columns: TableColumn<InstanceOverview>[] = [
         key: 'allocation',
         type: 'dynamic',
         render: (row) => (
-            <span className="text-sm font-normal text-neutral-50">{formatAllocation(row.allocation)}</span>
+            <span className="text-sm font-normal text-neutral-50">${formatAllocation(row.allocation)}</span>
         ),
     },
     {
