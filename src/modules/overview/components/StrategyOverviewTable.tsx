@@ -9,7 +9,7 @@ interface StrategyOverviewTableProps {
 }
 
 // Status badge component matching Figma TokenPairs design
-const StatusBadge = ({ status }: { status: InstanceOverview['status'] }) => {
+const StatusBadge = ({ status, openPositions }: { status: InstanceOverview['status']; openPositions: number }) => {
     const statusStyles = {
         LIVE: 'bg-green-600/10 text-green-500',
         STOPPED: 'bg-red-600/10 text-red-500',
@@ -27,13 +27,20 @@ const StatusBadge = ({ status }: { status: InstanceOverview['status'] }) => {
     }
 
     return (
-        <div
-            className={cn(
-                'flex items-center justify-center rounded-[40px] px-5 py-2 text-sm font-bold',
-                statusStyles[status],
+        <div className="flex flex-col items-center gap-1">
+            <div
+                className={cn(
+                    'flex items-center justify-center rounded-[40px] px-5 py-2 text-sm font-bold',
+                    statusStyles[status],
+                )}
+            >
+                {statusLabels[status]}
+            </div>
+            {status === 'STOPPING' && openPositions > 0 && (
+                <span className="text-[11px] font-medium text-amber-400">
+                    {openPositions} live position(s) closing
+                </span>
             )}
-        >
-            {statusLabels[status]}
         </div>
     )
 }
@@ -54,18 +61,8 @@ const DirectionBadge = ({ direction }: { direction: InstanceOverview['direction'
 
     return <span className={cn('text-sm font-medium', directionStyles[direction])}>{directionLabels[direction]}</span>
 }
-const formatAllocation = (row: InstanceOverview) => {
-    if (Number.isFinite(row.allocationValue)) {
-        return Number(row.allocationValue).toLocaleString()
-    }
-    if (Number.isFinite(row.allocatedCapital)) {
-        return Number(row.allocatedCapital).toLocaleString()
-    }
-    if (typeof row.allocation === 'string') {
-        const normalized = Number(row.allocation.replace(/[^0-9.-]+/g, ''))
-        return Number.isFinite(normalized) ? normalized.toLocaleString() : '0'
-    }
-    return '0'
+const formatAllocation = (allocation: number) => {
+    return Number.isFinite(allocation) ? Number(allocation).toFixed(2) : '0.00'
 }
 const columns: TableColumn<InstanceOverview>[] = [
     {
@@ -103,11 +100,11 @@ const columns: TableColumn<InstanceOverview>[] = [
         render: (row) => <span className="text-sm font-normal text-neutral-50">{row.openPositions}</span>,
     },
     {
-        title: 'Allocated Capital',
-        key: 'allocatedCapital',
+        title: 'Allocation',
+        key: 'allocation',
         type: 'dynamic',
         render: (row) => (
-            <span className="text-sm font-normal text-neutral-50">${formatAllocation(row)}</span>
+            <span className="text-sm font-normal text-neutral-50">{formatAllocation(row.allocation)}</span>
         ),
     },
     {
@@ -136,7 +133,7 @@ const columns: TableColumn<InstanceOverview>[] = [
         title: 'Status',
         key: 'status',
         type: 'dynamic',
-        render: (row) => <StatusBadge status={row.status} />,
+        render: (row) => <StatusBadge status={row.status} openPositions={row.openPositions} />,
     },
 ]
 

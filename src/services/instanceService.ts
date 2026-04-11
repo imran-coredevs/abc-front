@@ -33,10 +33,7 @@ export interface InstanceOverview {
     timeframe: string
     direction: 'LONG' | 'SHORT' | 'BOTH'
     openPositions: number
-    allocatedCapital?: number
-    allocationValue?: number
-    allocationType?: 'PERCENTAGE_OF_PORTFOLIO' | 'FIXED_AMOUNT'
-    allocation?: string
+    allocation: number
     leverage: number
     todayPnL: number
     lastTrade: string | null

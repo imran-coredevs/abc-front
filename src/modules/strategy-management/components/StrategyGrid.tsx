@@ -21,13 +21,7 @@ function mapStatus(status: InstanceOverview['status']): 'Running' | 'Stopped' | 
 }
 
 function parseAllocationValue(strategy: InstanceOverview): number {
-    if (Number.isFinite(strategy.allocationValue)) return Number(strategy.allocationValue)
-    if (Number.isFinite(strategy.allocatedCapital)) return Number(strategy.allocatedCapital)
-    if (typeof strategy.allocation === 'string') {
-        const normalized = Number(strategy.allocation.replace(/[^0-9.-]+/g, ''))
-        return Number.isFinite(normalized) ? normalized : 0
-    }
-    return 0
+    return Number.isFinite(strategy.allocation) ? Number(strategy.allocation) : 0
 }
 
 export default function StrategyGrid() {
@@ -158,7 +152,11 @@ export default function StrategyGrid() {
         scheduleNextPoll(instanceId)
     }
 
-    const handleToggleStatus = async (id: string, currentStatus: InstanceOverview['status']) => {
+    const handleToggleStatus = async (
+        id: string,
+        currentStatus: InstanceOverview['status'],
+        openPositions: number,
+    ) => {
         if (isConnected !== true) {
             toast.error('Please connect Binance API key to manage strategies')
             return
@@ -176,6 +174,11 @@ export default function StrategyGrid() {
             if (currentStatus === 'LIVE') {
                 await instanceService.stopInstance(id, 'User manual stop')
                 toast.success('Strategy stopping...')
+                if (openPositions > 0) {
+                    toast('Instance is STOPPING. Existing Binance positions may remain live until close is confirmed.', {
+                        icon: '⚠️',
+                    })
+                }
             } else if (currentStatus === 'STOPPED' || currentStatus === 'DRAFT') {
                 await instanceService.startInstance(id)
                 toast.success('Strategy starting...')
@@ -240,7 +243,7 @@ export default function StrategyGrid() {
                     pair={strategy?.symbols?.length ? strategy.symbols : strategy.tradingPair ? [strategy.tradingPair] : []}
                     direction={mapDirection(strategy?.direction ?? 'BOTH')}
                     allocation={parseAllocationValue(strategy)}
-                    onToggleStatus={() => handleToggleStatus(strategy.id, strategy.status)}
+                    onToggleStatus={() => handleToggleStatus(strategy.id, strategy.status, strategy.openPositions)}
                     onViewDetails={() => navigate(`/strategy-management/${strategy.id}`)}
                     isToggling={togglingIds.has(strategy.id) || strategy?.status === 'STARTING' || strategy?.status === 'STOPPING'}
                 />
