@@ -1,13 +1,8 @@
 import { InputField } from '@/components/ui/InputField'
 import Separator from '@/components/ui/Separator'
 import { cn } from '@/lib/utils'
-import { Controller } from 'react-hook-form'
-import type { StrategyControl, StrategyWatch } from '../../types/strategy-form.types'
-
-type Props = {
-    control: StrategyControl
-    watch: StrategyWatch
-}
+import { Controller, useFormContext } from 'react-hook-form'
+import type { StrategyControl, StrategyFormData } from '../../types/strategy-form.types'
 
 type ToggleRowProps = {
     name: 'strategyExits.onOppositeSignal' | 'strategyExits.onTrendChange' | 'strategyExits.allowReEntryOnActiveSignal'
@@ -40,7 +35,8 @@ function ToggleRow({ name, label, control }: ToggleRowProps) {
     )
 }
 
-export default function StrategyExitsSection({ control, watch }: Props) {
+export default function StrategyExitsSection() {
+    const { control, watch } = useFormContext<StrategyFormData>()
     const allowReEntry = watch('strategyExits.allowReEntryOnActiveSignal')
 
     return (

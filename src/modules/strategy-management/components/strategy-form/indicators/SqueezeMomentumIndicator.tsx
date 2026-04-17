@@ -1,13 +1,12 @@
 import IndicatorSection from '@/components/ui/IndicatorSection'
 import { InputField } from '@/components/ui/InputField'
 import { cn } from '@/lib/utils'
-import { Controller } from 'react-hook-form'
-import type { StrategyControl, StrategyWatch } from '../../../types/strategy-form.types'
+import { Controller, useFormContext } from 'react-hook-form'
+import type { StrategyFormData } from '../../../types/strategy-form.types'
 import Separator from '@/components/ui/Separator'
 
-type Props = { control: StrategyControl; watch: StrategyWatch }
-
-export default function SqueezeMomentumIndicator({ control, watch }: Props) {
+export default function SqueezeMomentumIndicator() {
+    const { control, watch } = useFormContext<StrategyFormData>()
     const role = watch('indicators.squeezeMomentum.role')
     const isSignal = role === 'signal'
 

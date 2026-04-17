@@ -4,17 +4,18 @@ import { InputField } from '@/components/ui/InputField'
 import Separator from '@/components/ui/Separator'
 import { cn } from '@/lib/utils'
 import { Trash } from 'iconsax-reactjs'
-import { Controller, useFieldArray } from 'react-hook-form'
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form'
 import { useState } from 'react'
 import { STOP_LOSS_TYPES, TAKE_PROFIT_TYPES } from '../../constants/strategy-form.defaults'
-import type { StrategyControl, StrategyWatch } from '../../types/strategy-form.types'
+import type { StrategyControl, StrategyFormData, StrategyWatch } from '../../types/strategy-form.types'
 
 type Props = {
     control: StrategyControl
     watch: StrategyWatch
 }
 
-export default function RiskManagementSection({ control, watch }: Props) {
+export default function RiskManagementSection() {
+    const { control, watch } = useFormContext<StrategyFormData>()
     const [stopLossExpanded, setStopLossExpanded] = useState(true)
     const [takeProfitExpanded, setTakeProfitExpanded] = useState(true)
     const [exitConditionsExpanded, setExitConditionsExpanded] = useState(true)

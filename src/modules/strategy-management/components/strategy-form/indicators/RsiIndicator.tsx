@@ -2,15 +2,13 @@ import FormSelect from '@/components/ui/FormSelect'
 import { InputField } from '@/components/ui/InputField'
 import IndicatorSection from '@/components/ui/IndicatorSection'
 import { PRICE_SOURCES, RSI_SMOOTHING } from '../../../constants/strategy-form.defaults'
-import type { StrategyControl, StrategyWatch } from '../../../types/strategy-form.types'
+import type { StrategyFormData } from '../../../types/strategy-form.types'
 import Separator from '@/components/ui/Separator'
+import { useFormContext } from 'react-hook-form'
 
-type Props = { control: StrategyControl; watch: StrategyWatch }
-
-export default function RsiIndicator({ control, watch }: Props) {
+export default function RsiIndicator() {
+    const { control, watch } = useFormContext<StrategyFormData>()
     const smoothingType = watch('indicators.rsi.smoothingType')
-    const role = watch('indicators.rsi.role')
-    const isSignal = role === 'signal'
     const showSmoothingLength = smoothingType !== 'None'
     const showBbMultiplier = smoothingType === 'SMA + Bollinger Bands'
 

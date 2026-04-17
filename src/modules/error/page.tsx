@@ -10,8 +10,8 @@ type Props = {
 const ErrorPage = ({ error }: Props) => {
     // Determine error type and message
     const getErrorInfo = () => {
-        const hasStatus = (err: Error | null): err is { status: number } => {
-            return typeof err === 'object' && err !== null && 'status' in err && typeof err.status === 'number';
+        const hasStatus = (err: Error | null | undefined): err is Error & { status: number } => {
+            return typeof err === 'object' && err !== null && 'status' in err && typeof (err as { status: unknown }).status === 'number'
         }
 
         if (hasStatus(error) && error.status === 404) {

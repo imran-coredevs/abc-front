@@ -11,18 +11,18 @@ export const INDICATOR_LABELS: Record<string, string> = {
 }
 
 export const MOCK_EQUITY_CURVE: EquityCurvePoint[] = [
-    { month: 'Jan', equity: 30000 },
-    { month: 'Feb', equity: 10850 },
-    { month: 'Mar', equity: 50200 },
-    { month: 'Apr', equity: 90400 },
-    { month: 'May', equity: 60900 },
-    { month: 'Jun', equity: 92200 },
-    { month: 'Jul', equity: 1800 },
-    { month: 'Aug', equity: 103100 },
-    { month: 'Sep', equity: 72700 },
-    { month: 'Oct', equity: 64200 },
-    { month: 'Nov', equity: 93800 },
-    { month: 'Dec', equity: 15400 },
+    { timestamp: new Date('2024-01-01').getTime(), equity: 30000 },
+    { timestamp: new Date('2024-02-01').getTime(), equity: 10850 },
+    { timestamp: new Date('2024-03-01').getTime(), equity: 50200 },
+    { timestamp: new Date('2024-04-01').getTime(), equity: 90400 },
+    { timestamp: new Date('2024-05-01').getTime(), equity: 60900 },
+    { timestamp: new Date('2024-06-01').getTime(), equity: 92200 },
+    { timestamp: new Date('2024-07-01').getTime(), equity: 1800 },
+    { timestamp: new Date('2024-08-01').getTime(), equity: 103100 },
+    { timestamp: new Date('2024-09-01').getTime(), equity: 72700 },
+    { timestamp: new Date('2024-10-01').getTime(), equity: 64200 },
+    { timestamp: new Date('2024-11-01').getTime(), equity: 93800 },
+    { timestamp: new Date('2024-12-01').getTime(), equity: 15400 },
 ]
 
 export const MOCK_RESULTS: BacktestResult = {
@@ -40,6 +40,11 @@ export const MOCK_RESULTS: BacktestResult = {
     longTrades: 28,
     shortTrades: 20,
     exposureRatio: 68.5,
+    winningTrades: 30,
+    losingTrades: 18,
+    profitFactor: 1.67,
+    maxConsecutiveWins: 7,
+    maxConsecutiveLosses: 4,
 }
 
 export const EQUITY_CHART_CONFIG: ChartConfig = {

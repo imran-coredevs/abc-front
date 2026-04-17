@@ -9,19 +9,14 @@ import investorService, { type AllocationPreviewResponse } from '@/services/inve
 import { InfoCircle } from 'iconsax-reactjs'
 import { CirclePercent } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import { CAPITAL_ALLOCATION_TYPES, TIMEFRAMES } from '../../constants/strategy-form.defaults'
-import type { StrategyControl, StrategySetValue, StrategyWatch } from '../../types/strategy-form.types'
+import type { StrategyFormData } from '../../types/strategy-form.types'
 import IndicatorsSection from './IndicatorsSection'
 import RiskManagementSection from './RiskManagementSection'
 
-type Props = {
-    control: StrategyControl
-    watch: StrategyWatch
-    setValue: StrategySetValue
-}
-
-export default function BasicConfigSection({ control, watch, setValue }: Props) {
+export default function BasicConfigSection() {
+    const { control, watch, setValue } = useFormContext<StrategyFormData>()
     const capitalAllocationType = watch('capitalAllocationType')
     const allocationValue = watch('allocationValue')
     const positionSizingMethod = watch('positionSizingMethod')
@@ -34,7 +29,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
     const symbols = watch('symbols')
 
     const isPercentageAlloc = capitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO'
-    const [durationUnit, setDurationUnit] = useState<'SECOND' | 'MINUTE' | 'HOUR'>('SECOND')
+    const [durationUnit, setDurationUnit] = useState<'MINUTE' | 'HOUR' | 'DAY'>('MINUTE')
     const [durationDraft, setDurationDraft] = useState<string | null>(null)
     const [portfolioExposureLimitEnabled, setPortfolioExposureLimitEnabled] = useState(
         maxPortfolioExposurePercentage > 0,
@@ -236,10 +231,10 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
         setValue,
     ])
 
-    const getDurationMultiplier = (unit: 'SECOND' | 'MINUTE' | 'HOUR') => {
-        if (unit === 'MINUTE') return 60
+    const getDurationMultiplier = (unit: 'MINUTE' | 'HOUR' | 'DAY') => {
         if (unit === 'HOUR') return 3600
-        return 1
+        if (unit === 'DAY') return 86400
+        return 60
     }
 
     const handleLeverageChange = (delta: number) => {
@@ -710,7 +705,7 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
 
                                                 <Select
                                                     value={durationUnit}
-                                                    onValueChange={(value: 'SECOND' | 'MINUTE' | 'HOUR') => {
+                                                    onValueChange={(value: 'MINUTE' | 'HOUR' | 'DAY') => {
                                                         setDurationUnit(value)
                                                         setDurationDraft(null)
                                                     }}
@@ -719,9 +714,9 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="SECOND">Second</SelectItem>
                                                         <SelectItem value="MINUTE">Minute</SelectItem>
                                                         <SelectItem value="HOUR">Hour</SelectItem>
+                                                        <SelectItem value="DAY">Day</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -773,10 +768,10 @@ export default function BasicConfigSection({ control, watch, setValue }: Props) 
                     </div>
                 </div>
 
-                <RiskManagementSection control={control} watch={watch} />
+                <RiskManagementSection />
             </div>
 
-            <IndicatorsSection control={control} watch={watch} />
+            <IndicatorsSection />
         </div>
     )
 }

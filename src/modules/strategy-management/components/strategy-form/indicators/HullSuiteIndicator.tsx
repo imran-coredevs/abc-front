@@ -3,14 +3,11 @@ import IndicatorSection from '@/components/ui/IndicatorSection'
 import { InputField } from '@/components/ui/InputField'
 import Separator from '@/components/ui/Separator'
 import { HULL_MODES } from '../../../constants/strategy-form.defaults'
-import type { StrategyControl, StrategyWatch } from '../../../types/strategy-form.types'
+import type { StrategyFormData } from '../../../types/strategy-form.types'
+import { useFormContext } from 'react-hook-form'
 
-type Props = { control: StrategyControl; watch: StrategyWatch }
-
-export default function HullSuiteIndicator({ control, watch }: Props) {
-    const role = watch('indicators.hullSuite.role')
-    const isSignal = role === 'signal'
-
+export default function HullSuiteIndicator() {
+    const { control, watch } = useFormContext<StrategyFormData>()
     return (
         <IndicatorSection title="Hull Suite" roleFieldName="indicators.hullSuite.role" control={control} watch={watch}>
             <InputField

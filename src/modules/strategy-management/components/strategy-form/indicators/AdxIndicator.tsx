@@ -2,13 +2,13 @@ import FormSelect from '@/components/ui/FormSelect'
 import { InputField } from '@/components/ui/InputField'
 import IndicatorSection from '@/components/ui/IndicatorSection'
 import { ADX_CONDITIONS, ADX_ROLES } from '../../../constants/strategy-form.defaults'
-import type { StrategyControl, StrategyWatch } from '../../../types/strategy-form.types'
+import type { StrategyFormData } from '../../../types/strategy-form.types'
 import Separator from '@/components/ui/Separator'
-
-type Props = { control: StrategyControl; watch: StrategyWatch }
+import { useFormContext } from 'react-hook-form'
 
 // ADX role is always 'filterOnly' (cannot emit signals) — no signalLookbackBars.
-export default function AdxIndicator({ control, watch }: Props) {
+export default function AdxIndicator() {
+    const { control, watch } = useFormContext<StrategyFormData>()
     return (
         <IndicatorSection
             title="ADX"

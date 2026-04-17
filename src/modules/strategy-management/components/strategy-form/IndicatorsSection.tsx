@@ -1,6 +1,6 @@
 import Separator from '@/components/ui/Separator'
 import FormSelect from '@/components/ui/FormSelect'
-import type { StrategyControl, StrategyWatch } from '../../types/strategy-form.types'
+import type { StrategyFormData } from '../../types/strategy-form.types'
 import AdxIndicator from './indicators/AdxIndicator'
 import HullSuiteIndicator from './indicators/HullSuiteIndicator'
 import RsiIndicator from './indicators/RsiIndicator'
@@ -8,7 +8,7 @@ import SqueezeMomentumIndicator from './indicators/SqueezeMomentumIndicator'
 import SupertrendIndicator from './indicators/SupertrendIndicator'
 import UtBotIndicator from './indicators/UtBotIndicator'
 import { InfoCircle } from 'iconsax-reactjs'
-import { Controller } from 'react-hook-form'
+import { Controller, useFormContext } from 'react-hook-form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const MARKET_DATA_OPTIONS = [
@@ -16,12 +16,8 @@ const MARKET_DATA_OPTIONS = [
     { value: 'HEIKIN_ASHI', label: 'Heikin-Ashi' },
 ]
 
-type Props = {
-    control: StrategyControl
-    watch: StrategyWatch
-}
-
-export default function IndicatorsSection({ control, watch }: Props) {
+export default function IndicatorsSection() {
+    const { control } = useFormContext<StrategyFormData>()
     return (
         <div className="w-full space-y-6 rounded-xl bg-white/5 p-5">
             <h2 className="text-xl font-semibold text-neutral-50">Indicators</h2>
@@ -66,12 +62,12 @@ export default function IndicatorsSection({ control, watch }: Props) {
             <Separator />
 
             <div className="grid grid-cols-1 gap-5">
-                <RsiIndicator control={control} watch={watch} />
-                <UtBotIndicator control={control} watch={watch} />
-                <SupertrendIndicator control={control} watch={watch} />
-                <HullSuiteIndicator control={control} watch={watch} />
-                <AdxIndicator control={control} watch={watch} />
-                <SqueezeMomentumIndicator control={control} watch={watch} />
+                <RsiIndicator />
+                <UtBotIndicator />
+                <SupertrendIndicator />
+                <HullSuiteIndicator />
+                <AdxIndicator />
+                <SqueezeMomentumIndicator />
             </div>
         </div>
     )

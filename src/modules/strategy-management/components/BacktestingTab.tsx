@@ -33,7 +33,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
 
     const stopLoss = strategyData?.risk?.stopLoss
     const takeProfit = strategyData?.risk?.takeProfit
-    const isRunDisabled = !dateRange.from || !dateRange.to || backtestStatus === 'running'
+    const isRunDisabled = !dateRange.from || !dateRange.to || backtestStatus === 'pending' || backtestStatus === 'running'
 
     const stopLossText = stopLoss
         ? stopLoss.type === 'FIXED_PERCENTAGE'
@@ -106,6 +106,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
         try {
             setHasResults(false)
             setErrorMessage(null)
+            setBacktestStatus('pending')
 
             // Format dates to ISO strings
             const startDate = new Date(dateRange.from).toISOString()
@@ -114,7 +115,7 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
             // Start the backtest (API responds immediately)
             const startResponse = await startBacktest(strategyData._id, startDate, endDate)
 
-            // Show running status immediately after backtest starts
+            // API confirmed the backtest was queued — switch to active polling state
             setBacktestStatus('running')
 
             // Poll for completion in the background
@@ -226,7 +227,9 @@ export default function BacktestingTab({ strategyData }: BacktestingTabProps) {
                 onReset={handleReset}
             />
 
-            {backtestStatus === 'running' && <BacktestLoadingState />}
+            {(backtestStatus === 'pending' || backtestStatus === 'running') && (
+                <BacktestLoadingState status={backtestStatus} />
+            )}
 
             {backtestStatus === 'failed' && errorMessage && (
                 <div className="rounded-lg bg-red-500/10 p-4 text-red-500">

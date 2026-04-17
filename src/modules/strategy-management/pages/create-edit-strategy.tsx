@@ -1,7 +1,7 @@
 import Separator from '@/components/ui/Separator'
 import { instanceService } from '@/services/instanceService'
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { FormProvider, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { useNavigate, useParams } from 'react-router'
 import { useBinanceConnectionStore } from '@/store/useBinanceConnectionStore'
@@ -72,18 +72,10 @@ export default function CreateEditStrategyPage() {
     const [isLoading, setIsLoading] = useState(isEditMode)
     const { isConnected, fetchConnectionStatus } = useBinanceConnectionStore()
 
-    const {
-        control,
-        handleSubmit,
-        watch,
-        setValue,
-        setError,
-        clearErrors,
-        reset,
-        formState: { isSubmitting },
-    } = useForm<StrategyFormData>({
+    const methods = useForm<StrategyFormData>({
         defaultValues: STRATEGY_FORM_DEFAULTS,
     })
+    const { handleSubmit, setError, clearErrors, reset, formState: { isSubmitting } } = methods
     type FormFieldPath = Parameters<typeof setError>[0]
 
     const getBackendFieldErrors = (errors: unknown): Array<{ path: string; message: string }> => {
@@ -91,9 +83,12 @@ export default function CreateEditStrategyPage() {
 
         const walk = (value: unknown, currentPath: string) => {
             if (Array.isArray(value)) {
-                const firstMessage = value.find((item) => typeof item === 'string')
-                if (firstMessage && currentPath) {
-                    fieldErrors.push({ path: currentPath, message: firstMessage })
+                // Collect ALL error messages (not just the first one)
+                const messages = value.filter((item) => typeof item === 'string')
+                if (messages.length > 0 && currentPath) {
+                    // Join multiple messages with " • " separator
+                    const combinedMessage = messages.join(' • ')
+                    fieldErrors.push({ path: currentPath, message: combinedMessage })
                 }
                 return
             }
@@ -193,20 +188,32 @@ export default function CreateEditStrategyPage() {
             }
         } catch (error: unknown) {
             const apiError = error as ApiErrorShape
+            const errorData = apiError?.response?.data
+            
             console.error('Failed to save strategy:', error)
-            console.error('Error response:', apiError?.response?.data)
-            const backendFieldErrors = getBackendFieldErrors(apiError?.response?.data?.errors)
+            console.error('Full error response:', errorData)
+            console.error('Error structure:', {
+                message: errorData?.message,
+                errors: errorData?.errors,
+                hasErrors: !!errorData?.errors,
+            })
 
+            // Try to parse backend field errors
+            const backendFieldErrors = getBackendFieldErrors(errorData?.errors)
+            
             if (backendFieldErrors.length > 0) {
+                console.log(`Found ${backendFieldErrors.length} field errors:`, backendFieldErrors)
                 backendFieldErrors.forEach(({ path, message }) => {
-                    console.warn(`Field error: ${path} - ${message}`)
+                    console.warn(`Setting field error: ${path} → ${message}`)
                     setError(path as FormFieldPath, { type: 'server', message })
                 })
-                toast.error('Please fix the highlighted form errors')
+                toast.error('Please fix the validation errors below')
                 return
             }
 
-            const errorMessage = apiError?.response?.data?.message || 'Failed to save strategy'
+            // If no field-level errors, show the general error message
+            const errorMessage = errorData?.message || 'Failed to save strategy'
+            console.warn(`No field errors found, showing general error: ${errorMessage}`)
             toast.error(errorMessage)
         }
     }
@@ -220,16 +227,18 @@ export default function CreateEditStrategyPage() {
     }
 
     return (
-        <div className="relative overflow-hidden">
-            <div className="absolute -bottom-[20%] left-[50%] -z-1 -translate-x-1/2">
-                <div className="h-200 w-200 rounded-full bg-linear-to-b from-blue-900 to-blue-800 blur-[500px]" />
+        <FormProvider {...methods}>
+            <div className="relative overflow-hidden">
+                <div className="absolute -bottom-[20%] left-[50%] -z-1 -translate-x-1/2">
+                    <div className="h-200 w-200 rounded-full bg-linear-to-b from-blue-900 to-blue-800 blur-[500px]" />
+                </div>
+                <StrategyFormHeader isEditMode={isEditMode} id={id} />
+                <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+                    <BasicConfigSection />
+                    <Separator />
+                    <FormActions isEditMode={isEditMode} id={id} isSubmitting={isSubmitting} />
+                </form>
             </div>
-            <StrategyFormHeader isEditMode={isEditMode} id={id} />
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
-                <BasicConfigSection control={control} watch={watch} setValue={setValue} />
-                <Separator />
-                <FormActions isEditMode={isEditMode} id={id} isSubmitting={isSubmitting} />
-            </form>
-        </div>
+        </FormProvider>
     )
 }

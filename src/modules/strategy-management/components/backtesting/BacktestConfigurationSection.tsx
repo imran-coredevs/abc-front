@@ -165,7 +165,12 @@ export default function BacktestConfigurationSection({
                             disabled={isRunDisabled}
                             className="h-12 rounded-full px-8 text-base text-neutral-50 hover:bg-blue-600 disabled:opacity-50"
                         >
-                            {backtestStatus === 'running' ? (
+                            {backtestStatus === 'pending' ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                    Submitting…
+                                </div>
+                            ) : backtestStatus === 'running' ? (
                                 <div className="flex items-center gap-2">
                                     <div className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                                     Running…

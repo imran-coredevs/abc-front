@@ -1,4 +1,4 @@
-export type BacktestStatus = 'idle' | 'running' | 'completed' | 'failed'
+export type BacktestStatus = 'idle' | 'pending' | 'running' | 'completed' | 'failed'
 
 export type StrategyInfo = {
     _id?: string

@@ -3,6 +3,25 @@ import * as RechartsPrimitive from 'recharts'
 
 import { cn } from '@/lib/utils'
 
+type ChartPayloadItem = {
+    dataKey?: string | number
+    name?: string | number
+    value?: number | string | (number | string)[]
+    color?: string
+    fill?: string
+    type?: string
+    unit?: string
+    payload?: Record<string, unknown>
+}
+
+type LegendPayloadItem = {
+    value?: string | number
+    type?: string
+    color?: string
+    dataKey?: string | number
+    id?: string
+}
+
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: '', dark: '.dark' } as const
 
@@ -91,13 +110,15 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 
 const ChartTooltipContent = React.forwardRef<
     HTMLDivElement,
-    React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+    Omit<React.ComponentProps<typeof RechartsPrimitive.Tooltip>, 'payload' | 'label'> &
         React.ComponentProps<'div'> & {
             hideLabel?: boolean
             hideIndicator?: boolean
             indicator?: 'line' | 'dot' | 'dashed'
             nameKey?: string
             labelKey?: string
+            payload?: ChartPayloadItem[]
+            label?: string | number
         }
 >(
     (
@@ -134,7 +155,8 @@ const ChartTooltipContent = React.forwardRef<
                     : itemConfig?.label
 
             if (labelFormatter) {
-                return <div className={cn('font-medium', labelClassName)}>{labelFormatter(value, payload)}</div>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return <div className={cn('font-medium', labelClassName)}>{labelFormatter(value, payload as any)}</div>
             }
 
             if (!value) {
@@ -161,11 +183,11 @@ const ChartTooltipContent = React.forwardRef<
                 {!nestLabel ? tooltipLabel : null}
                 <div className="grid gap-1.5">
                     {payload
-                        .filter((item) => item.type !== 'none')
-                        .map((item, index) => {
+                        .filter((item: ChartPayloadItem) => item.type !== 'none')
+                        .map((item: ChartPayloadItem, index: number) => {
                             const key = `${nameKey || item.name || item.dataKey || 'value'}`
                             const itemConfig = getPayloadConfigFromPayload(config, item, key)
-                            const indicatorColor = color || item.payload.fill || item.color
+                            const indicatorColor = color || (item.payload as { fill?: string } | undefined)?.fill || item.color
 
                             return (
                                 <div
@@ -176,7 +198,8 @@ const ChartTooltipContent = React.forwardRef<
                                     )}
                                 >
                                     {formatter && item?.value !== undefined && item.name ? (
-                                        formatter(item.value, item.name, item, index, item.payload)
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        formatter(item.value, item.name, item as any, index, item.payload as any)
                                     ) : (
                                         <>
                                             {itemConfig?.icon ? (
@@ -237,10 +260,11 @@ const ChartLegend = RechartsPrimitive.Legend
 
 const ChartLegendContent = React.forwardRef<
     HTMLDivElement,
-    React.ComponentProps<'div'> &
-        Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
+    React.ComponentProps<'div'> & {
             hideIcon?: boolean
             nameKey?: string
+            payload?: LegendPayloadItem[]
+            verticalAlign?: 'top' | 'bottom' | 'middle'
         }
 >(({ className, hideIcon = false, payload, verticalAlign = 'bottom', nameKey }, ref) => {
     const { config } = useChart()
@@ -259,8 +283,8 @@ const ChartLegendContent = React.forwardRef<
             )}
         >
             {payload
-                .filter((item) => item.type !== 'none')
-                .map((item) => {
+                .filter((item: LegendPayloadItem) => item.type !== 'none')
+                .map((item: LegendPayloadItem) => {
                     const key = `${nameKey || item.dataKey || 'value'}`
                     const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
