@@ -91,7 +91,7 @@ const columns: TableColumn<TradeHistory>[] = [
         type: 'dynamic',
         render: (row) => (
             <span className="text-sm font-normal text-neutral-50">
-                ${row.entryPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${row.entryPrice?.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
             </span>
         ),
     },
@@ -101,7 +101,7 @@ const columns: TableColumn<TradeHistory>[] = [
         type: 'dynamic',
         render: (row) => (
             <span className="text-sm font-normal text-neutral-50">
-                ${row.exitPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ${row.exitPrice?.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
             </span>
         ),
     },
@@ -130,7 +130,7 @@ const columns: TableColumn<TradeHistory>[] = [
                     row.pnl >= 0 ? 'text-green-400' : 'text-red-400',
                 )}
             >
-                {row.pnl >= 0 ? '+' : ''}${Math.abs(row.pnl).toFixed(2)}
+                {row.pnl >= 0 ? '+' : ''}${Math.abs(row.pnl).toFixed(4)}
             </span>
         ),
     },

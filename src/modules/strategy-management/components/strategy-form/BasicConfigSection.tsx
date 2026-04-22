@@ -29,16 +29,31 @@ export default function BasicConfigSection() {
     const symbols = watch('symbols')
 
     const isPercentageAlloc = capitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO'
+    const minimumAllocationValue = isPercentageAlloc ? 0.01 : 10
     const [durationUnit, setDurationUnit] = useState<'MINUTE' | 'HOUR' | 'DAY'>('MINUTE')
     const [durationDraft, setDurationDraft] = useState<string | null>(null)
+
+    // ── FIX #1: Sync the exposure-limit toggle with form state ───────────────
     const [portfolioExposureLimitEnabled, setPortfolioExposureLimitEnabled] = useState(
-        maxPortfolioExposurePercentage > 0,
+        (maxPortfolioExposurePercentage ?? 0) > 0,
     )
+
+    useEffect(() => {
+        const isEnabled = (Number(maxPortfolioExposurePercentage) || 0) > 0
+        setPortfolioExposureLimitEnabled((current) => (current === isEnabled ? current : isEnabled))
+    }, [maxPortfolioExposurePercentage])
+    // ── END FIX #1 ────────────────────────────────────────────────────────────
+
     const [exposureData, setExposureData] = useState<{
         totalExposure: number
         effectiveLeverage: number
     } | null>(null)
     const [allocationPreview, setAllocationPreview] = useState<AllocationPreviewResponse | null>(null)
+
+    // ── FIX #4 (part A): Add previewError state ───────────────────────────────
+    const [previewError, setPreviewError] = useState<string | null>(null)
+    // ── END FIX #4 (part A) ───────────────────────────────────────────────────
+
     const lastPreviewRef = useRef<{ key: string; at: number }>({ key: '', at: 0 })
     const figmaRadioClass =
         'relative size-5 appearance-none rounded-full border border-blue-800 bg-transparent outline-none transition checked:border-blue-800 checked:bg-[radial-gradient(circle,_#6545ee_0_35%,_transparent_36%)] focus-visible:ring-2 focus-visible:ring-blue-800/50 cursor-pointer'
@@ -53,12 +68,16 @@ export default function BasicConfigSection() {
     const maximumAllowedExposure =
         allocationPreview?.maxAllowedExposureAmount ?? portfolioBalance * (1 + exposureLimitPercentage / 100)
 
-    // Cap allocation value at 100 when switching to percentage
+    // ── FIX #2: Only cap allocationValue when type flips to percentage ────────
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-        if (isPercentageAlloc && allocationValue > 100) {
+        if (isPercentageAlloc && Number(allocationValue) > 100) {
             setValue('allocationValue', 100, { shouldValidate: true })
         }
-    }, [isPercentageAlloc, allocationValue, setValue])
+        // Intentionally depend only on the type flip. Adding allocationValue here
+        // would re-introduce the typing-interference bug.
+    }, [isPercentageAlloc, setValue])
+    // ── END FIX #2 ────────────────────────────────────────────────────────────
 
     const previewInput = useMemo(
         () => ({
@@ -90,7 +109,7 @@ export default function BasicConfigSection() {
 
     const debouncedPreviewInput = useDebounced(previewInput, 1000)
 
-    // Fetch exposure data when allocation parameters change
+    // ── FIX #4 (part B): Replace fetchExposureData useEffect ─────────────────
     useEffect(() => {
         const {
             capitalAllocationType: debouncedCapitalAllocationType,
@@ -101,14 +120,21 @@ export default function BasicConfigSection() {
             fixedTradeAmount: debouncedFixedTradeAmount,
             capitalPercentagePerTrade: debouncedCapitalPercentagePerTrade,
             maxOpenPositions: debouncedMaxOpenPositions,
+            symbols: debouncedSymbols,
         } = debouncedPreviewInput
 
+        const minimumDebouncedAllocationValue =
+            debouncedCapitalAllocationType === 'PERCENTAGE_OF_PORTFOLIO' ? 0.01 : 10
+
         const hasRequiredInput =
-            debouncedCapitalAllocationType && Number.isFinite(debouncedAllocationValue) && debouncedAllocationValue > 0
+            debouncedCapitalAllocationType &&
+            Number.isFinite(debouncedAllocationValue) &&
+            debouncedAllocationValue >= minimumDebouncedAllocationValue
 
         if (!hasRequiredInput) {
             setAllocationPreview(null)
             setExposureData(null)
+            setPreviewError(null)
             return
         }
 
@@ -118,6 +144,7 @@ export default function BasicConfigSection() {
         ) {
             setAllocationPreview(null)
             setExposureData(null)
+            setPreviewError(null)
             return
         }
 
@@ -129,37 +156,42 @@ export default function BasicConfigSection() {
         ) {
             setAllocationPreview(null)
             setExposureData(null)
+            setPreviewError(null)
             return
         }
+
+        // Client-side dedup: skip if identical input was just requested.
+        const requestKey = JSON.stringify(debouncedPreviewInput)
+        if (requestKey === lastPreviewRef.current.key) {
+            return
+        }
+        lastPreviewRef.current = { key: requestKey, at: Date.now() }
 
         let isActive = true
 
         const fetchExposureData = async () => {
             try {
-                const requestKey = JSON.stringify(debouncedPreviewInput)
-                const now = Date.now()
-                if (requestKey === lastPreviewRef.current.key && now - lastPreviewRef.current.at < 1500) {
-                    return
-                }
-                lastPreviewRef.current = { key: requestKey, at: now }
-
-                const response = await investorService.getAllocationPreview({
-                    capitalAllocationType: debouncedCapitalAllocationType,
-                    allocationValue: debouncedAllocationValue,
-                    leverage: debouncedLeverage > 0 ? debouncedLeverage : undefined,
-                    maxPortfolioExposurePercentage: debouncedMaxExposure,
-                    positionSizingMethod: debouncedPositionSizingMethod,
-                    fixedTradeAmount:
-                        debouncedPositionSizingMethod === 'FIXED'
-                            ? debouncedFixedTradeAmount
-                            : undefined,
-                    capitalPercentagePerTrade:
-                        debouncedPositionSizingMethod === 'PERCENTAGE'
-                            ? debouncedCapitalPercentagePerTrade
-                            : undefined,
-                    maxOpenPositions: debouncedMaxOpenPositions > 0 ? debouncedMaxOpenPositions : undefined,
-                    symbols: debouncedPreviewInput.symbols,
-                }, 'live')
+                const response = await investorService.getAllocationPreview(
+                    {
+                        capitalAllocationType: debouncedCapitalAllocationType,
+                        allocationValue: debouncedAllocationValue,
+                        leverage: debouncedLeverage > 0 ? debouncedLeverage : undefined,
+                        maxPortfolioExposurePercentage: debouncedMaxExposure,
+                        positionSizingMethod: debouncedPositionSizingMethod,
+                        fixedTradeAmount:
+                            debouncedPositionSizingMethod === 'FIXED'
+                                ? debouncedFixedTradeAmount
+                                : undefined,
+                        capitalPercentagePerTrade:
+                            debouncedPositionSizingMethod === 'PERCENTAGE'
+                                ? debouncedCapitalPercentagePerTrade
+                                : undefined,
+                        maxOpenPositions:
+                            debouncedMaxOpenPositions > 0 ? debouncedMaxOpenPositions : undefined,
+                        symbols: debouncedSymbols,
+                    },
+                    'live',
+                )
 
                 if (!isActive) return
 
@@ -168,17 +200,21 @@ export default function BasicConfigSection() {
                     totalExposure: response.projectedEntryNotional,
                     effectiveLeverage: response.leverage,
                 })
+                setPreviewError(null)
             } catch (error) {
-                console.error('Failed to fetch allocation data:', error)
                 if (!isActive) return
+
+                // Surface the error instead of silently computing fake values.
+                // No fallback math — stale/incorrect exposure numbers are worse
+                // than an explicit error message in a form that allocates capital.
+                console.error('Failed to fetch allocation preview:', error)
                 setAllocationPreview(null)
-                // Fallback to mock calculation if API fails
-                const baseAmount = portfolioAllocation
-                const totalExposure = baseAmount * (Number(leverage) || 0)
-                setExposureData({
-                    totalExposure,
-                    effectiveLeverage: Number(leverage) || 0,
-                })
+                setExposureData(null)
+                setPreviewError(
+                    error instanceof Error
+                        ? error.message
+                        : 'Unable to calculate allocation preview. Check your connection and try again.',
+                )
             }
         }
 
@@ -187,7 +223,11 @@ export default function BasicConfigSection() {
         return () => {
             isActive = false
         }
-    }, [debouncedPreviewInput, leverage, portfolioAllocation])
+        // Only depend on the debounced input. `leverage` and `portfolioAllocation`
+        // were redundant — leverage is already inside debouncedPreviewInput, and
+        // portfolioAllocation was only used by the removed fallback.
+    }, [debouncedPreviewInput])
+    // ── END FIX #4 (part B) ───────────────────────────────────────────────────
 
     const dynamicLimits = useMemo(() => {
         const defaults = {
@@ -212,16 +252,48 @@ export default function BasicConfigSection() {
         }
     }, [allocationPreview])
 
+    // ── FIX #3: Replace blind echo-back useEffect with explicit clamp ─────────
     useEffect(() => {
-        setValue('leverage', Number(leverage) || 0, { shouldValidate: true })
-        setValue('maxOpenPositions', Number(maxOpenPositions) || 0, { shouldValidate: true })
-        if (positionSizingMethod === 'FIXED') {
-            setValue('fixedTradeAmount', Number(fixedTradeAmount) || 0, { shouldValidate: true })
+        // Only act when the preview has returned real limits.
+        if (!allocationPreview?.positionSizingLimits) return
+
+        const currentLeverage = Number(leverage) || 0
+        if (currentLeverage > dynamicLimits.maxLeverage) {
+            setValue('leverage', dynamicLimits.maxLeverage, {
+                shouldValidate: true,
+                shouldDirty: true,
+            })
         }
+
+        const currentMaxPositions = Number(maxOpenPositions) || 0
+        if (currentMaxPositions > dynamicLimits.maxOpenPositions) {
+            setValue('maxOpenPositions', dynamicLimits.maxOpenPositions, {
+                shouldValidate: true,
+                shouldDirty: true,
+            })
+        }
+
+        if (positionSizingMethod === 'FIXED' && dynamicLimits.maxFixedTradeAmount !== undefined) {
+            const currentFixed = Number(fixedTradeAmount) || 0
+            if (currentFixed > dynamicLimits.maxFixedTradeAmount) {
+                setValue('fixedTradeAmount', dynamicLimits.maxFixedTradeAmount, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                })
+            }
+        }
+
         if (positionSizingMethod === 'PERCENTAGE') {
-            setValue('capitalPercentagePerTrade', Number(capitalPercentagePerTrade) || 0, { shouldValidate: true })
+            const currentPercent = Number(capitalPercentagePerTrade) || 0
+            if (currentPercent > dynamicLimits.maxCapitalPercentagePerTrade) {
+                setValue('capitalPercentagePerTrade', dynamicLimits.maxCapitalPercentagePerTrade, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                })
+            }
         }
     }, [
+        allocationPreview,
         dynamicLimits,
         leverage,
         maxOpenPositions,
@@ -230,6 +302,7 @@ export default function BasicConfigSection() {
         positionSizingMethod,
         setValue,
     ])
+    // ── END FIX #3 ────────────────────────────────────────────────────────────
 
     const getDurationMultiplier = (unit: 'MINUTE' | 'HOUR' | 'DAY') => {
         if (unit === 'HOUR') return 3600
@@ -294,12 +367,15 @@ export default function BasicConfigSection() {
                                     label={isPercentageAlloc ? 'Allocation Percentage (%)' : 'Allocation Amount (USD)'}
                                     type="number"
                                     placeholder={isPercentageAlloc ? 'e.g., 20' : 'e.g., 1000'}
-                                    min={0.01}
+                                    min={minimumAllocationValue}
                                     max={isPercentageAlloc ? 100 : undefined}
-                                    step={isPercentageAlloc ? 0.01 : 1}
+                                    step={0.01}
                                     rules={{
                                         required: 'Allocation value is required',
-                                        min: { value: 0.01, message: 'Must be > 0' },
+                                        min: {
+                                            value: minimumAllocationValue,
+                                            message: isPercentageAlloc ? 'Must be > 0' : 'Minimum is $10',
+                                        },
                                         ...(isPercentageAlloc && { max: { value: 100, message: 'Max 100%' } }),
                                     }}
                                 />
@@ -438,9 +514,6 @@ export default function BasicConfigSection() {
                                                     </div>
                                                 )}
                                             />
-                                            {/* <p className="text-sm font-medium text-neutral-300">
-                                                Stepper Input: 0 - 300%
-                                            </p> */}
                                         </div>
 
                                         {/* Calculated Exposure Display */}
@@ -656,6 +729,18 @@ export default function BasicConfigSection() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* ── FIX #4 (part C): Preview error display ───────── */}
+                            {previewError && (
+                                <div className="space-y-1 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2">
+                                    <div className="flex items-center gap-2">
+                                        <InfoCircle size="16" className="shrink-0 text-red-400" />
+                                        <p className="text-sm font-medium text-red-300">Allocation preview unavailable</p>
+                                    </div>
+                                    <p className="text-xs text-red-200/80">{previewError}</p>
+                                </div>
+                            )}
+                            {/* ── END FIX #4 (part C) ──────────────────────────── */}
 
                             {/* Maximum Trade Duration */}
                             <Controller
