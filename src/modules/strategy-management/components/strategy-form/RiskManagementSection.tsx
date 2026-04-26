@@ -321,6 +321,16 @@ function TrailingStopCard({ control, watch }: Props) {
             {enabled && (
                 <div className="space-y-4 rounded-lg bg-neutral-950 p-4">
                     <InputField
+                        name="risk.trailingStop.activationThreshold"
+                        control={control}
+                        label="Activate After %"
+                        type="number"
+                        placeholder="e.g., 1.5 (0 = from entry)"
+                        step="0.01"
+                        rules={{ min: { value: 0, message: 'Min 0' } }}
+                        horizontal
+                    />
+                    <InputField
                         name="risk.trailingStop.trailingPercentage"
                         control={control}
                         label="Trailing %"

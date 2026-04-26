@@ -83,7 +83,7 @@ export type StrategyFormData = {
             structuralMaxDistancePercent?: number
         }
         breakEven: { enabled: boolean; triggerPercentage: number; offsetPercentage: number }
-        trailingStop: { enabled: boolean; trailingPercentage: number }
+        trailingStop: { enabled: boolean; trailingPercentage: number; activationThreshold?: number }
         takeProfit: {
             type: TakeProfitType
             fixedPercentage: number

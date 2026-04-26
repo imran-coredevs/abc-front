@@ -137,6 +137,7 @@ export interface BreakEvenConfig {
 export interface TrailingStopConfig {
   enabled: boolean;
   trailingPercentage: number;  // trail distance as % from current price
+  activationThreshold?: number; // min profit % before trailing activates (0 = trail from entry)
 }
 
 export interface PartialTpLevel {
