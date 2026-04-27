@@ -41,7 +41,7 @@ export default function OverviewPage() {
             title: 'Portfolio',
             description: 'Total capital currently allocated',
             quantity: dashboardData
-                ? `$${dashboardData?.portfolio?.totalCapital?.toLocaleString('en-US', {
+                ? `$${dashboardData?.portfolio?.totalAllocatedCapital?.toLocaleString('en-US', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                   }) ?? '0.00'}`
@@ -52,7 +52,7 @@ export default function OverviewPage() {
                 </div>
             ),
             variant: 'progress' as const,
-            progressPercent: dashboardData ? Math.round(dashboardData?.portfolio?.portfolioPercentage ?? 0) : 0,
+            progressPercent: dashboardData ? Math.round(dashboardData?.portfolio?.allocatedPercentage ?? 0) : 0,
             amountIcon: (
                 <div className="relative size-6 shrink-0">
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldWallet} />
@@ -76,8 +76,8 @@ export default function OverviewPage() {
                 : '$0.00',
             variant: 'increase' as const,
             increaseText: dashboardData
-                ? `${(dashboardData?.todaysPerformance?.percentageChange ?? 0) >= 0 ? '+' : ''}${(dashboardData?.todaysPerformance?.percentageChange ?? 0).toFixed(1)}% Yesterday`
-                : '0% Yesterday',
+                ? `${(dashboardData?.todaysPerformance?.percentageChange ?? 0) >= 0 ? '+' : ''}${(dashboardData?.todaysPerformance?.percentageChange ?? 0).toFixed(2)}% of Portfolio`
+                : '0.00% of Portfolio',
             amountIcon: (
                 <div className="relative size-6 shrink-0">
                     <img alt="" className="absolute block size-full max-w-none" src={imgVuesaxBoldMoney} />

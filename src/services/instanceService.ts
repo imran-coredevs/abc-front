@@ -7,8 +7,12 @@ import { api } from '@/config/apiConfig'
 export interface DashboardResponse {
     data: {
         portfolio: {
-            totalCapital: number
-            portfolioPercentage: number
+            totalAllocatedCapital: number
+            allocatedPercentage: number
+            currentExposureNotional: number
+            exposurePercentage: number
+            availableBalance: number
+            allocationStatus: string
         }
         todaysPerformance: {
             pnl: number
